@@ -10,7 +10,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function(){
-    $keywords = Keyword::all();
+    $keywords = Keyword::where('user_id', auth()->id())->get();
     return view('dashboard', compact('keywords'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
