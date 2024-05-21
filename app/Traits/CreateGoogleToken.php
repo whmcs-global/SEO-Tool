@@ -57,7 +57,6 @@ trait CreateGoogleToken
             return $body;
         }
         catch (Exception $e) {
-            dd($e->getMessage());
             return null;
         }
     }

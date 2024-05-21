@@ -53,13 +53,11 @@
                         <div class="mb-0 form-group row">
                             <div class="col-md-6 offset-md-4">
                                 @if ($adminSetting)
-                                <a href="{{ route('googleStatus',$adminSetting)}}" class="btn btn-danger">
+                                <button id="disconnect_google" class="btn btn-danger">
                                     Disconnect
-                                </a>
+                                </button>
                                 @else
-                                <a href="{{ route('googleConnect')}}" class="btn btn-primary">
-                                    Login with Google
-                                </a>
+                                <a href="{{ route('googleConnect')}}" class="btn btn-primary" >Link Google Account</a>
                                 @endif
                             </div>
                         </div>
@@ -71,5 +69,22 @@
 @endsection
 
 @push('scripts')
-
+<script>
+$("#disconnect_google").click(function () {
+    swal({
+        title: 'Are you sure?',
+        text: 'once you disconnect, certain features will no longer be available for use. Proceed with caution.',
+        icon: 'warning',
+        buttons: true,
+        dangerMode: true,
+    })
+    .then((willDelete) => {
+        if (willDelete) {
+            @if ($adminSetting)
+            window.location.href = "{{ route('googleStatus', [ 'adminSetting'  => $adminSetting]) }}";
+            @endif
+        }
+    });
+});
+</script>
 @endpush

@@ -37,7 +37,7 @@ Route::middleware(['auth','role:admin'])->name('admin.')->prefix('admin')->group
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/google_status/{AdminSetting}',[\App\Http\Controllers\Admin\GoogleAnalyticsController::class,'changeStatus'])->name('googleStatus');
+    Route::get('/google_status/{adminSetting}',[\App\Http\Controllers\Admin\GoogleAnalyticsController::class,'changeStatus'])->name('googleStatus');
     Route::get('/connect_google_auth',[\App\Http\Controllers\Admin\GoogleAnalyticsController::class,'googleConnect'])->name('googleConnect');
     Route::get('/google/callback',[\App\Http\Controllers\Admin\GoogleAnalyticsController::class,'callbackToGoogle'])->name('googleAuthCallback');
     Route::get('/keywords/{keyword}/analytics', [\App\Http\Controllers\GoogleAnalyticController::class, 'redirectToGoogle'])->name('keywords.analytics');

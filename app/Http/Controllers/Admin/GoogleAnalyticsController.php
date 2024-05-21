@@ -21,7 +21,7 @@ class GoogleAnalyticsController extends Controller
     public function configGoogleAnalytics(Request $request)
     {
         $adminSetting = AdminSetting::where('user_id', auth()->id())->first();
-
+        // dd($adminSetting);
         if(!is_null($adminSetting)) {
             // Initialize Guzzle client
             $client = new Client();
@@ -59,6 +59,7 @@ class GoogleAnalyticsController extends Controller
     //     // return view('admin.google-analytics.google-connect', ['auth_url' => $auth_url]);
     //     return redirect()->to($auth_url);
     // }
+    
     public function googleConnect()
     {
         try {
@@ -123,25 +124,24 @@ class GoogleAnalyticsController extends Controller
                     ]);
 
                     $closeWindow = 'window-hide';
-                    return view('admin.google-analytics.index', compact('adminSetting', 'closeWindow'));
+                    return view('settings.index', compact('adminSetting', 'closeWindow'));
                 }
             }
 
-            return redirect()->route('admindashboard')->with('status', 'error')->with('message', 'Something went wrong.');
+            return redirect()->route('dashboard')->with('status', 'error')->with('message', 'Something went wrong.');
 
         } catch (RequestException $e) {
 
-            return redirect()->route('admindashboard')->with('status', 'error')->with('message', $e->getMessage());
+            return redirect()->route('dashboard')->with('status', 'error')->with('message', $e->getMessage());
         }
     }
 
     public function changeStatus(AdminSetting $adminSetting)
     {
         $client = new Client();
-
+        
         $endpoint = 'https://oauth2.googleapis.com/revoke';
         try {
-
             // Send a POST request to revoke the token
             $response = $client->post($endpoint, [
             'form_params' => [
@@ -150,7 +150,7 @@ class GoogleAnalyticsController extends Controller
             ]);
             // Check if the token was successfully revoked
             if ($response->getStatusCode() === 200) {
-                // $adminSetting->delete();
+                $adminSetting->delete();
                 echo "Access token revoked successfully\n";
             } else {
                 echo "Error revoking access token\n";

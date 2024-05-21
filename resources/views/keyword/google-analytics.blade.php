@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.7/css/dataTables.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
 
     <!-- Begin Page Content -->
     <section class="section">
@@ -21,7 +21,7 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-md-8">
-                                <h4 class="w-100">Google Analytics</h4>
+                                <h4 class="w-100">Google Analytics - {{ request()->keyword['keyword'] }}</h4>
                             </div>
                             <div class="col-md-4">
                                     <input type="text" id="daterange" name="daterange" style="width: 172px;"
@@ -67,7 +67,7 @@
             </div>
         </div>
     </section>
-    <script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
             new DataTable('#dataTable');

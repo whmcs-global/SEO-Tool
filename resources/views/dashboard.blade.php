@@ -28,7 +28,7 @@
                         <tr>
                             <td class="px-4 py-3">{{ $keyword->keyword }}</td>
                             <td class="px-4 py-3 text-right">
-                                <a href="{{route('keywords.analytics', $keyword)}}" class="mr-2 btn btn-primary btn-sm rounded-pill">Show Analytics</a>
+                                <a href="{{route('keywords.analytics', $keyword )}}" class="mr-2 btn btn-primary btn-sm rounded-pill">Show Analytics</a>
                                 <a href="{{route('keywords.edit', $keyword)}}" class="mr-2 btn btn-primary btn-sm rounded-pill">Edit</a>
                                 <form method="POST" action="{{route('keywords.destroy', $keyword)}}" class="d-inline-block">
                                     @csrf

@@ -45,6 +45,7 @@ class GoogleAnalyticController extends Controller
             $dateFilter= $startDate.' / '.$endDate;
             $client = new Client();
             $adminSetting = AdminSetting::first();
+            // dd($adminSetting);
             $queryData = $dateData = [];
             if (!is_null($adminSetting)) {
 
@@ -71,6 +72,7 @@ class GoogleAnalyticController extends Controller
                 }
 
                 if ($adminSetting->status) {
+                    // dd($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type);
                     $queryData = $this->analyticsQueryData($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type ?? 'web');
                     $dateData = $this->analyticsChartData($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type ?? 'web');
                     // dd($queryData, $dateData);
@@ -114,7 +116,6 @@ class GoogleAnalyticController extends Controller
                 ],
                 "searchType": "' . $type . '"
             }';
-
             $headers = [
                 'Content-Type' => 'application/json'
             ];
