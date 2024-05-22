@@ -36,7 +36,11 @@ Dashboard
                     <tr>
                         <td>{{ $keyword->keyword }}</td>
                         @role('admin')
+                        @if($keyword->user->id == auth()->user()->id)
+                        <td>You</td>
+                        @else
                         <td>{{ $keyword->user->name }}</td>
+                        @endif
                         @endrole
                         <td>{{ $keyword->created_at->format('M d, Y H:i A') }}</td>
                         <td>{{ $keyword->updated_at->format('M d, Y H:i A') }}</td>
@@ -51,10 +55,10 @@ Dashboard
                                 </a>
                                 @endcan
                                 @can('delete keyword')
-                                <form method="POST" action="{{ route('keywords.destroy', $keyword) }}" class="d-inline mr-2">
+                                <form method="POST" action="{{ route('keywords.destroy', $keyword) }}" class="d-inline mr-2" id="delete-form-{{ $keyword->id }}">
                                     @csrf
                                     @method('delete')
-                                    <button type="submit" class="btn btn-danger rounded-pill" onclick="return confirm('Are you sure you want to delete this keyword?')">
+                                    <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $keyword->id }})">
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </form>
@@ -69,3 +73,20 @@ Dashboard
         </div>
     </div>
 @endsection
+@push('scripts')
+<script>
+    function confirmDelete(id) {
+        swal({
+            title: 'Are you sure?',
+            text: 'You won\'t be able to revert this!',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+        if (willDelete) {
+            document.getElementById('delete-form-' + id).submit();
+        }
+    });
+    }
+    </script>
+@endpush
