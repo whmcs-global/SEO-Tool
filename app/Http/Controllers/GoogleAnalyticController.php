@@ -119,7 +119,8 @@ class GoogleAnalyticController extends Controller
                 'Content-Type' => 'application/json'
             ];
 
-            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key=AIzaSyAolG-tIIf72xBT3OQiYozPPbC2djfMj6w&access_token=' . $accessToken, $headers, $Query);
+            $key = config('google.key');
+            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key='.$key.'&access_token=' . $accessToken, $headers, $Query);
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
 
@@ -170,8 +171,8 @@ class GoogleAnalyticController extends Controller
                 'Content-Type' => 'application/json'
             ];
 
-
-            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key=AIzaSyAolG-tIIf72xBT3OQiYozPPbC2djfMj6w&access_token=' . $accessToken, $headers, $dateFilter);
+            $key = config('google.key');
+            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key='.$key.'&access_token=' . $accessToken, $headers, $dateFilter);
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
             // Check if response status is successful
