@@ -40,23 +40,40 @@ trait CreateGoogleToken
     //         return null;
     //     }
     // }
-    public function createToken ($client, $clientId, $clientSecret, $redirectUrl, $refreshToken) {
+    public function createToken($client, $clientId, $clientSecret, $redirectUrl, $refreshToken) {
         try {
-            $client = new Client();
-            $response = $client->post ( 'https://oauth2.googleapis.com/token', [
-            'form_params' => [
-            'client_id' => $clientId,
-            'client_secret' => $clientSecret,
-            'redirect_uri' => 'https://dev.hostingseekers.com/google/callback',
-            'grant_type' => 'refresh_token',
-            'refresh_token' => $refreshToken,
-            'scope' => 'https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/userinfo.email',
-            ],
+            $response = $client->post('https://oauth2.googleapis.com/token', [
+                'form_params' => [
+                    'client_id' => $clientId,
+                    'client_secret' => $clientSecret,
+                    'redirect_uri' => $redirectUrl, // Use the provided redirect URL
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => $refreshToken,
+                    'scope' => 'https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/userinfo.email',
+                ],
             ]);
+
             $body = $response->getBody();
-            return $body;
-        }
-        catch (Exception $e) {
+            $data = json_decode($body, true);
+
+            if (isset($data['access_token'])) {
+                return $data;
+            } else {
+                throw new Exception('Error obtaining access token');
+            }
+        } catch (Exception $e) {
+            $errorResponse = $e->getResponse()->getBody()->getContents();
+            $errorData = json_decode($errorResponse, true);
+
+            if (isset($errorData['error']) && $errorData['error'] === 'invalid_grant') {
+                // Handle specific case where the refresh token is expired or revoked
+                error_log('Refresh token has expired or been revoked.');
+                // Notify the system/user to re-authenticate
+            } else {
+                // Log other errors
+                error_log('Error: ' . $e->getMessage());
+            }
+
             return null;
         }
     }

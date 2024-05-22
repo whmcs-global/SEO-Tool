@@ -56,16 +56,15 @@ class GoogleAnalyticController extends Controller
                 $currentTime = Carbon::now();
                 $accessToken = $adminSetting->access_token;
                 if ($expirationTime->lessThan($currentTime) && ($adminSetting->status)) {
-                    $tokenResponse = $this->createToken($client, $adminSetting->client_id, $adminSetting->client_secret_id, $adminSetting->redirect_url, $adminSetting->refresh_token);
+                    $tokenResponse = $this->createToken($client, jsdecode_userdata($adminSetting->client_id), jsdecode_userdata($adminSetting->client_secret_id), $adminSetting->redirect_url, $adminSetting->refresh_token);
                     if ($tokenResponse) {
-                        $details = $tokenResponse->getContents();
-                        $details = json_decode($details);
+                        $details = $tokenResponse;
                         $adminSetting->update([
-                            'access_token' => $details->access_token,
-                            'expiry_time' => $details->expires_in,
+                            'access_token' => $details['access_token'],
+                            'expiry_time' => $details['expires_in'],
                             'created_at' => Carbon::now(),
                         ]);
-                        $accessToken =  $details->access_token;
+                        $accessToken =  $details['access_token'];
                     }
                 } else {
                     $accessToken = $adminSetting->access_token;
@@ -120,7 +119,7 @@ class GoogleAnalyticController extends Controller
                 'Content-Type' => 'application/json'
             ];
 
-            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key=AIzaSyB4XKbQj9yFFF559ltbMSRWOekK1MD4EoU&access_token=' . $accessToken, $headers, $Query);
+            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key=AIzaSyAolG-tIIf72xBT3OQiYozPPbC2djfMj6w&access_token=' . $accessToken, $headers, $Query);
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
 
@@ -172,7 +171,7 @@ class GoogleAnalyticController extends Controller
             ];
 
 
-            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key=AIzaSyB4XKbQj9yFFF559ltbMSRWOekK1MD4EoU&access_token=' . $accessToken, $headers, $dateFilter);
+            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key=AIzaSyAolG-tIIf72xBT3OQiYozPPbC2djfMj6w&access_token=' . $accessToken, $headers, $dateFilter);
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
             // Check if response status is successful

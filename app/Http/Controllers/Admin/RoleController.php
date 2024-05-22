@@ -11,8 +11,8 @@ class RoleController extends Controller
 {
     public function index(): \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
     {
-        //        $roles=Role::all();
-        $roles = Role::whereNotIn('name', ['admin'])->get();
+               $roles=Role::all();
+        // $roles = Role::whereNotIn('name', ['admin'])->get();
         return view('admin.roles.index', compact('roles'));
     }
 

@@ -9,10 +9,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function(){
-    $keywords = Keyword::where('user_id', auth()->id())->get();
-    return view('dashboard', compact('keywords'));
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [KeywordController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
 
 Route::middleware(['auth','role:admin'])->name('admin.')->prefix('admin')->group(function(){

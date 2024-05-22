@@ -1,5 +1,7 @@
 @extends('layouts.admin')
-
+@section('title')
+Settings
+@endsection
 @section('content')
 <div class="container">
     <section class="section">
@@ -14,7 +16,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">Admin Settings</div>
+                <div class="card-header">Google Console API</div>
 
                 <div class="card-body">
 
@@ -57,7 +59,7 @@
                                     Disconnect
                                 </button>
                                 @else
-                                <a href="{{ route('googleConnect')}}" class="btn btn-primary" >Link Google Account</a>
+                                <a onclick="window.open('{{ route('googleConnect')}}', '_blank', 'location=yes,height=900,width=800,scrollbars=yes,status=yes');" target="_blank" style="color: white;" class="btn btn-primary">Link Google Account</a>
                                 @endif
                             </div>
                         </div>
@@ -73,7 +75,7 @@
 $("#disconnect_google").click(function () {
     swal({
         title: 'Are you sure?',
-        text: 'once you disconnect, certain features will no longer be available for use. Proceed with caution.',
+        text: 'Once you disconnect, google console features will no longer be available for use. Proceed with caution.',
         icon: 'warning',
         buttons: true,
         dangerMode: true,
@@ -86,5 +88,10 @@ $("#disconnect_google").click(function () {
         }
     });
 });
+
+@if(isset($closeWindow))
+    window.opener.location.reload();
+    window.top.close();
+@endif
 </script>
 @endpush

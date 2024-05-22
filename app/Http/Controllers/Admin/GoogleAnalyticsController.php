@@ -30,42 +30,27 @@ class GoogleAnalyticsController extends Controller
             $expirationTime = $pastUpdatedAccessTokenTime->copy()->addSeconds($expiryTimeMinutes);
             $currentTime = Carbon::now();
             if($expirationTime->lessThan($currentTime) && ($adminSetting->status)) {
-                $tokenResponse = $this->createToken($client, $adminSetting->client_id, $adminSetting->client_secret_id, $adminSetting->redirect_url, $adminSetting->refresh_token);
+                $tokenResponse = $this->createToken($client, jsdecode_userdata($adminSetting->client_id), jsdecode_userdata($adminSetting->client_secret_id), $adminSetting->redirect_url, $adminSetting->refresh_token);
                 if($tokenResponse) {
-                    $details = json_decode($tokenResponse->getContents());
+                    $details = $tokenResponse;
                     $adminSetting->update([
-                        'access_token' => $details->access_token,
-                        'expiry_time' => $details->expires_in,
+                        'access_token' => $details['access_token'],
+                        'expiry_time' => $details['expires_in'],
                         'created_at' => Carbon::now(),
                     ]);
-
                 }
             }
         }
         return view('settings.index', compact('adminSetting'));
     }
 
-    // public function googleConnect()
-    // {
-    //     // Replace these values with your Google OAuth credentials
-    //     $clientID = env('GOOGLE_ANALYTICS_CLIENT_ID');
-    //     $redirectUri = env('GOOGLE_ANALYTICS_URL');
-
-    //     $scope = urlencode('https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/userinfo.email');
-
-    //     // Construct the URL
-    //     $auth_url = "https://accounts.google.com/o/oauth2/v2/auth?redirect_uri={$redirectUri}&prompt=consent&response_type=code&client_id={$clientID}&scope={$scope}&access_type=offline";
-
-    //     // return view('admin.google-analytics.google-connect', ['auth_url' => $auth_url]);
-    //     return redirect()->to($auth_url);
-    // }
-    
     public function googleConnect()
     {
         try {
             // Replace these values with your Google OAuth credentials
-            $clientID = env('GOOGLE_ANALYTICS_CLIENT_ID');
-            $redirectUri = env('GOOGLE_ANALYTICS_URL');
+            $clientID = config('google.client_id');
+            $redirectUri = config('google.redirect_url');
+
             $scope = urlencode('https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/userinfo.email');
             // dd($clientID, $redirectUri, $scope);
             // Construct the URL
@@ -83,10 +68,9 @@ class GoogleAnalyticsController extends Controller
     public function callbackToGoogle(Request $request)
     {
        // Replace these values with your Google OAuth credentials
-       $clientID = env('GOOGLE_ANALYTICS_CLIENT_ID');
-       $clientSecret = env('GOOGLE_ANALYTICS_CLIENT_SECRET_ID');
-       $redirectUri = env('GOOGLE_ANALYTICS_URL');
-
+       $clientID = config('google.client_id');
+       $clientSecret = config('google.client_secret');
+       $redirectUri = config('google.redirect_url');
        try {
             // Initialize Guzzle client
             $client = new Client();
@@ -108,15 +92,14 @@ class GoogleAnalyticsController extends Controller
 
                 // Decode the JSON response
                 $token_data = json_decode($body, true);
-
                 // Access token and other details
                 $access_token = $token_data['access_token'];
                 if($access_token) {
                     $adminSetting = AdminSetting::create([
                         'user_id' => auth()->id(),
-                        'client_id' => env('GOOGLE_ANALYTICS_CLIENT_ID'),
-                        'client_secret_id' => env('GOOGLE_ANALYTICS_CLIENT_SECRET_ID'),
-                        'redirect_url' => env('GOOGLE_ANALYTICS_URL'),
+                        'client_id' => jsencode_userdata($clientID),
+                        'client_secret_id' => jsencode_userdata($clientSecret),
+                        'redirect_url' => config('google.redirect_url'),
                         'access_token'=> $access_token,
                         'refresh_token'=> $token_data['refresh_token'],
                         'expiry_time'=> $token_data['expires_in'],
@@ -139,7 +122,7 @@ class GoogleAnalyticsController extends Controller
     public function changeStatus(AdminSetting $adminSetting)
     {
         $client = new Client();
-        
+
         $endpoint = 'https://oauth2.googleapis.com/revoke';
         try {
             // Send a POST request to revoke the token

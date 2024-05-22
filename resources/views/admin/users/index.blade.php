@@ -1,5 +1,7 @@
 @extends('layouts.admin')
-
+@section('title')
+Users
+@endsection
 @section('content')
 <div class="container-fluid">
     @if(session('message'))
@@ -12,26 +14,32 @@
             <div class="clearfix"></div>
             <div class="overflow-hidden bg-info">
                 <div class="table-responsive">
-                    <table class="table mb-0 table-striped table-hover">
-                        <thead class="text-white bg-primary">
+                <table class="table table-hover">
+                        <thead class="thead-dark bg-primary">
                             <tr>
-                                <th scope="col" class="px-4 py-3">Name</th>
-                                <th scope="col" class="px-4 py-3">Email</th>
-                                <th scope="col" class="px-4 py-3 text-right">Actions</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col" class="text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($users as $user)
                             <tr>
-                                <td class="px-4 py-3">{{$user->name}}</td>
-                                <td class="px-4 py-3">{{$user->email}}</td>
-                                <td class="px-4 py-3 text-right">
-                                    <a href="{{route('admin.users.show',$user)}}" class="mr-2 btn btn-primary btn-sm">Roles & Permission</a>
-                                    <form method="POST" action="{{route('admin.users.destroy',$user)}}" style="display:inline;">
-                                        @csrf
-                                        @method('delete')
-                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                    </form>
+                                <td>{{ $user->name }}</td>
+                                <td>{{ $user->email }}</td>
+                                <td class="text-right">
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
+                                        <a href="{{ route('admin.users.show', $user) }}" class="btn btn-primary rounded-pill mr-2">
+                                            <i class="fas fa-user-lock"></i> Roles & Permission
+                                        </a>
+                                        <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="d-inline">
+                                            @csrf
+                                            @method('delete')
+                                            <button type="submit" class="btn btn-danger rounded-pill" onclick="return confirm('Are you sure you want to delete this user?')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach

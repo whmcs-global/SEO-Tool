@@ -53,15 +53,17 @@
         }
 
         $('#keyword-textarea').on('keydown', function(e) {
-          if (e.key === 'Enter') {
-            var keyword = $(this).val().trim();
-            if (keyword !== '') {
-              keywords.push(keyword);
-              $(this).val('');
-              updatePreview();
+            if (e.key === 'Enter') {
+                var keyword = $(this).val().trim();
+                if (keyword !== '') {
+                    if (!keywords.includes(keyword)) {
+                        keywords.push(keyword);
+                    }
+                    $(this).val('');
+                    updatePreview();
+                }
+                e.preventDefault();
             }
-            e.preventDefault();
-          }
         });
 
         $(document).on('click', '.keyword-preview .delete', function() {

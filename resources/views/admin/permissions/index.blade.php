@@ -1,4 +1,7 @@
 @extends('layouts.admin')
+@section('title')
+Permission
+@endsection
 @section('content')
     @if(session('message'))
     <div class="alert alert-success" role="alert">
@@ -17,29 +20,35 @@
 
         <div class="bg-blue-200 card">
             <div class="p-0 card-body">
-                <table class="table mb-0 table-striped table-hover">
-                    <thead class="text-white bg-primary">
-                        <tr>
-                            <th scope="col" class="px-4 py-3">Name</th>
-                            <th scope="col" class="px-4 py-3 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($permissions as $permission)
-                        <tr>
-                            <td class="px-4 py-3">{{ $permission->name }}</td>
-                            <td class="px-4 py-3 text-right">
-                                <a href="{{ route('admin.permissions.edit', $permission) }}" class="mr-2 btn btn-primary btn-sm rounded-pill">Edit</a>
-                                <form method="POST" action="{{ route('admin.permissions.destroy', $permission) }}" class="d-inline-block">
+            <table class="table table-hover">
+                <thead class="thead-dark bg-primary">
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col" class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($permissions as $permission)
+                    <tr>
+                        <td>{{ $permission->name }}</td>
+                        <td class="text-right">
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
+                                <a href="{{ route('admin.permissions.edit', $permission) }}" class="btn btn-primary rounded-pill mr-2">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <form method="POST" action="{{ route('admin.permissions.destroy', $permission) }}" class="d-inline">
                                     @csrf
                                     @method('delete')
-                                    <button type="submit" class="btn btn-danger btn-sm rounded-pill" onclick="return confirm('Are you sure you want to delete this permission?')">Delete</button>
+                                    <button type="submit" class="btn btn-danger rounded-pill" onclick="return confirm('Are you sure you want to delete this permission?')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
                                 </form>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
             </div>
         </div>
     </div>

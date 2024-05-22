@@ -2,6 +2,9 @@
 
 return [
 
+    'encryptionMethod' => env('ENC_DEC_METHOD', ''),
+    'secrect' => env('ENC_DEC_SECRET', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Name
