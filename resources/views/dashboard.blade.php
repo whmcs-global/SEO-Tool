@@ -19,6 +19,7 @@ Dashboard
         @endcan
         <div class="bg-blue-200 card">
             <div class="p-0 card-body">
+            @can('keyword list')
             <table class="table table-hover">
                 <thead class="thead-dark bg-primary">
                     <tr>
@@ -69,6 +70,7 @@ Dashboard
                     @endforeach
                 </tbody>
             </table>
+            @endcan
             </div>
         </div>
     </div>

@@ -32,8 +32,8 @@ class DatabaseSeeder extends Seeder
         Permission::create(['name' => 'edit keyword']);
         Permission::create(['name' => 'delete keyword']);
 
-        $userRole->givePermissionTo('write keyword');
-        $adminRole->givePermissionTo(['write keyword','edit keyword','delete keyword']);
+        $userRole->givePermissionTo(['keyword list','add keyword']);
+        $adminRole->givePermissionTo(['add keyword','edit keyword','delete keyword','keyword list']);
 
         $admin = User::create([
             'name' => 'Admin',
