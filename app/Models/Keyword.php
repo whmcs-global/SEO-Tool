@@ -9,7 +9,7 @@ class Keyword extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id','keyword'];
+    protected $fillable = ['user_id','keyword','ip_address'];
 
     public function user()
     {

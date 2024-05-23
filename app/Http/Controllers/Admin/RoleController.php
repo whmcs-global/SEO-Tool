@@ -11,8 +11,8 @@ class RoleController extends Controller
 {
     public function index(): \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
     {
-               $roles=Role::all();
-        // $roles = Role::whereNotIn('name', ['admin'])->get();
+            //    $roles=Role::all();
+        $roles = Role::whereNotIn('name', ['super admin'])->get();
         return view('admin.roles.index', compact('roles'));
     }
 
@@ -23,10 +23,10 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
-        //        dd($request->roleName);
         $validated = $request->validate([
-            'roleName' => 'required',
+            'roleName' => 'required|unique:roles,name',
         ]);
+        
         Role::create([
             'name' => $request->roleName,
         ]);
@@ -67,17 +67,24 @@ class RoleController extends Controller
 
     public function givePermission(Request $request, Role $role)
     {
-        //        dd($request->all());
+        $permissions = $request->input('permissions', []);
 
-        if ($role->hasPermissionTo($request->permission)) {
-            return redirect(route('admin.roles.index'))
-                ->with('message', 'Permission exists');
+        $existingPermissions = $role->permissions->pluck('name')->toArray();
+        $newPermissions = array_diff($permissions, $existingPermissions);
+        $removedPermissions = array_diff($existingPermissions, $permissions);
+
+        if (!empty($newPermissions)) {
+            $role->givePermissionTo($newPermissions);
         }
 
-        $role->givePermissionTo($request->permission);
-        return redirect(route('admin.roles.index'))
-            ->with('message', 'Permission added');
+        if (!empty($removedPermissions)) {
+            $role->revokePermissionTo($removedPermissions);
+        }
+
+        return redirect()->back()->with('success', 'Permissions updated successfully.');
     }
+
+    
     public function revokePermission(Role $role, Permission $permission)
     {
         //        dd($permission);

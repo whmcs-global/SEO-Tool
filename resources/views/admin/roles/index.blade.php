@@ -36,13 +36,15 @@
                                         <a href="{{ route('admin.roles.edit', $role) }}" class="btn btn-primary rounded-pill mr-2">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
-                                        <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" class="d-inline" id="delete-form-{{ $role->id }}">
-                                            @csrf
-                                            @method('delete')
-                                            <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $role->id }})">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </button>
-                                        </form>
+                                        @if(!in_array($role->id, [1, 2, 3]))
+                                            <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" class="d-inline" id="delete-form-{{ $role->id }}">
+                                                @csrf
+                                                @method('delete')
+                                                <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $role->id }})">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -57,6 +59,16 @@
 @push('scripts')
     <script>
         function confirmDelete(id) {
+            const restrictedIds = [1, 2, 3];
+            if (restrictedIds.includes(id)) {
+                swal({
+                    title: 'Action Denied',
+                    text: 'This role cannot be deleted.',
+                    icon: 'error',
+                });
+                return;
+            }
+
             swal({
                 title: 'Are you sure?',
                 text: 'You won\'t be able to revert this!',

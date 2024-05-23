@@ -12,16 +12,17 @@ Route::get('/', function () {
 Route::get('/dashboard', [KeywordController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
 
-Route::middleware(['auth','role:admin'])->name('admin.')->prefix('admin')->group(function(){
+Route::middleware(['auth','role:Admin|Super Admin'])->name('admin.')->prefix('admin')->group(function(){
     Route::get('admin',[\App\Http\Controllers\Admin\indexController::class,'index'])->name('index');
     Route::resource('roles',\App\Http\Controllers\Admin\RoleController::class)->except('show');
     Route::post('/roles/{role}/permissions',[\App\Http\Controllers\Admin\RoleController::class,'givePermission'])->name('roles.permissions');
-    Route::delete('/roles/{role}/permissions/{permission}', [RoleController::class, 'revokePermission'])
-        ->name('roles.permissions.revoke');
+    Route::delete('/roles/{role}/permissions/{permission}', [RoleController::class, 'revokePermission'])->name('roles.permissions.revoke');
     Route::resource('permissions',\App\Http\Controllers\Admin\PermissionController::class)->except('show');
     Route::post('/permissions/{permission}/roles',[\App\Http\Controllers\Admin\PermissionController::class,'assignRole'])->name('permissions.roles');
     Route::delete('/permissions/{permission}/roles/{role}',[\App\Http\Controllers\Admin\PermissionController::class,'removeRole'])->name('permissions.roles.remove');
     Route::get('users',[\App\Http\Controllers\Admin\UserController::class,'index'])->name('users.index');
+    Route::get('/user/create',[\App\Http\Controllers\Admin\UserController::class,'create'])->name('user.create');
+    Route::post('/user/store',[\App\Http\Controllers\Admin\UserController::class,'store'])->name('user.store');
     Route::get('users/{user}',[\App\Http\Controllers\Admin\UserController::class,'show'])->name('users.show');
     Route::delete('users/{user}',[\App\Http\Controllers\Admin\UserController::class,'destroy'])->name('users.destroy');
     Route::post('/users/{user}/roles',[\App\Http\Controllers\Admin\UserController::class,'assignRole'])->name('users.roles');
@@ -29,7 +30,6 @@ Route::middleware(['auth','role:admin'])->name('admin.')->prefix('admin')->group
     Route::post('/users/{user}/permissions', [UserController::class, 'givePermission'])->name('users.permissions');
     Route::delete('/users/{user}/permissions/{permission}', [UserController::class, 'revokePermission'])->name('users.permissions.revoke');
     Route::get('/settings',[\App\Http\Controllers\Admin\GoogleAnalyticsController::class,'configGoogleAnalytics'])->name('settings');
-
 });
 
 

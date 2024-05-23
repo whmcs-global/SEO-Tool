@@ -34,11 +34,19 @@
             </button>
         </div>
         <nav :class="{'block': open, 'hidden': !open}" class="flex-grow px-4 pb-4 md:block md:pb-0 md:overflow-y-auto">
-            @can('add keyword')
+            @can('Add keyword')
             <a class="block px-4 py-2 mt-2 text-sm font-semibold text-gray-900 {{ request()->routeIs('dashboard') ? ' bg-gray-200 dark:bg-gray-700' : 'bg-transparent dark:bg-transparent ' }} rounded-lg  dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:focus:text-white dark:hover:text-white dark:text-gray-200 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
                 href="{{route('dashboard')}}">keywords</a>
             @endcan
-            @role('admin')
+            @role('Admin')
+            <a class="block px-4 py-2 mt-2 text-sm font-semibold text-gray-900 {{ request()->routeIs('admin.roles.index') ? ' bg-gray-200 dark:bg-gray-700' : 'bg-transparent dark:bg-transparent ' }} rounded-lg  dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:focus:text-white dark:hover:text-white dark:text-gray-200 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
+               href="{{ route('admin.roles.index') }}">Roles</a>
+            <a class="block px-4 py-2 mt-2 text-sm font-semibold text-gray-900 {{ request()->routeIs('admin.permissions.index') ? ' bg-gray-200 dark:bg-gray-700' : 'bg-transparent dark:bg-transparent ' }} rounded-lg  dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:focus:text-white dark:hover:text-white dark:text-gray-200 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
+               href="{{route('admin.permissions.index')}}">Permissions</a>
+            <a class="block px-4 py-2 mt-2 text-sm font-semibold text-gray-900 {{ request()->routeIs('admin.users.index') ? ' bg-gray-200 dark:bg-gray-700' : 'bg-transparent dark:bg-transparent ' }} rounded-lg  dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:focus:text-white dark:hover:text-white dark:text-gray-200 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
+               href="{{route('admin.users.index')}}">Users</a>
+            @endrole
+            @role('Super Admin')
             <a class="block px-4 py-2 mt-2 text-sm font-semibold text-gray-900 {{ request()->routeIs('admin.roles.index') ? ' bg-gray-200 dark:bg-gray-700' : 'bg-transparent dark:bg-transparent ' }} rounded-lg  dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:focus:text-white dark:hover:text-white dark:text-gray-200 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
                href="{{ route('admin.roles.index') }}">Roles</a>
             <a class="block px-4 py-2 mt-2 text-sm font-semibold text-gray-900 {{ request()->routeIs('admin.permissions.index') ? ' bg-gray-200 dark:bg-gray-700' : 'bg-transparent dark:bg-transparent ' }} rounded-lg  dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:focus:text-white dark:hover:text-white dark:text-gray-200 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"

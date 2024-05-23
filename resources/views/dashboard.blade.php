@@ -10,7 +10,7 @@ Dashboard
     @endif
 
     <div class="container py-5">
-        @can('add keyword')
+        @can('Add keyword')
         <div class="mb-3 row justify-content-end">
             <div class="col-auto">
                 <a href="{{ route('keywords.create') }}" class="btn btn-primary rounded-pill">Add Keyword</a>
@@ -19,13 +19,18 @@ Dashboard
         @endcan
         <div class="bg-blue-200 card">
             <div class="p-0 card-body">
-            @can('keyword list')
+            @can('Keyword list')
             <table class="table table-hover">
                 <thead class="thead-dark bg-primary">
                     <tr>
                         <th scope="col" style="width: 30%;">Keyword</th>
-                        @role('admin')
+                        @role('Admin')
                         <th scope="col">Created By</th>
+                        <th scope="col" style="width: 15%;">IP Address</th>
+                        @endrole
+                        @role('Super Admin')
+                        <th scope="col">Created By</th>
+                        <th scope="col" style="width: 15%;">IP Address</th>
                         @endrole
                         <th scope="col" style="width: 15%;">Created At</th>
                         <th scope="col" style="width: 15%;">Updated At</th>
@@ -36,12 +41,13 @@ Dashboard
                     @foreach($keywords as $keyword)
                     <tr>
                         <td>{{ $keyword->keyword }}</td>
-                        @role('admin')
-                        @if($keyword->user->id == auth()->user()->id)
-                        <td>You</td>
-                        @else
+                        @role('Admin')
                         <td>{{ $keyword->user->name }}</td>
-                        @endif
+                        <td>{{ $keyword->ip_address}}</td>
+                        @endrole
+                        @role('Super Admin')
+                        <td>{{ $keyword->user->name }}</td>
+                        <td>{{ $keyword->ip_address}}</td>
                         @endrole
                         <td>{{ $keyword->created_at->format('M d, Y H:i A') }}</td>
                         <td>{{ $keyword->updated_at->format('M d, Y H:i A') }}</td>
@@ -50,12 +56,12 @@ Dashboard
                                 <a href="{{ route('keywords.analytics', $keyword) }}" class="btn btn-primary rounded-pill mr-2">
                                     <i class="fas fa-chart-line"></i> Analytics
                                 </a>
-                                @can('edit keyword')
+                                @can('Edit keyword')
                                 <a href="{{ route('keywords.edit', $keyword) }}" class="btn btn-secondary rounded-pill mr-2">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
                                 @endcan
-                                @can('delete keyword')
+                                @can('Delete keyword')
                                 <form method="POST" action="{{ route('keywords.destroy', $keyword) }}" class="d-inline mr-2" id="delete-form-{{ $keyword->id }}">
                                     @csrf
                                     @method('delete')

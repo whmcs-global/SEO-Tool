@@ -44,8 +44,8 @@ class GoogleAnalyticController extends Controller
             }
             $dateFilter= $startDate.' / '.$endDate;
             $client = new Client();
-            $adminSetting = AdminSetting::first();
-            // dd($adminSetting);
+            // $adminSetting = AdminSetting::first();
+            $adminSetting = AdminSetting::where('user_id', auth()->id())->first();
             $queryData = $dateData = [];
             if (!is_null($adminSetting)) {
 

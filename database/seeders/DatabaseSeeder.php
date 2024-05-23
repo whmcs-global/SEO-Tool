@@ -24,16 +24,26 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create the first user with role 'admin'
-        $adminRole=Role::create(['name' => 'admin']);
-        $userRole=Role::create(['name' => 'user']);
+        $superadminRole=Role::create(['name' => 'Super Admin']);
+        $adminRole=Role::create(['name' => 'Admin']);
+        $userRole=Role::create(['name' => 'User']);
 
         // Create permissions
-        Permission::create(['name' => 'add keyword']);
-        Permission::create(['name' => 'edit keyword']);
-        Permission::create(['name' => 'delete keyword']);
+        Permission::create(['name' => 'Add keyword']);
+        Permission::create(['name' => 'Edit keyword']);
+        Permission::create(['name' => 'Delete keyword']);
+        Permission::create(['name' => 'Keyword list']);
 
-        $userRole->givePermissionTo(['keyword list','add keyword']);
-        $adminRole->givePermissionTo(['add keyword','edit keyword','delete keyword','keyword list']);
+        $userRole->givePermissionTo(['Keyword list','Add keyword']);
+        $adminRole->givePermissionTo(['Add keyword','Edit keyword','Delete keyword','Keyword list']);
+        $superadminRole->givePermissionTo(['Add keyword','Edit keyword','Delete keyword','Keyword list']);
+
+        $superadmin = User::create([
+            'name' => 'Super Admin',
+            'email' => 'superadmin@example.com',
+            'password' => static::$password ?? Hash::make('Shine@123'),
+        ]);
+        $superadmin->assignrole('super admin');
 
         $admin = User::create([
             'name' => 'Admin',
@@ -41,7 +51,6 @@ class DatabaseSeeder extends Seeder
             'password' => static::$password ?? Hash::make('Shine@123'),
         ]);
 
-        // Assign 'admin' role to the first user
         $admin->assignRole('admin');
 
         $user=User::create([

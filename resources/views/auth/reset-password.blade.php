@@ -11,7 +11,7 @@
                     <form method="POST" action="{{ route('password.store') }}">
                         @csrf
 
-                        <input type="hidden" name="token" value="{{ $token }}">
+                        <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
                         <div class="mb-3 row">
                             <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>

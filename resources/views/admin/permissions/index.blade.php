@@ -11,13 +11,13 @@
     @endif
 
     <div class="container py-5">
-        <div class="mb-3 row justify-content-end">
+        <!-- <div class="mb-3 row justify-content-end">
             <div class="col-auto">
                 {{-- @can('add role')--}}
                 <a href="{{ route('admin.permissions.create') }}" class="btn btn-primary rounded-pill">Create Permission</a>
                 {{-- @endcan--}}
             </div>
-        </div>
+        </div> -->
         <div class="bg-blue-200 card">
             <div class="p-0 card-body">
                 <table class="table table-hover">

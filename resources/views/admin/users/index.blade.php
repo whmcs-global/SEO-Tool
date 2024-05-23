@@ -12,6 +12,11 @@
         @endif
 
         <div class="py-12">
+        <div class="mb-3 row justify-content-end">
+            <div class="col-auto">
+                <a href="{{ route('admin.user.create') }}" class="btn btn-primary rounded-pill">Create User</a>
+            </div>
+        </div>
             <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="clearfix"></div>
                 <div class="overflow-hidden bg-info">

@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="container py-5">
-  <div class="p-6 mx-auto bg-blue-200 border border-blue-400 max-w-7xl rounded-3xl">
-    <div class="mb-4 row">
+  <!-- <div class="p-6 mx-auto bg-blue-200 border border-blue-400 max-w-7xl rounded-3xl"> -->
+    <!-- <div class="mb-4 row">
       <div class="col-auto mt-2 mb-2">
         <h3 class="font-semibold">Form</h3>
       </div>
@@ -24,9 +24,9 @@
         @enderror
       </div>
       <button type="submit" class="mb-4 ml-2 btn btn-primary rounded-pill">Update</button>
-    </form>
+    </form> -->
     <div class="p-2 mb-4 bg-blue-600 rounded"></div>
-    <div class="p-2 mt-4 border border-blue-400 rounded">
+    <!-- <div class="p-2 mt-4 border border-blue-400 rounded">
       <h4 class="font-semibold">Role Permissions</h4>
       <div class="p-2 mt-4">
         @if($role->permissions)
@@ -56,7 +56,43 @@
         <span class="text-sm text-danger">{{ $message }}</span>
         @enderror
       </form>
-    </div>
+    </div> -->
+    <div class="p-2 mt-4 border border-blue-400 rounded">
+    <h4 class="font-semibold">{{ $role->name}} Role Permissions</h4>
+    <!-- <div class="p-2 mt-4">
+        @if($role->permissions)
+            @foreach($role->permissions as $role_permission)
+                <div class="mb-2 mr-2 d-inline-block">
+                    <form method="POST" action="{{ route('admin.roles.permissions.revoke', ['role' => $role, 'permission' => $role_permission]) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger rounded-pill">{{ $role_permission->name }}</button>
+                    </form>
+                </div>
+            @endforeach
+        @endif
+    </div> -->
+    <form action="{{ route('admin.roles.permissions', $role) }}" method="post" class="mt-4">
+        @csrf
+        <div class="form-group">
+            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Permissions</label>
+            <div class="grid grid-cols-3 gap-4">
+                @foreach($permissions as $permission)
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="permissions[]" value="{{ $permission->name }}" id="permission_{{ $permission->id }}" @if($role->permissions->contains($permission)) checked @endif>
+                        <label class="form-check-label" for="permission_{{ $permission->id }}">
+                            {{ $permission->name }}
+                        </label>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        <button type="submit" class="mt-3 btn btn-primary rounded-pill">Assign</button>
+        @error('permissions')
+            <span class="text-sm text-danger">{{ $message }}</span>
+        @enderror
+    </form>
+<!-- </div> -->
   </div>
 </div>
 @endsection
