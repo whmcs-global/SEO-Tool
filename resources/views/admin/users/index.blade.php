@@ -36,6 +36,9 @@
                                         <td>{{ $user->email }}</td>
                                         <td class="text-right">
                                             <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
+                                                <a href="{{ route('admin.user.edit', $user) }}" class="btn btn-primary rounded-pill mr-2">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
                                                 <a href="{{ route('admin.users.show', $user) }}" class="btn btn-primary rounded-pill mr-2">
                                                     <i class="fas fa-user-lock"></i> Roles & Permission
                                                 </a>

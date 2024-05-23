@@ -25,6 +25,39 @@ class UserController extends Controller
         return view('admin.users.create', compact('roles'));
     }
 
+    public function edit(User $user){
+
+        $roles = Role::whereNotIn('name', ['super admin'])->get();
+        return view('admin.users.edit', compact('roles','user'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'role' => 'required|string|exists:roles,name',
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+
+        if ($request->filled('password')) {
+            $validatedPassword = $request->validate([
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+            $user->update([
+                'password' => Hash::make($validatedPassword['password']),
+            ]);
+        }
+
+        $user->syncRoles([$validated['role']]);
+
+        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+    }
+
     public function store(Request $request)
     {
         $request->validate([

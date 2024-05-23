@@ -23,6 +23,8 @@ Route::middleware(['auth','role:Admin|Super Admin'])->name('admin.')->prefix('ad
     Route::get('users',[\App\Http\Controllers\Admin\UserController::class,'index'])->name('users.index');
     Route::get('/user/create',[\App\Http\Controllers\Admin\UserController::class,'create'])->name('user.create');
     Route::post('/user/store',[\App\Http\Controllers\Admin\UserController::class,'store'])->name('user.store');
+    Route::get('/user/edit{user}',[\App\Http\Controllers\Admin\UserController::class,'edit'])->name('user.edit');
+    Route::put('/user/update{user}',[\App\Http\Controllers\Admin\UserController::class,'update'])->name('user.update');
     Route::get('users/{user}',[\App\Http\Controllers\Admin\UserController::class,'show'])->name('users.show');
     Route::delete('users/{user}',[\App\Http\Controllers\Admin\UserController::class,'destroy'])->name('users.destroy');
     Route::post('/users/{user}/roles',[\App\Http\Controllers\Admin\UserController::class,'assignRole'])->name('users.roles');
