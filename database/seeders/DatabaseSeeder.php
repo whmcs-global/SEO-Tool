@@ -33,10 +33,21 @@ class DatabaseSeeder extends Seeder
         Permission::create(['name' => 'Edit keyword']);
         Permission::create(['name' => 'Delete keyword']);
         Permission::create(['name' => 'Keyword list']);
+        Permission::create(['name' => 'Create user']);
+        Permission::create(['name' => 'Edit user']);
+        Permission::create(['name' => 'Delete user']);
+        Permission::create(['name' => 'User list']);
+        Permission::create(['name' => 'Google API']);
+        Permission::create(['name' => 'Role list']);
+        Permission::create(['name' => 'Create role']);
+        Permission::create(['name' => 'Edit role']);
+        Permission::create(['name' => 'Delete role']);
 
-        $userRole->givePermissionTo(['Keyword list','Add keyword']);
-        $adminRole->givePermissionTo(['Add keyword','Edit keyword','Delete keyword','Keyword list']);
-        $superadminRole->givePermissionTo(['Add keyword','Edit keyword','Delete keyword','Keyword list']);
+        $permission = Permission::all();
+
+        $userRole->givePermissionTo(['Keyword list','Add keyword','Edit keyword','Delete keyword']);
+        $adminRole->givePermissionTo(['Add keyword','Edit keyword','Delete keyword','Keyword list','Create user','User list','Edit user','Delete user']);
+        $superadminRole->givePermissionTo($permission);
 
         $superadmin = User::create([
             'name' => 'Super Admin',

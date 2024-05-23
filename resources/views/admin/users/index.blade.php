@@ -13,9 +13,11 @@
 
         <div class="py-12">
         <div class="mb-3 row justify-content-end">
+            @can('Create user')
             <div class="col-auto">
                 <a href="{{ route('admin.user.create') }}" class="btn btn-primary rounded-pill">Create User</a>
             </div>
+            @endcan
         </div>
             <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="clearfix"></div>
@@ -36,12 +38,15 @@
                                         <td>{{ $user->email }}</td>
                                         <td class="text-right">
                                             <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
-                                                <a href="{{ route('admin.user.edit', $user) }}" class="btn btn-primary rounded-pill mr-2">
+                                                @can('Edit user')
+                                                <a href="{{ route('admin.user.edit', $user) }}" class="mr-2 btn btn-primary rounded-pill">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
-                                                <a href="{{ route('admin.users.show', $user) }}" class="btn btn-primary rounded-pill mr-2">
+                                                @endcan
+                                                {{-- <a href="{{ route('admin.users.show', $user) }}" class="mr-2 btn btn-primary rounded-pill">
                                                     <i class="fas fa-user-lock"></i> Roles & Permission
-                                                </a>
+                                                </a> --}}
+                                                @can('Delete user')
                                                 <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="d-inline" id="delete-form-{{ $user->id }}">
                                                     @csrf
                                                     @method('delete')
@@ -49,6 +54,7 @@
                                                         <i class="fas fa-trash"></i> Delete
                                                     </button>
                                                 </form>
+                                                @endcan
                                             </div>
                                         </td>
                                     </tr>

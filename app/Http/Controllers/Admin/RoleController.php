@@ -11,6 +11,7 @@ class RoleController extends Controller
 {
     public function index(): \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\Foundation\Application
     {
+        // dd('here');
             //    $roles=Role::all();
         $roles = Role::whereNotIn('name', ['super admin'])->get();
         return view('admin.roles.index', compact('roles'));
@@ -26,7 +27,7 @@ class RoleController extends Controller
         $validated = $request->validate([
             'roleName' => 'required|unique:roles,name',
         ]);
-        
+
         Role::create([
             'name' => $request->roleName,
         ]);
@@ -67,6 +68,11 @@ class RoleController extends Controller
 
     public function givePermission(Request $request, Role $role)
     {
+        $request->validate([
+            'roleName' => 'required',
+        ]);
+        $role->update(['name' => $request->roleName,]);
+
         $permissions = $request->input('permissions', []);
 
         $existingPermissions = $role->permissions->pluck('name')->toArray();
@@ -81,16 +87,12 @@ class RoleController extends Controller
             $role->revokePermissionTo($removedPermissions);
         }
 
-        return redirect()->back()->with('success', 'Permissions updated successfully.');
+        return redirect()->route('admin.roles.index')->with('success', 'Permissions updated successfully.');
     }
 
-    
+
     public function revokePermission(Role $role, Permission $permission)
     {
-        //        dd($permission);
-        //        dd($role);
-        //        dd($permission);
-        //        dd($role);
         if ($role->hasPermissionTo($permission)) {
             $role->revokePermissionTo($permission);
             return redirect(route('admin.roles.index'))

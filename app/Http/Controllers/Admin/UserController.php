@@ -20,7 +20,7 @@ class UserController extends Controller
     }
 
     public function create(){
-        
+
         $roles = Role::whereNotIn('name', ['super admin'])->get();
         return view('admin.users.create', compact('roles'));
     }
@@ -35,13 +35,13 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role' => 'required|string|exists:roles,name',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user->update([
             'name' => $validated['name'],
-            'email' => $validated['email'],
+            'password' => Hash::make($request->password),
         ]);
 
         if ($request->filled('password')) {
@@ -66,16 +66,16 @@ class UserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'exists:roles,id'],
         ]);
-    
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-    
+
         $role = Role::findById($request->role);
         $user->assignRole($role->name);
-    
+
         return redirect(route('admin.users.index'));
     }
 
@@ -104,7 +104,7 @@ class UserController extends Controller
         ]);
 
         $role = Role::where('name', $request->role)->firstOrFail();
-        
+
         if ($user->hasRole($role->name)) {
             return back()->with('message', 'Role already exists.');
         }

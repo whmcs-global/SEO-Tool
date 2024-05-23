@@ -7,9 +7,7 @@
           Form
         </div>
         <div class="col-auto mt-2 mb-2 ml-auto">
-          {{-- @can('add role')--}}
           <a href="{{route('admin.roles.index')}}" class="btn btn-primary rounded-3xl">back</a>
-          {{-- @endcan--}}
         </div>
       </div>
       <form action="{{route('admin.roles.store')}}" method="post">
