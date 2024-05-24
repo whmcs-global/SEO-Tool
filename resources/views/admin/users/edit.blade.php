@@ -22,7 +22,8 @@
                     </div>
                     <div class="card-body">
                         <form method="POST"
-                            action="{{ isset($user) ? route('admin.user.update', $user) : route('admin.user.store') }}">
+                            action="{{ isset($user) ? route('admin.user.update', $user) : route('admin.user.store') }}"
+                            id="userForm">
                             @csrf
                             @isset($user)
                                 @method('PUT')
@@ -40,27 +41,13 @@
                                     @enderror
                                 </div>
                             </div>
-                            {{-- <div class="mb-3 row">
-                                <label for="email"
-                                    class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
-                                <div class="col-md-6">
-                                    <input id="email" type="email"
-                                        class="form-control @error('email') is-invalid @enderror" name="email"
-                                        value="{{ old('email', $user->email ?? '') }}" required autocomplete="email">
-                                    @error('email')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div> --}}
                             <div class="mb-3 row">
                                 <label for="password"
                                     class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
                                 <div class="col-md-6">
                                     <input id="password" type="password"
                                         class="form-control @error('password') is-invalid @enderror" name="password"
-                                        required autocomplete="new-password">
+                                         autocomplete="new-password">
                                     @error('password')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
@@ -73,7 +60,8 @@
                                     class="col-md-4 col-form-label text-md-end">{{ __('Confirm Password') }}</label>
                                 <div class="col-md-6">
                                     <input id="password-confirm" type="password" class="form-control"
-                                        name="password_confirmation" required autocomplete="new-password">
+                                        name="password_confirmation" autocomplete="new-password">
+                                    <span id="confirmPasswordError" class="text-danger" style="display: none;">Please confirm your password.</span>
                                 </div>
                             </div>
                             <div class="mb-3 row">
@@ -114,3 +102,24 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#userForm').on('submit', function(e) {
+                var password = $('#password').val();
+                var confirmPassword = $('#password-confirm').val();
+
+                if (password !== '' && confirmPassword === '') {
+                    e.preventDefault();
+                    $('#confirmPasswordError').text('Please confirm your password.').show();
+                } else if (password !== '' && password !== confirmPassword) {
+                    e.preventDefault();
+                    $('#confirmPasswordError').text('Passwords do not match.').show();
+                } else {
+                    $('#confirmPasswordError').hide();
+                }
+            });
+        });
+    </script>
+@endpush

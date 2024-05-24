@@ -36,14 +36,15 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'role' => 'required|string|exists:roles,name',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user->update([
             'name' => $validated['name'],
-            'password' => Hash::make($request->password),
         ]);
 
+        $user->syncRoles([$validated['role']]);
+    
         if ($request->filled('password')) {
             $validatedPassword = $request->validate([
                 'password' => 'required|string|min:8|confirmed',
@@ -53,10 +54,35 @@ class UserController extends Controller
             ]);
         }
 
-        $user->syncRoles([$validated['role']]);
-
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
+
+    // public function update(Request $request, User $user)
+    // {
+    //     $validated = $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'role' => 'required|string|exists:roles,name',
+    //         'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    //     ]);
+
+    //     $user->update([
+    //         'name' => $validated['name'],
+    //         'password' => Hash::make($request->password),
+    //     ]);
+
+    //     if ($request->filled('password')) {
+    //         $validatedPassword = $request->validate([
+    //             'password' => 'required|string|min:8|confirmed',
+    //         ]);
+    //         $user->update([
+    //             'password' => Hash::make($validatedPassword['password']),
+    //         ]);
+    //     }
+
+    //     $user->syncRoles([$validated['role']]);
+
+    //     return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+    // }
 
     public function store(Request $request)
     {
