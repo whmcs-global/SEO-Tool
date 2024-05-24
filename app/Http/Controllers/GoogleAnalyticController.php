@@ -106,19 +106,20 @@ class GoogleAnalyticController extends Controller
                     {
                         "filters": [
                             {
-                                "operator": "CONTAINS",
+                                "operator": "EQUALS",
                                 "dimension": "QUERY",
                                 "expression": "' . $company . '",
                             }
-                        ]
-                    }
-                ],
-                "searchType": "' . $type . '"
-            }';
-            $headers = [
-                'Content-Type' => 'application/json'
-            ];
-
+                            ]
+                        }
+                    ],
+                    "searchType": "' . $type . '"
+                }';
+                $headers = [
+                    'Content-Type' => 'application/json'
+                ];
+                
+            // "operator": "CONTAINS",
             $key = config('google.key');
             $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key='.$key.'&access_token=' . $accessToken, $headers, $Query);
             $res = $client->sendAsync($request)->wait();
@@ -157,7 +158,7 @@ class GoogleAnalyticController extends Controller
                     {
                         "filters": [
                             {
-                                "operator": "CONTAINS",
+                                "operator": "EQUALS",
                                 "dimension": "QUERY",
                                 "expression": "' . $company . '"
                             }

@@ -31,4 +31,4 @@
             </li>
         </ul>
         @endcan
-    </aside>
+</aside>

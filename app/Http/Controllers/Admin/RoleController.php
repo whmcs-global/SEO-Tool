@@ -19,7 +19,12 @@ class RoleController extends Controller
 
     public function create()
     {
-        return view('admin.roles.create');
+        if(auth()->user()->hasRole('Super Admin')){
+            $permissions = Permission::all();
+        }else{
+            $permissions = Permission::whereNotIn('name', ['Google API'])->get();
+        }
+        return view('admin.roles.create', compact('permissions'));
     }
 
     public function store(Request $request)
@@ -27,18 +32,24 @@ class RoleController extends Controller
         $validated = $request->validate([
             'roleName' => 'required|unique:roles,name',
         ]);
-
-        Role::create([
+    
+        $role = Role::create([
             'name' => $request->roleName,
         ]);
-
+    
+        $role->permissions()->attach($request->permissions);
+    
         return redirect(route('admin.roles.index'))
             ->with('message', 'Role has successfully been created.');
     }
 
     public function edit(Role $role)
     {
-        $permissions = Permission::all();
+        if(auth()->user()->hasRole('Super Admin')){
+            $permissions = Permission::all();
+        }else{
+            $permissions = Permission::whereNotIn('name', ['Google API'])->get();
+        }
         return view('admin.roles.edit', compact('role', 'permissions'));
     }
 
