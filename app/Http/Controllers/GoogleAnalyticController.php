@@ -44,7 +44,9 @@ class GoogleAnalyticController extends Controller
             }
             $dateFilter= $startDate.' / '.$endDate;
             $client = new Client();
-            $adminSetting = AdminSetting::first();
+
+            $adminSetting = AdminSetting::where('website_id', auth()->user()->website_id)->first();
+            // $adminSetting = AdminSetting::first();
             // $adminSetting = AdminSetting::where('user_id', auth()->id())->first();
             $queryData = $dateData = [];
             if (!is_null($adminSetting)) {
@@ -120,8 +122,15 @@ class GoogleAnalyticController extends Controller
                 ];
                 
             // "operator": "CONTAINS",
-            $key = config('google.key');
-            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key='.$key.'&access_token=' . $accessToken, $headers, $Query);
+            if(auth()->user()->website_id){
+                $website = Website::where('id', auth()->user()->website_id)->first();
+                $web_url = $website->url;
+                $key = $website->API_KEY;
+            }else{
+                $web_url = 'www.hostingseekers.com';
+                $key = config('google.key');
+            }
+            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F'.$web_url.'%2F/searchAnalytics/query?key='.$key.'&access_token=' . $accessToken, $headers, $Query);
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
 
@@ -172,8 +181,16 @@ class GoogleAnalyticController extends Controller
                 'Content-Type' => 'application/json'
             ];
 
-            $key = config('google.key');
-            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwww.hostingseekers.com%2F/searchAnalytics/query?key='.$key.'&access_token=' . $accessToken, $headers, $dateFilter);
+            // $key = config('google.key');
+            if(auth()->user()->website_id){
+                $website = Website::where('id', auth()->user()->website_id)->first();
+                $web_url = $website->url;
+                $key = $website->API_KEY;
+            }else{
+                $web_url = 'www.hostingseekers.com';
+                $key = config('google.key');
+            }
+            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F'.$web_url.'%2F/searchAnalytics/query?key='.$key.'&access_token=' . $accessToken, $headers, $dateFilter);
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
             // Check if response status is successful

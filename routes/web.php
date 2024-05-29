@@ -1,13 +1,13 @@
 <?php
 
-use App\Http\Controllers\{ProfileController, Controller, KeywordController};
+use App\Http\Controllers\{ProfileController, Controller, KeywordController, WebsiteController};
 use App\Http\Controllers\Admin\{RoleController, UserController};
 use Illuminate\Support\Facades\Route;
 use App\Models\Keyword;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
 Route::get('/dashboard', [KeywordController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -62,10 +62,15 @@ Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('a
     Route::post('/users/{user}/permissions', [UserController::class, 'givePermission'])->name('users.permissions');
     Route::delete('/users/{user}/permissions/{permission}', [UserController::class, 'revokePermission'])->name('users.permissions.revoke');
     Route::get('/settings', [\App\Http\Controllers\Admin\GoogleAnalyticsController::class, 'configGoogleAnalytics'])->middleware(['permission:Google API'])->name('settings');
+
+    Route::get('/websites/create', [WebsiteController::class, 'create'])->name('websites.create');
+    Route::post('/websites', [WebsiteController::class, 'store'])->name('websites.store');
 });
 
 
 Route::middleware('auth')->group(function () {
+    Route::get('/website', [WebsiteController::class, 'set_website_default'])->name('websites.default');
+    Route::get('/website/{website}', [WebsiteController::class, 'set_website'])->name('websites.set');
     Route::get('/google_status/{adminSetting}', [\App\Http\Controllers\Admin\GoogleAnalyticsController::class, 'changeStatus'])->name('googleStatus');
     Route::get('/connect_google_auth', [\App\Http\Controllers\Admin\GoogleAnalyticsController::class, 'googleConnect'])->name('googleConnect');
     Route::get('/google/callback', [\App\Http\Controllers\Admin\GoogleAnalyticsController::class, 'callbackToGoogle'])->name('googleAuthCallback');

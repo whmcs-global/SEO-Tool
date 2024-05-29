@@ -11,17 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admin_settings', function (Blueprint $table) {
+        Schema::create('websites', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->unsignedBigInteger('website_id')->nullable();
-            $table->string('client_id');
-            $table->string('client_secret_id');
-            $table->string('redirect_url');
-            $table->string('refresh_token');
-            $table->string('access_token');
-            $table->string('expiry_time');
-            $table->boolean('status')->default(1);
+            $table->string('name');
+            $table->string('url');
+            $table->string('GOOGLE_ANALYTICS_CLIENT_ID');
+            $table->string('GOOGLE_ANALYTICS_CLIENT_SECRET');
+            $table->string('GOOGLE_ANALYTICS_REDIRECT_URI');
+            $table->string('API_KEY');
             $table->timestamps();
         });
     }
@@ -31,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admin_settings');
+        Schema::dropIfExists('websites');
     }
 };

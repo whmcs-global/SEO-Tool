@@ -11,6 +11,7 @@ class AdminSetting extends Model
 
     protected $fillable = [
         'user_id',
+        'website_id',
         'client_id',
         'client_secret_id',
         'redirect_url',

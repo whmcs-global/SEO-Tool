@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use App\Traits\{CreateGoogleToken};
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
+use App\Models\Website;
 
 class GoogleAnalyticsController extends Controller
 {
@@ -20,7 +21,7 @@ class GoogleAnalyticsController extends Controller
      */
     public function configGoogleAnalytics(Request $request)
     {
-        $adminSetting = AdminSetting::first(); //where('user_id', auth()->id())->
+        $adminSetting = AdminSetting::where('website_id', auth()->user()->website_id)->first(); //where('user_id', auth()->id())->
         // dd($adminSetting);
         if(!is_null($adminSetting)) {
             // Initialize Guzzle client
@@ -48,8 +49,16 @@ class GoogleAnalyticsController extends Controller
     {
         try {
             // Replace these values with your Google OAuth credentials
-            $clientID = config('google.client_id');
-            $redirectUri = config('google.redirect_url');
+            if(!auth()->user()->website_id){
+                $clientID = config('google.client_id');
+                $redirectUri = config('google.redirect_url');
+            }
+            else {
+                $web_id = auth()->user()->website_id;
+                $website = Website::where('id', $web_id)->first();
+                $clientID = $website->GOOGLE_ANALYTICS_CLIENT_ID;
+                $redirectUri = $website->GOOGLE_ANALYTICS_REDIRECT_URI;
+            }
 
             $scope = urlencode('https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/userinfo.email');
             // dd($clientID, $redirectUri, $scope);
@@ -59,8 +68,6 @@ class GoogleAnalyticsController extends Controller
             return redirect()->to($auth_url);
         } catch (\Exception $e) {
             Log::error('Error in googleConnect: ' . $e->getMessage());
-
-            // Redirect back with error message
             return redirect()->back()->with('error', 'An error occurred while trying to connect to Google.');
         }
     }
@@ -68,9 +75,21 @@ class GoogleAnalyticsController extends Controller
     public function callbackToGoogle(Request $request)
     {
        // Replace these values with your Google OAuth credentials
-       $clientID = config('google.client_id');
-       $clientSecret = config('google.client_secret');
-       $redirectUri = config('google.redirect_url');
+    //    $clientID = config('google.client_id');
+    //    $clientSecret = config('google.client_secret');
+    //    $redirectUri = config('google.redirect_url');
+    if(!auth()->user()->website_id){
+        $clientID = config('google.client_id');
+        $clientSecret = config('google.client_secret');
+        $redirectUri = config('google.redirect_url');
+    }
+    else {
+        $web_id = auth()->user()->website_id;
+        $website = Website::where('id', $web_id)->first();
+        $clientSecret = $website->GOOGLE_ANALYTICS_CLIENT_SECRET;
+        $clientID = $website->GOOGLE_ANALYTICS_CLIENT_ID;
+        $redirectUri = $website->GOOGLE_ANALYTICS_REDIRECT_URI;
+    }
        try {
             // Initialize Guzzle client
             $client = new Client();
@@ -97,6 +116,7 @@ class GoogleAnalyticsController extends Controller
                 if($access_token) {
                     $adminSetting = AdminSetting::create([
                         'user_id' => auth()->id(),
+                        'website_id' => auth()->user()->website_id,
                         'client_id' => jsencode_userdata($clientID),
                         'client_secret_id' => jsencode_userdata($clientSecret),
                         'redirect_url' => config('google.redirect_url'),

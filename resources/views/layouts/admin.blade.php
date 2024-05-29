@@ -17,6 +17,12 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     @stack('styles')
+    <style>
+    .aws-region-select {
+        margin-right: 20px; /* Adjust the value as necessary */
+        height: 38px; /* Ensure it matches the height of other navbar elements */
+    }
+    </style>
 </head>
 
 <body>
@@ -30,19 +36,28 @@
                     </ul>
                 </div>
                 <ul class="navbar-nav navbar-right">
-                    <li class="dropdown"><a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image" src="{{ isset(auth()->user()->userDetails->profile_pic_path) ? asset('storage/'.auth()->user()->userDetails->profile_pic_path) : asset('assets/img/user.png') }}" class="user-img-radious-style"> <span class="d-sm-none d-lg-inline-block"></span></a>
+                    <li class="nav-item dropdown" style="margin-right: 40px;">
+                    <select class="form-control aws-region-select" id="aws-region-select">
+                        <option data-href="{{ route('websites.default')}}">HostingSeekers</option>
+                        @foreach ($websites as $website)
+                            <option data-href="{{ route('websites.set',$website )}}" @if(auth()->user()->website_id == $website->id) selected @endif>{{ $website->name }}</option>
+                        @endforeach
+                        <option data-href="{{ route('admin.websites.create') }}">Add New Project</option>
+                    </select>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
+                            <img alt="image" src="{{ isset(auth()->user()->userDetails->profile_pic_path) ? asset('storage/'.auth()->user()->userDetails->profile_pic_path) : asset('assets/img/user.png') }}" class="user-img-radious-style">
+                            <span class="d-sm-none d-lg-inline-block">{{ auth()->user()->name }}</span>
+                        </a>
                         <div class="dropdown-menu dropdown-menu-right pullDown">
                             <div class="dropdown-title">{{ auth()->user()->name }}</div>
-                            <a href="{{ route('profile.edit') }}" class="dropdown-item has-icon"> <i class="far fa-user"></i> Profile
+                            <a href="{{ route('profile.edit') }}" class="dropdown-item has-icon"> <i class="far fa-user"></i> Profile</a>
                             <div class="dropdown-divider"></div>
-
-                            {{-- <a href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('frm-logout').submit();">Logout</a>     --}}
                             <form id="frm-logout" action="{{ route('logout') }}" method="POST" style="display: none;">
                                 {{ csrf_field() }}
                             </form>
-                            <a href="{{ route('logout') }}" class="dropdown-item has-icon text-danger" onclick="event.preventDefault();document.getElementById('frm-logout').submit();"> <i class="fas fa-sign-out-alt"></i>
-                                Logout
-                            </a>
+                            <a href="{{ route('logout') }}" class="dropdown-item has-icon text-danger" onclick="event.preventDefault();document.getElementById('frm-logout').submit();"> <i class="fas fa-sign-out-alt"></i> Logout</a>
                         </div>
                     </li>
                 </ul>
@@ -50,7 +65,6 @@
             <div class="main-sidebar sidebar-style-2">
                 @include('layouts.admin_sidebar')
             </div>
-            <!-- Main Content -->
             <div class="main-content">
                 @yield('content')
             </div>
@@ -63,5 +77,11 @@
     <script src="{{ asset('assets/js/sweetalert.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
     @stack('scripts')
+    <script>
+        document.getElementById('aws-region-select').addEventListener('change', function() {
+            var selectedRegion = this.options[this.selectedIndex].getAttribute('data-href');
+            window.location = selectedRegion;
+        });
+    </script>
 </body>
 </html>
