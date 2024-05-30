@@ -6,9 +6,14 @@
     </div>
     <ul class="sidebar-menu">
         <li class="dropdown @if (in_array(Request::route()->getName(), ['dashboard'])) active @endif">
-            <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-brands fa-searchengin"></i></i><span>Keywords</span></a>
+            <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-brands fa-searchengin"></i></i><span>Dashboard</span></a>
         </li>
     </ul>
+    <!-- <ul class="sidebar-menu">
+        <li class="dropdown @if (in_array(Request::route()->getName(), ['keywords.show'])) active @endif">
+            <a href="{{ route('keywords.show') }}" class="nav-link"><i class="fa-brands fa-searchengin"></i></i><span>Keywords</span></a>
+        </li>
+    </ul> -->
     @can('User list')
     <ul class="sidebar-menu">
         <li class="dropdown @if (in_array(Request::route()->getName(), ['admin.users.index'])) active @endif">

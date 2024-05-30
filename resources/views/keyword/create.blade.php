@@ -24,7 +24,7 @@
             <h3 class="font-semibold">Add Keywords</h3>
           </div>
           <div class="col-auto ml-auto">
-            <a href="{{ route('dashboard') }}" class="btn btn-primary rounded-pill">Home</a>
+            <a href="{{ route('dashboard') }}" class="btn btn-primary rounded-pill">back</a>
           </div>
         </div>
 

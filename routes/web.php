@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Keyword;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('dashboard');
 })->name('home');
 
 Route::get('/dashboard', [KeywordController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
@@ -80,6 +80,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/keywords/{keyword}', [KeywordController::class, 'update'])->name('keywords.update');
     Route::get('/keywords/create', [KeywordController::class, 'create'])->name('keywords.create');
     Route::post('/keywords', [KeywordController::class, 'store'])->name('keywords.store');
+    Route::get('/keywords}', [KeywordController::class, 'show'])->name('keywords.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

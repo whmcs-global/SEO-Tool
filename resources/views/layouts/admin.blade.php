@@ -32,36 +32,47 @@
             <nav class="sticky navbar navbar-expand-lg main-navbar">
                 <div class="mr-auto form-inline">
                     <ul class="mr-3 navbar-nav">
-                        <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg collapse-btn"> <i data-feather="align-justify"></i></a></li>
+                        <li style="margin-right: 10px;">
+                            <a href="#" data-toggle="sidebar" class="nav-link nav-link-lg collapse-btn">
+                                <i data-feather="align-justify"></i>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <ul class="navbar-nav navbar-right">
-                    <label for="">Project</label>
-                    <li class="nav-item dropdown" style="margin-right: 40px;">
-                    <select class="form-control aws-region-select" id="aws-region-select">
-                        <option data-href="{{ route('websites.default')}}">HostingSeekers</option>
-                        @foreach ($websites as $website)
-                            <option data-href="{{ route('websites.set',$website )}}" @if(auth()->user()->website_id == $website->id) selected @endif>{{ $website->name }}</option>
-                        @endforeach
-                        <option data-href="{{ route('admin.websites.create') }}">Add New Project</option>
-                    </select>
+                    <li style="margin-right: 10px; margin-top: 10px;">
+                        <label for="">Project</label>
                     </li>
-                    <li class="dropdown">
-                        <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
-                            <img alt="image" src="{{ isset(auth()->user()->userDetails->profile_pic_path) ? asset('storage/'.auth()->user()->userDetails->profile_pic_path) : asset('assets/img/user.png') }}" class="user-img-radious-style">
-                            <span class="d-sm-none d-lg-inline-block">{{ auth()->user()->name }}</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right pullDown">
-                            <div class="dropdown-title">{{ auth()->user()->name }}</div>
-                            <a href="{{ route('profile.edit') }}" class="dropdown-item has-icon"> <i class="far fa-user"></i> Profile</a>
-                            <div class="dropdown-divider"></div>
-                            <form id="frm-logout" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                {{ csrf_field() }}
-                            </form>
-                            <a href="{{ route('logout') }}" class="dropdown-item has-icon text-danger" onclick="event.preventDefault();document.getElementById('frm-logout').submit();"> <i class="fas fa-sign-out-alt"></i> Logout</a>
-                        </div>
-                    </li>
-                </ul>
+                        <li class="nav-item dropdown" style="margin-right: 10px;">
+                            <select class="form-control aws-region-select" id="aws-region-select">
+                                <option data-href="{{ route('websites.default')}}">HostingSeekers</option>
+                                @foreach ($websites as $website)
+                                    <option data-href="{{ route('websites.set', $website) }}" @if(auth()->user()->website_id == $website->id) selected @endif>
+                                        {{ $website->name }}
+                                    </option>
+                                @endforeach
+                                <!-- <option data-href="{{ route('admin.websites.create') }}">Add New Project</option> -->
+                            </select>
+                        </li>
+                        <li style="margin-right: 10px;">
+                            <a href="{{ route('admin.websites.create') }}" class="btn btn-primary">Add New Project</a>
+                        </li>
+                        <li class="dropdown" style="margin-right: 10px;">
+                            <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
+                                <img alt="image" src="{{ isset(auth()->user()->userDetails->profile_pic_path) ? asset('storage/'.auth()->user()->userDetails->profile_pic_path) : asset('assets/img/user.png') }}" class="user-img-radious-style">
+                                <span class="d-sm-none d-lg-inline-block">{{ auth()->user()->name }}</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right pullDown">
+                                <div class="dropdown-title">{{ auth()->user()->name }}</div>
+                                <a href="{{ route('profile.edit') }}" class="dropdown-item has-icon"> <i class="far fa-user"></i> Profile</a>
+                                <div class="dropdown-divider"></div>
+                                <form id="frm-logout" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                    {{ csrf_field() }}
+                                </form>
+                                <a href="{{ route('logout') }}" class="dropdown-item has-icon text-danger" onclick="event.preventDefault();document.getElementById('frm-logout').submit();"> <i class="fas fa-sign-out-alt"></i> Logout</a>
+                            </div>
+                        </li>
+                    </ul>
             </nav>
             <div class="main-sidebar sidebar-style-2">
                 @include('layouts.admin_sidebar')

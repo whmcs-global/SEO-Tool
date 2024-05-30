@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('keywords', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('website_id')->constrained()->onDelete('cascade')->nullable();
             $table->string('keyword');
             $table->string('ip_address');
             $table->timestamps();
