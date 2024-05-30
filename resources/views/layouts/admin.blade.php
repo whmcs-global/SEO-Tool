@@ -36,6 +36,7 @@
                     </ul>
                 </div>
                 <ul class="navbar-nav navbar-right">
+                    <label for="">Project</label>
                     <li class="nav-item dropdown" style="margin-right: 40px;">
                     <select class="form-control aws-region-select" id="aws-region-select">
                         <option data-href="{{ route('websites.default')}}">HostingSeekers</option>
