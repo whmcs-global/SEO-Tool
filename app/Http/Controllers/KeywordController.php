@@ -7,29 +7,46 @@ use Illuminate\Http\Request;
 use App\Models\{Keyword, AdminSetting};
 use Illuminate\Support\Facades\Validator;
 use GuzzleHttp\Psr7\Request as GzRequest;
+use App\Services\GoogleAnalyticsService;
+use App\Services\GoogleAdsService;
 
 class KeywordController extends Controller
 {
 
     use KeywordAnalytic;
 
+    protected $googleAnalyticsService;
+
+    public function __construct(GoogleAnalyticsService $googleAnalyticsService, GoogleAdsService $googleAdsService)
+    {
+        $this->googleAnalyticsService = $googleAnalyticsService;
+        // $this->googleAdsService = $googleAdsService;
+    }
+
     public function show()
     {
-        if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
-            $keywords = Keyword::with('user')->where('website_id', auth()->user()->website_id)->get();
-        } else {
+        // if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
+        //     $keywords = Keyword::with('user')->where('website_id', auth()->user()->website_id)->get();
+        // } else {
             $keywords = Keyword::where('user_id', auth()->id())->where('website_id', auth()->user()->website_id)->get();
-        }
+        // }
         return view('keyword.list', compact('keywords'));
     }
 
     public function dashboard()
     {
-        if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
-            $keywords = Keyword::with('user')->where('website_id', auth()->user()->website_id)->get();
-        } else {
+
+        // $keywords = ['hostingseekers'];
+        // $results = $this->googleAnalyticsService->getPageVisitsForKeyword($keyword);
+        // $metrics = $this->googleAdsService->getKeywordHistoricalMetrics($keywords);
+        // dd($metrics);
+        // dd($results);
+        // return response()->json($results);
+        // if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
+        //     $keywords = Keyword::with('user')->where('website_id', auth()->user()->website_id)->get();
+        // } else {
             $keywords = Keyword::where('user_id', auth()->id())->where('website_id', auth()->user()->website_id)->get();
-        }
+        // }
         $settings = AdminSetting::where('website_id', auth()->user()->website_id)->first();
         $ranges = [
             '1-10' => 0,
@@ -43,14 +60,18 @@ class KeywordController extends Controller
                 $key = $this->keywords(request(), $keyword);
                 if(isset($key['code'])){
                     $error_message = $key['message'];
-                    dd($error_message);
+                    // dd($error_message);
                     continue;
                 }
                 if($key){
-                    $keyword->position = round($key[0]->position);
+                    $keyword->position = (int) $key[0]->position;
+                    $keyword->clicks = (int) $key[0]->clicks;
+                    $keyword->impressions = $key[0]->impressions;
                 }
                 else{
-                    $keyword->position = 0;
+                    $keyword->position = '-';
+                    $keyword->clicks = '-';
+                    $keyword->impressions = '-';
                 }
             }
             foreach ($keywords as $keyword) {
@@ -68,6 +89,7 @@ class KeywordController extends Controller
             }
         }
 
+        // dd($keywords);
         return view('dashboard', compact('keywords', 'ranges'));
     }
 

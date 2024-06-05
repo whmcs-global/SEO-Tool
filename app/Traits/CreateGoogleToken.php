@@ -49,7 +49,8 @@ trait CreateGoogleToken
                     'redirect_uri' => $redirectUrl, // Use the provided redirect URL
                     'grant_type' => 'refresh_token',
                     'refresh_token' => $refreshToken,
-                    'scope' => 'https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/userinfo.email',
+                    // 'scope' => 'https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/adwords',
+                    'scope' => 'https://www.googleapis.com/auth/adwords',
                 ],
             ]);
 

@@ -29,10 +29,11 @@ Dashboard
                     <tr>
                         <th>Keyword</th>
                         <th>Position</th>
-                        <th>Site Visits</th>
+                        <th>S. Volume</th>
                         <th>Click</th>
+                        <th>Impressions</th>
                         <th>Competition</th>
-                        <th>Bite rate</th>
+                        <th>Bid rate</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -40,19 +41,20 @@ Dashboard
                     @foreach($keywords as $keyword)
                     <tr>
                         <td>{{ $keyword->keyword }}</td>
+                        <td>{{ $keyword->position }}</td>
                         <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
+                        <td>{{ $keyword->clicks }}</td>
+                        <td>{{ $keyword->impressions }}</td>
                         <td>0</td>
                         <td>0</td>
                         <td class="text-right">
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
-                                    <a href="{{ route('keywords.analytics', $keyword) }}" class="btn btn-primary rounded-pill mr-2">
+                                    <!-- <a href="{{ route('keywords.analytics', $keyword) }}" class="btn btn-primary rounded-pill mr-2">
                                         <i class="fas fa-chart-line"></i> Analytics
-                                    </a>
+                                    </a> -->
                                     @can('Edit keyword')
                                     <a href="{{ route('keywords.edit', $keyword) }}" class="btn btn-secondary rounded-pill mr-2">
-                                        <i class="fas fa-edit"></i> Edit
+                                        <i class="fas fa-edit"></i>
                                     </a>
                                     @endcan
                                     @can('Delete keyword')
@@ -60,7 +62,7 @@ Dashboard
                                         @csrf
                                         @method('delete')
                                         <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $keyword->id }})">
-                                            <i class="fas fa-trash"></i> Delete
+                                            <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
                                     @endcan
