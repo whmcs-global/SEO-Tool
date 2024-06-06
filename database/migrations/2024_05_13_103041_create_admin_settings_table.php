@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('website_id')->nullable();
+            $table->string('type')->nullable();
             $table->string('client_id');
             $table->string('client_secret_id');
             $table->string('redirect_url');

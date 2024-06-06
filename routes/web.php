@@ -19,31 +19,24 @@ Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('a
     Route::get('roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])
         ->name('roles.index')
         ->middleware('permission:Role list');
-
     Route::get('roles/create', [\App\Http\Controllers\Admin\RoleController::class, 'create'])
         ->name('roles.create')
         ->middleware('permission:Create role');
-
     Route::post('roles', [\App\Http\Controllers\Admin\RoleController::class, 'store'])
         ->name('roles.store')
         ->middleware('permission:Create role');
-
     Route::get('roles/{role}/edit', [\App\Http\Controllers\Admin\RoleController::class, 'edit'])
         ->name('roles.edit')
         ->middleware('permission:Edit role');
-
     Route::put('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])
         ->name('roles.update')
         ->middleware('permission:Edit role');
-
     Route::delete('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])
         ->name('roles.destroy')
         ->middleware('permission:Delete role');
-
     Route::post('/roles/{role}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'givePermission'])
         ->name('roles.permissions')
         ->middleware('permission:Edit role');
-
     Route::delete('/roles/{role}/permissions/{permission}', [RoleController::class, 'revokePermission'])->name('roles.permissions.revoke');
     Route::resource('permissions', \App\Http\Controllers\Admin\PermissionController::class)->except('show');
     Route::post('/permissions/{permission}/roles', [\App\Http\Controllers\Admin\PermissionController::class, 'assignRole'])->name('permissions.roles');
@@ -69,11 +62,21 @@ Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('a
 
 
 Route::middleware('auth')->group(function () {
+    // Website
     Route::get('/website', [WebsiteController::class, 'set_website_default'])->name('websites.default');
     Route::get('/website/{website}', [WebsiteController::class, 'set_website'])->name('websites.set');
+
+    // Google Analytics
     Route::get('/google_status/{adminSetting}', [\App\Http\Controllers\Admin\GoogleAnalyticsController::class, 'changeStatus'])->name('googleStatus');
     Route::get('/connect_google_auth', [\App\Http\Controllers\Admin\GoogleAnalyticsController::class, 'googleConnect'])->name('googleConnect');
     Route::get('/google/callback', [\App\Http\Controllers\Admin\GoogleAnalyticsController::class, 'callbackToGoogle'])->name('googleAuthCallback');
+
+    // Google Ads
+    Route::get('/google_ads_status/{adminSetting}', [\App\Http\Controllers\Admin\GoogleAdsController::class, 'changeStatus'])->name('googleAdsStatus');
+    Route::get('/connect_google_ads_auth', [\App\Http\Controllers\Admin\GoogleAdsController::class, 'googleAdsConnect'])->name('googleAdsConnect');
+    Route::get('/google_ads/callback', [\App\Http\Controllers\Admin\GoogleAdsController::class, 'callbackToGoogle'])->name('googleAdsAuthCallback');
+
+    // Keywords
     Route::get('/keywords/{keyword}/analytics', [\App\Http\Controllers\GoogleAnalyticController::class, 'redirectToGoogle'])->name('keywords.analytics');
     Route::delete('/keywords/{keyword}', [KeywordController::class, 'destroy'])->name('keywords.destroy');
     Route::get('/keywords/{keyword}/edit', [KeywordController::class, 'edit'])->name('keywords.edit');
@@ -82,6 +85,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/keywords', [KeywordController::class, 'store'])->name('keywords.store');
     Route::get('/keywords}', [KeywordController::class, 'show'])->name('keywords.show');
 
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

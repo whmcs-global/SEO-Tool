@@ -17,7 +17,7 @@ class KeywordController extends Controller
 
     protected $googleAnalyticsService;
 
-    public function __construct(GoogleAnalyticsService $googleAnalyticsService, GoogleAdsService $googleAdsService)
+    public function __construct(GoogleAnalyticsService $googleAnalyticsService)
     {
         $this->googleAnalyticsService = $googleAnalyticsService;
         // $this->googleAdsService = $googleAdsService;
@@ -47,7 +47,7 @@ class KeywordController extends Controller
         // } else {
             $keywords = Keyword::where('user_id', auth()->id())->where('website_id', auth()->user()->website_id)->get();
         // }
-        $settings = AdminSetting::where('website_id', auth()->user()->website_id)->first();
+        $settings = AdminSetting::where('website_id', auth()->user()->website_id)->where('type','google')->first();
         $ranges = [
             '1-10' => 0,
             '11-20' => 0,
