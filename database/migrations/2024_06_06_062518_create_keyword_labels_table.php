@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('keywords', function (Blueprint $table) {
+        Schema::create('keyword_labels', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('website_id')->constrained()->onDelete('cascade')->nullable();
-            $table->string('keyword');
-            $table->string('ip_address');
+            $table->foreignId('keyword_id')->constrained()->onDelete('cascade');
+            $table->foreignId('label_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('keywords');
+        Schema::dropIfExists('keyword_labels');
     }
 };
