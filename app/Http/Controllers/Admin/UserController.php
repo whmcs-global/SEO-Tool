@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\{User, Website, User_project};
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -21,14 +21,17 @@ class UserController extends Controller
 
     public function create(){
 
+        $websites = Website::all();
         $roles = Role::whereNotIn('name', ['super admin'])->get();
-        return view('admin.users.create', compact('roles'));
+        return view('admin.users.create', compact('roles','websites'));
     }
 
     public function edit(User $user){
 
+        $websites = Website::all();
+        $selected_project = User_project::where('user_id', $user->id)->pluck('website_id')->toArray();
         $roles = Role::whereNotIn('name', ['super admin'])->get();
-        return view('admin.users.edit', compact('roles','user'));
+        return view('admin.users.edit', compact('roles','user','websites','selected_project'));
     }
 
     public function update(Request $request, User $user)
@@ -52,6 +55,16 @@ class UserController extends Controller
             $user->update([
                 'password' => Hash::make($validatedPassword['password']),
             ]);
+        }
+        User_project::where('user_id', $user->id)->delete();
+        $projects = $request->projects;
+        if($projects){
+            foreach ($projects as $project) {
+                $user_project = new User_project();
+                $user_project->user_id = $user->id;
+                $user_project->website_id = $project;
+                $user_project->save();
+            }
         }
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
@@ -101,7 +114,15 @@ class UserController extends Controller
 
         $role = Role::findById($request->role);
         $user->assignRole($role->name);
-
+        $projects = $request->projects;
+        if($projects){
+            foreach ($projects as $project) {
+                $user_project = new User_project();
+                $user_project->user_id = $user->id;
+                $user_project->website_id = $project;
+                $user_project->save();
+            }
+        }
         return redirect(route('admin.users.index'));
     }
 

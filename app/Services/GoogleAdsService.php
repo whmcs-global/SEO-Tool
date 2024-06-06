@@ -30,7 +30,7 @@ class GoogleAdsService
         $this->client = (new GoogleAdsClientBuilder())
             ->withDeveloperToken(config('google-ads.developer_token'))
             ->withOAuth2Credential($oAuth2Credential)
-            ->withLoginCustomerId(config('google-ads.login_customer_id'))
+            ->withLoginCustomerId('5256032344')
             ->build();
     }
 
@@ -50,7 +50,27 @@ class GoogleAdsService
                 ])
             );
 
-            dd($response->getResults());
+            $results = $response->getResults();
+            $modifiedResults = [];
+            foreach ($results as $result) {
+                $metrics = $result->getKeywordMetrics();
+                $lowBidMicros = $metrics->getLowTopOfPageBidMicros();
+                $lowBidRupees = $lowBidMicros / 1000000;
+                $highBidMicros = $metrics->getHighTopOfPageBidMicros();
+                $highBidRupees = $highBidMicros / 1000000; 
+                $modifiedResults[] = [
+                    'text' => $result->getText(),
+                    'keywordMetrics' => [
+                        'avgMonthlySearches' => $metrics->getAvgMonthlySearches(),
+                        'monthlySearchVolumes' => $metrics->getMonthlySearchVolumes(),
+                        'competition' => $metrics->getCompetition(),
+                        'competitionIndex' => $metrics->getCompetitionIndex(),
+                        'lowTopOfPageBidRupees' => $lowBidRupees,
+                        'highTopOfPageBidRupees' => $highBidRupees
+                    ]
+                ];
+            }
+            return $modifiedResults;
         } catch (ApiException $apiException) {
             throw new \Exception("ApiException was thrown with message: " . $apiException->getMessage());
         }

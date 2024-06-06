@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('title')
-Dashboard
+Keyword Tracker
 @endsection
 
 @section('content')
@@ -24,30 +24,33 @@ Dashboard
         @endcan
         <div class="card-body">
             @can('Keyword list')
-            <table id="keywordsTable" class="table table-hover">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Keyword</th>
-                        <th>Position</th>
-                        <th>S. Volume</th>
-                        <th>Click</th>
-                        <th>Impressions</th>
-                        <th>Competition</th>
-                        <th>Bid rate</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($keywords as $keyword)
-                    <tr>
-                        <td>{{ $keyword->keyword }}</td>
-                        <td>{{ $keyword->position }}</td>
-                        <td>0</td>
-                        <td>{{ $keyword->clicks }}</td>
-                        <td>{{ $keyword->impressions }}</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td class="text-right">
+            <div class="table-responsive">
+                <table id="keywordsTable" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Keyword</th>
+                            <th>Position</th>
+                            <th>S. Volume</th>
+                            <th>Click</th>
+                            <th>Impressions</th>
+                            <th>Competition</th>
+                            <th>Bid rate (Low Range)</th>
+                            <th>Bid rate (High Range)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($keywords as $keyword)
+                        <tr>
+                            <td>{{ $keyword->keyword }}</td>
+                            <td>{{ $keyword->position }}</td>
+                            <td>{{ $keyword->avgMonthlySearches }}</td>
+                            <td>{{ $keyword->clicks }}</td>
+                            <td>{{ $keyword->impressions }}</td>
+                            <td>{{ $keyword->competition}}</td>
+                            <td>{{ round($keyword->lowTopOfPageBidRupees,2)}}</td>
+                            <td>{{ round($keyword->highTopOfPageBidRupees,2)}}</td>
+                            <td class="text-right">
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
                                     <!-- <a href="{{ route('keywords.analytics', $keyword) }}" class="btn btn-primary rounded-pill mr-2">
                                         <i class="fas fa-chart-line"></i> Analytics
@@ -68,10 +71,11 @@ Dashboard
                                     @endcan
                                 </div>
                             </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
             @endcan
         </div>
     </div>
@@ -86,12 +90,16 @@ Dashboard
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#keywordsTable').DataTable();
+        $('#keywordsTable').DataTable({
+            responsive: true,
+            columnDefs: [
+                { targets: -1, orderable: false }
+            ]
+        });
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-
 document.addEventListener('DOMContentLoaded', function() {
     var data = [
         {{ $ranges['1-10'] }},
@@ -107,9 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
         chart: {
             type: 'bar',
             height: 350,
-            toolbar: {
-                show: false
-            },
+            toolbar: { show: false },
             animations: {
                 enabled: true,
                 easing: 'easeinout',
@@ -121,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 horizontal: false,
                 columnWidth: '55%',
                 endingShape: 'rounded'
-            },
+            }
         },
         dataLabels: {
             enabled: true,
@@ -160,9 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         },
-        fill: {
-            opacity: 1
-        },
+        fill: { opacity: 1 },
         tooltip: {
             y: {
                 formatter: function (val) {

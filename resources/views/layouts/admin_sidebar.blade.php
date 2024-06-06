@@ -4,9 +4,24 @@
                 class="header-logo" /> <span class="logo-name">SEO Tool</span>
         </a>
     </div>
-    <ul class="sidebar-menu">
+    <!-- <ul class="sidebar-menu">
         <li class="dropdown @if (in_array(Request::route()->getName(), ['dashboard'])) active @endif">
             <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-brands fa-searchengin"></i></i><span>Keyword Tracker</span></a>
+        </li>
+    </ul> -->
+    <ul class="sidebar-menu">
+        <li class="dropdown @if (in_array(Request::route()->getName(), ['dashboard'])) active @endif">
+                <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                        class="fa-solid fa-person-running"></i><span>Keyword</span></a>
+                <ul class="dropdown-menu">
+                    <li @if (in_array(Request::route()->getName(), ['dashboard'])) class="active" @endif><a
+                            href="{{ route('dashboard') }}">Keyword Tracker</a></li>
+                    <li @if (in_array(Route::current()->getName(), ['keywords.create'])) class="active" @endif><a
+                            href="{{ route('keywords.create') }}">Add Keyword</a></li>
+                </ul>
+            </li>
+        <li class="dropdown ">
+            <a href="#" class="nav-link"><i class="fa-solid fa-link"></i></i><span>Backlinks</span></a>
         </li>
     </ul>
     <!-- <ul class="sidebar-menu">

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\{ProfileController, Controller, KeywordController, WebsiteController};
+use App\Http\Controllers\{ProfileController, Controller, KeywordController, WebsiteController, LabelController};
 use App\Http\Controllers\Admin\{RoleController, UserController};
 use Illuminate\Support\Facades\Route;
 use App\Models\Keyword;
@@ -9,7 +9,7 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 })->name('home');
 
-Route::get('/dashboard', [KeywordController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/keyword_tracker', [KeywordController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
 
 Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('admin')->group(function () {
@@ -62,6 +62,9 @@ Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('a
 
 
 Route::middleware('auth')->group(function () {
+
+    Route::post('/labels', [LabelController::class, 'store'])->name('labels.store');
+
     // Website
     Route::get('/website', [WebsiteController::class, 'set_website_default'])->name('websites.default');
     Route::get('/website/{website}', [WebsiteController::class, 'set_website'])->name('websites.set');

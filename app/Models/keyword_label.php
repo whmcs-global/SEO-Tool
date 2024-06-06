@@ -13,4 +13,14 @@ class keyword_label extends Model
         'keyword_id',
         'label_id'
     ];
+
+    public function keyword()
+    {
+        return $this->belongsTo(Keyword::class);
+    }
+
+    public function label()
+    {
+        return $this->belongsTo(Label::class);
+    }
 }

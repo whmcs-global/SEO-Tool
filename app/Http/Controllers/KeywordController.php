@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Traits\{KeywordAnalytic};
 use Illuminate\Http\Request;
-use App\Models\{Keyword, AdminSetting};
+use App\Models\{Keyword, AdminSetting, Label, keyword_label};
 use Illuminate\Support\Facades\Validator;
 use GuzzleHttp\Psr7\Request as GzRequest;
 use App\Services\GoogleAnalyticsService;
@@ -17,10 +17,10 @@ class KeywordController extends Controller
 
     protected $googleAnalyticsService;
 
-    public function __construct(GoogleAnalyticsService $googleAnalyticsService)
+    public function __construct(GoogleAnalyticsService $googleAnalyticsService, GoogleAdsService $googleAdsService)
     {
         $this->googleAnalyticsService = $googleAnalyticsService;
-        // $this->googleAdsService = $googleAdsService;
+        $this->googleAdsService = $googleAdsService;
     }
 
     public function show()
@@ -33,21 +33,86 @@ class KeywordController extends Controller
         return view('keyword.list', compact('keywords'));
     }
 
+    // public function dashboard()
+    // {
+    //     // $keywords = ['hostingseekers'];
+    //     // $metrics = $this->googleAdsService->getKeywordHistoricalMetrics($keywords);
+    //     // return response()->json($results);
+    //     // if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
+    //     //     $keywords = Keyword::with('user')->where('website_id', auth()->user()->website_id)->get();
+    //     // } else {
+    //         $keywords = Keyword::where('user_id', auth()->id())->where('website_id', auth()->user()->website_id)->get();
+    //     // }
+
+    //     $keywords_ads = $keywords->pluck('keyword')->toArray();
+    //     $metrics = $this->googleAdsService->getKeywordHistoricalMetrics($keywords_ads);
+
+    //     $settings = AdminSetting::where('website_id', auth()->user()->website_id)->where('type','google')->first();
+    //     $ranges = [
+    //         '1-10' => 0,
+    //         '11-20' => 0,
+    //         '21-30' => 0,
+    //         '31-40' => 0,
+    //         '41-50' => 0
+    //     ];
+    //     if($settings){
+    //         foreach ($keywords as $keyword) {
+    //             $key = $this->keywords(request(), $keyword);
+    //             if(isset($key['code'])){
+    //                 $error_message = $key['message'];
+    //                 continue;
+    //             }
+    //             if($key){
+    //                 $keyword->position = (int) $key[0]->position;
+    //                 $keyword->clicks = (int) $key[0]->clicks;
+    //                 $keyword->impressions = $key[0]->impressions;
+    //             }
+    //             else{
+    //                 $keyword->position = '-';
+    //                 $keyword->clicks = '-';
+    //                 $keyword->impressions = '-';
+    //             }
+    //         }
+    //         foreach ($keywords as $keyword) {
+    //             if ($keyword->position >= 1 && $keyword->position <= 10) {
+    //                 $ranges['1-10']++;
+    //             } elseif ($keyword->position >= 11 && $keyword->position <= 20) {
+    //                 $ranges['11-20']++;
+    //             } elseif ($keyword->position >= 21 && $keyword->position <= 30) {
+    //                 $ranges['21-30']++;
+    //             } elseif ($keyword->position >= 31 && $keyword->position <= 40) {
+    //                 $ranges['31-40']++;
+    //             } elseif ($keyword->position >= 41 && $keyword->position <= 50) {
+    //                 $ranges['41-50']++;
+    //             }
+    //         }
+    //     }
+
+    //     // dd($keywords);
+    //     return view('dashboard', compact('keywords', 'ranges'));
+    // }
     public function dashboard()
     {
+        $keywords = Keyword::where('user_id', auth()->id())->where('website_id', auth()->user()->website_id)->get();
 
-        // $keywords = ['hostingseekers'];
-        // $results = $this->googleAnalyticsService->getPageVisitsForKeyword($keyword);
-        // $metrics = $this->googleAdsService->getKeywordHistoricalMetrics($keywords);
+        $keywords_ads = $keywords->pluck('keyword')->toArray();
+        $metrics = $this->googleAdsService->getKeywordHistoricalMetrics($keywords_ads);
         // dd($metrics);
-        // dd($results);
-        // return response()->json($results);
-        // if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
-        //     $keywords = Keyword::with('user')->where('website_id', auth()->user()->website_id)->get();
-        // } else {
-            $keywords = Keyword::where('user_id', auth()->id())->where('website_id', auth()->user()->website_id)->get();
-        // }
-        $settings = AdminSetting::where('website_id', auth()->user()->website_id)->where('type','google')->first();
+        foreach ($keywords as $keyword) {
+            foreach ($metrics as $metric) {
+                if ($metric['text'] === $keyword->keyword) {
+                    $keyword->avgMonthlySearches = $metric['keywordMetrics']['avgMonthlySearches'];
+                    $keyword->monthlySearchVolumes = $metric['keywordMetrics']['monthlySearchVolumes'];
+                    $keyword->competition = $metric['keywordMetrics']['competition'];
+                    $keyword->competitionIndex = $metric['keywordMetrics']['competitionIndex'];
+                    $keyword->lowTopOfPageBidRupees = $metric['keywordMetrics']['lowTopOfPageBidRupees'];
+                    $keyword->highTopOfPageBidRupees = $metric['keywordMetrics']['highTopOfPageBidRupees'];
+                    break;
+                }
+            }
+        }
+        $settings = AdminSetting::where('website_id', auth()->user()->website_id)->where('type', 'google')->first();
+
         $ranges = [
             '1-10' => 0,
             '11-20' => 0,
@@ -55,20 +120,18 @@ class KeywordController extends Controller
             '31-40' => 0,
             '41-50' => 0
         ];
-        if($settings){
+        if ($settings) {
             foreach ($keywords as $keyword) {
                 $key = $this->keywords(request(), $keyword);
-                if(isset($key['code'])){
+                if (isset($key['code'])) {
                     $error_message = $key['message'];
-                    // dd($error_message);
                     continue;
                 }
-                if($key){
+                if ($key) {
                     $keyword->position = (int) $key[0]->position;
                     $keyword->clicks = (int) $key[0]->clicks;
                     $keyword->impressions = $key[0]->impressions;
-                }
-                else{
+                } else {
                     $keyword->position = '-';
                     $keyword->clicks = '-';
                     $keyword->impressions = '-';
@@ -88,14 +151,13 @@ class KeywordController extends Controller
                 }
             }
         }
-
-        // dd($keywords);
         return view('dashboard', compact('keywords', 'ranges'));
     }
 
     public function create()
     {
-        return view('keyword.create');
+        $labels = Label::all();
+        return view('keyword.create', compact('labels'));
     }
 
     public function edit(Keyword $keyword)
@@ -131,7 +193,7 @@ class KeywordController extends Controller
 
         $ipaddress=$this->getUserIP();
         $keywords = $request->keywords;
-
+        $labels = $request->label;
         foreach ($keywords as $keywordValue) {
             $keyword = new Keyword();
             $keyword->user_id = auth()->id();
@@ -139,8 +201,15 @@ class KeywordController extends Controller
             $keyword->keyword = $keywordValue;
             $keyword->ip_address = $ipaddress;
             $keyword->save();
+            if($labels){
+                foreach ($labels as $label) {
+                    $keyword_label = new keyword_label();
+                    $keyword_label->keyword_id = $keyword->id;
+                    $keyword_label->label_id = $label;
+                    $keyword_label->save();
+                }
+            }
         }
-
         return response()->json(['success' => 'Keywords saved successfully'], 200);
     }
 

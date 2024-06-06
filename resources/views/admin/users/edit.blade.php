@@ -84,6 +84,16 @@
                                     @enderror
                                 </div>
                             </div>
+                            <div class="mb-3 row">
+                                <label for="field2" class="col-md-4 col-form-label text-md-end">{{ __('Assign Projects') }}</label>
+                                <div class="col-md-6">
+                                    <select id="field2" class="form-control" name="projects[]" multiple multiselect-search="true" multiselect-max-items="3">
+                                        @foreach($websites as $website)
+                                            <option value="{{ $website->id }}" {{ in_array($website->id, $selected_project) ? 'selected' : '' }}>{{ $website->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                             <div class="mb-0 row">
                                 <div class="col-md-6 offset-md-4">
                                     <button type="submit" class="btn btn-primary">
@@ -104,6 +114,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('assets/js/custom/multiselect-dropdown.js') }}"></script>
     <script>
         $(document).ready(function() {
             $('#userForm').on('submit', function(e) {

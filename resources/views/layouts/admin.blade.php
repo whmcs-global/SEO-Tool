@@ -54,9 +54,16 @@
                                 <!-- <option data-href="{{ route('admin.websites.create') }}">Add New Project</option> -->
                             </select>
                         </li>
+                        @role('Super-admin')
                         <li style="margin-right: 10px;">
                             <a href="{{ route('admin.websites.create') }}" class="btn btn-primary">Add New Project</a>
                         </li>
+                        @endrole
+                        @role('Admin')
+                        <li style="margin-right: 10px;">
+                            <a href="{{ route('admin.websites.create') }}" class="btn btn-primary">Add New Project</a>
+                        </li>
+                        @endrole
                         <li class="dropdown" style="margin-right: 10px;">
                             <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
                                 <img alt="image" src="{{ isset(auth()->user()->userDetails->profile_pic_path) ? asset('storage/'.auth()->user()->userDetails->profile_pic_path) : asset('assets/img/user.png') }}" class="user-img-radious-style">
