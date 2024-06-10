@@ -8,13 +8,36 @@ Keyword Tracker
 <section class="section">
     @if(session('message'))
     <div class="alert alert-success" role="alert">
-        <span class="font-weight-bold">Success alert!</span> {{ session('message') }}
+        <span class="font-weight-bold"></span> {{ session('message') }}
     </div>
     @endif
+
+    <div class="mb-3">
+        <form method="GET" action="{{ route('dashboard') }}">
+            <div class="form-group">
+                <label for="labels">Filter by Labels:</label>
+                <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true" multiselect-max-items="3">
+                    @foreach ($labels as $label)
+                        <option value="{{ $label->id }}" {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
+                            {{ $label->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+
     <div class="mt-5">
         <div id="keywordsChart"></div>
     </div>
+
     <div class="card">
+        <!-- <div class="mb-3">
+            <div class="col-auto">
+                <a href="{{ route('keywords.refresh') }}" class="btn btn-primary rounded-pill">Refresh Data</a>
+            </div>
+        </div> -->
         @can('Add keyword')
         <div class="mb-3 row justify-content-end">
             <div class="col-auto">
@@ -25,36 +48,38 @@ Keyword Tracker
         <div class="card-body">
             @can('Keyword list')
             <div class="table-responsive">
-                <table id="keywordsTable" class="table table-hover">
-                    <thead class="thead-dark">
+            <table id="keywordsTable" class="table table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Position</th>
+                        <th>S. Volume</th>
+                        <th>Click</th>
+                        <th>Impressions</th>
+                        <th>Competition</th>
+                        <th>Bid rate (Low Range)</th>
+                        <th>Bid rate (High Range)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if($keywords->isEmpty())
                         <tr>
-                            <th>Keyword</th>
-                            <th>Position</th>
-                            <th>S. Volume</th>
-                            <th>Click</th>
-                            <th>Impressions</th>
-                            <th>Competition</th>
-                            <th>Bid rate (Low Range)</th>
-                            <th>Bid rate (High Range)</th>
-                            <th>Actions</th>
+                            <td colspan="9" class="text-center">No keywords found</td>
                         </tr>
-                    </thead>
-                    <tbody>
+                    @else
                         @foreach($keywords as $keyword)
                         <tr>
-                            <td>{{ $keyword->keyword }}</td>
+                        <td data-toggle="tooltip" data-placement="top" title="{{ implode(', ', $keyword->labels->pluck('name')->toArray()) }}">{{ $keyword->keyword }}</td>
                             <td>{{ $keyword->position }}</td>
-                            <td>{{ $keyword->avgMonthlySearches }}</td>
+                            <td>{{ $keyword->search_volume }}</td>
                             <td>{{ $keyword->clicks }}</td>
-                            <td>{{ $keyword->impressions }}</td>
-                            <td>{{ $keyword->competition}}</td>
-                            <td>{{ round($keyword->lowTopOfPageBidRupees,2)}}</td>
-                            <td>{{ round($keyword->highTopOfPageBidRupees,2)}}</td>
+                            <td>{{ $keyword->impression }}</td>
+                            <td>{{ $keyword->competition }}</td>
+                            <td>{{ round($keyword->bid_rate_low, 2) }}</td>
+                            <td>{{ round($keyword->bid_rate_high, 2) }}</td>
                             <td class="text-right">
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
-                                    <!-- <a href="{{ route('keywords.analytics', $keyword) }}" class="btn btn-primary rounded-pill mr-2">
-                                        <i class="fas fa-chart-line"></i> Analytics
-                                    </a> -->
                                     @can('Edit keyword')
                                     <a href="{{ route('keywords.edit', $keyword) }}" class="btn btn-secondary rounded-pill mr-2">
                                         <i class="fas fa-edit"></i>
@@ -73,8 +98,9 @@ Keyword Tracker
                             </td>
                         </tr>
                         @endforeach
-                    </tbody>
-                </table>
+                    @endif
+                </tbody>
+            </table>
             </div>
             @endcan
         </div>
@@ -87,6 +113,7 @@ Keyword Tracker
 @endpush
 
 @push('scripts')
+<script src="{{ asset('assets/js/custom/multiselect-dropdown.js') }}"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script>
     $(document).ready(function() {
@@ -96,6 +123,7 @@ Keyword Tracker
                 { targets: -1, orderable: false }
             ]
         });
+        $('[data-toggle="tooltip"]').tooltip();
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>

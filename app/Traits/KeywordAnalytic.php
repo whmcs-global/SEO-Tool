@@ -34,7 +34,7 @@ trait KeywordAnalytic
             $dateFilter= $startDate.' / '.$endDate;
             $client = new Client();
 
-            $adminSetting = AdminSetting::where('website_id', auth()->user()->website_id)->first();
+            $adminSetting = AdminSetting::where('website_id',$keyword->website_id)->where('type', 'google')->first();
             $queryData = $dateData = [];
             if (!is_null($adminSetting)) {
 
@@ -60,7 +60,7 @@ trait KeywordAnalytic
                 }
 
                 if ($adminSetting->status) {
-                    $queryData = $this->analyticsQueryData($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type ?? 'web');
+                    $queryData = $this->analyticsQueryData($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type ?? 'web', $keyword->website_id);
                 }
                 return $queryData;
             } else {
@@ -71,7 +71,7 @@ trait KeywordAnalytic
         }
     }
 
-    function analyticsQueryData($startDate, $endDate, $client, $accessToken, $company, $type)
+    function analyticsQueryData($startDate, $endDate, $client, $accessToken, $company, $type, $website_id)
     {
         try {
             $Query = '{
@@ -97,8 +97,8 @@ trait KeywordAnalytic
                     'Content-Type' => 'application/json'
                 ];
                 
-            if(auth()->user()->website_id){
-                $website = Website::where('id', auth()->user()->website_id)->first();
+            if($website_id){
+                $website = Website::where('id', $website_id)->first();
                 $web_url = $website->url;
                 $key = $website->API_KEY;
             }else{

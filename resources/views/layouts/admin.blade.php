@@ -26,6 +26,7 @@
 </head>
 
 <body>
+<div class="loader"></div>
     <div id="app">
         <div class="main-wrapper main-wrapper-1">
             <div class="navbar-bg"></div>
@@ -97,6 +98,14 @@
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
     @stack('scripts')
     <script>
+        $(document).ready(function() {
+            $('#keyword-tracker').on('click', function() {
+                $('.loader').show();
+            });
+            $(window).on("load", function () {
+                $(".loader").fadeOut("slow");
+            });
+        });
         document.getElementById('aws-region-select').addEventListener('change', function() {
             var selectedRegion = this.options[this.selectedIndex].getAttribute('data-href');
             window.location = selectedRegion;

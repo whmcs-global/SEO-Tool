@@ -33,86 +33,12 @@ class KeywordController extends Controller
         return view('keyword.list', compact('keywords'));
     }
 
-    // public function dashboard()
-    // {
-    //     // $keywords = ['hostingseekers'];
-    //     // $metrics = $this->googleAdsService->getKeywordHistoricalMetrics($keywords);
-    //     // return response()->json($results);
-    //     // if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
-    //     //     $keywords = Keyword::with('user')->where('website_id', auth()->user()->website_id)->get();
-    //     // } else {
-    //         $keywords = Keyword::where('user_id', auth()->id())->where('website_id', auth()->user()->website_id)->get();
-    //     // }
-
-    //     $keywords_ads = $keywords->pluck('keyword')->toArray();
-    //     $metrics = $this->googleAdsService->getKeywordHistoricalMetrics($keywords_ads);
-
-    //     $settings = AdminSetting::where('website_id', auth()->user()->website_id)->where('type','google')->first();
-    //     $ranges = [
-    //         '1-10' => 0,
-    //         '11-20' => 0,
-    //         '21-30' => 0,
-    //         '31-40' => 0,
-    //         '41-50' => 0
-    //     ];
-    //     if($settings){
-    //         foreach ($keywords as $keyword) {
-    //             $key = $this->keywords(request(), $keyword);
-    //             if(isset($key['code'])){
-    //                 $error_message = $key['message'];
-    //                 continue;
-    //             }
-    //             if($key){
-    //                 $keyword->position = (int) $key[0]->position;
-    //                 $keyword->clicks = (int) $key[0]->clicks;
-    //                 $keyword->impressions = $key[0]->impressions;
-    //             }
-    //             else{
-    //                 $keyword->position = '-';
-    //                 $keyword->clicks = '-';
-    //                 $keyword->impressions = '-';
-    //             }
-    //         }
-    //         foreach ($keywords as $keyword) {
-    //             if ($keyword->position >= 1 && $keyword->position <= 10) {
-    //                 $ranges['1-10']++;
-    //             } elseif ($keyword->position >= 11 && $keyword->position <= 20) {
-    //                 $ranges['11-20']++;
-    //             } elseif ($keyword->position >= 21 && $keyword->position <= 30) {
-    //                 $ranges['21-30']++;
-    //             } elseif ($keyword->position >= 31 && $keyword->position <= 40) {
-    //                 $ranges['31-40']++;
-    //             } elseif ($keyword->position >= 41 && $keyword->position <= 50) {
-    //                 $ranges['41-50']++;
-    //             }
-    //         }
-    //     }
-
-    //     // dd($keywords);
-    //     return view('dashboard', compact('keywords', 'ranges'));
-    // }
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $keywords = Keyword::where('user_id', auth()->id())->where('website_id', auth()->user()->website_id)->get();
-
-        $keywords_ads = $keywords->pluck('keyword')->toArray();
-        $metrics = $this->googleAdsService->getKeywordHistoricalMetrics($keywords_ads);
-        // dd($metrics);
-        foreach ($keywords as $keyword) {
-            foreach ($metrics as $metric) {
-                if ($metric['text'] === $keyword->keyword) {
-                    $keyword->avgMonthlySearches = $metric['keywordMetrics']['avgMonthlySearches'];
-                    $keyword->monthlySearchVolumes = $metric['keywordMetrics']['monthlySearchVolumes'];
-                    $keyword->competition = $metric['keywordMetrics']['competition'];
-                    $keyword->competitionIndex = $metric['keywordMetrics']['competitionIndex'];
-                    $keyword->lowTopOfPageBidRupees = $metric['keywordMetrics']['lowTopOfPageBidRupees'];
-                    $keyword->highTopOfPageBidRupees = $metric['keywordMetrics']['highTopOfPageBidRupees'];
-                    break;
-                }
-            }
-        }
-        $settings = AdminSetting::where('website_id', auth()->user()->website_id)->where('type', 'google')->first();
-
+        $labelIds = $request->input('labels', []);
+        
+        $labels = Label::all();
+        
         $ranges = [
             '1-10' => 0,
             '11-20' => 0,
@@ -120,23 +46,19 @@ class KeywordController extends Controller
             '31-40' => 0,
             '41-50' => 0
         ];
-        if ($settings) {
-            foreach ($keywords as $keyword) {
-                $key = $this->keywords(request(), $keyword);
-                if (isset($key['code'])) {
-                    $error_message = $key['message'];
-                    continue;
-                }
-                if ($key) {
-                    $keyword->position = (int) $key[0]->position;
-                    $keyword->clicks = (int) $key[0]->clicks;
-                    $keyword->impressions = $key[0]->impressions;
-                } else {
-                    $keyword->position = '-';
-                    $keyword->clicks = '-';
-                    $keyword->impressions = '-';
-                }
-            }
+        $keywordsQuery = Keyword::where('user_id', auth()->id())
+            ->where('website_id', auth()->user()->website_id);
+
+        if (!empty($labelIds)) {
+            $keywordsQuery = $keywordsQuery->whereHas('labels', function($query) use ($labelIds) {
+                $query->whereIn('labels.id', $labelIds);
+            });
+        }
+        $keywords = $keywordsQuery->get();
+        if($keywords->isEmpty()){
+            return view('dashboard', compact('keywords', 'labels', 'labelIds', 'ranges'));
+        }
+
             foreach ($keywords as $keyword) {
                 if ($keyword->position >= 1 && $keyword->position <= 10) {
                     $ranges['1-10']++;
@@ -150,8 +72,7 @@ class KeywordController extends Controller
                     $ranges['41-50']++;
                 }
             }
-        }
-        return view('dashboard', compact('keywords', 'ranges'));
+        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds'));
     }
 
     public function create()
@@ -162,18 +83,26 @@ class KeywordController extends Controller
 
     public function edit(Keyword $keyword)
     {
-        return view('keyword.edit', compact('keyword'));
+        $labels = Label::all();
+        return view('keyword.edit', compact('keyword', 'labels'));
     }
 
     public function update(Request $request, Keyword $keyword)
     {
         $request->validate([
             'keyword' => 'required|string',
+            'labels' => 'array',
+            'labels.*' => 'exists:labels,id'
         ]);
+
         $keyword->keyword = $request->keyword;
         $keyword->save();
+
+        $keyword->labels()->sync($request->labels);
+        session()->flash('message', 'Keywords updated successfully');
         return redirect()->route('dashboard');
     }
+
 
 
     public function store(Request $request)
@@ -210,6 +139,7 @@ class KeywordController extends Controller
                 }
             }
         }
+        session()->flash('message', 'Keywords saved successfully');
         return response()->json(['success' => 'Keywords saved successfully'], 200);
     }
 
@@ -240,5 +170,14 @@ class KeywordController extends Controller
             $ip = $remote;
         }
         return $ip;
+    }
+
+    public function refresh_data(){
+        $command = 'php artisan keywords:update-metrics 2>&1';
+        $output = shell_exec($command);
+        if ($output === null) {
+            return response()->json(['error' => 'Command execution failed'], 500);
+        }
+        return redirect()->route('dashboard');
     }
 }

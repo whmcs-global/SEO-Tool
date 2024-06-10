@@ -17,7 +17,7 @@ class GoogleAdsService
 
     public function __construct()
     {
-        $googleads = AdminSetting::where('website_id', auth()->user()->website_id)->where('type','google_ads')->first();
+        $googleads = AdminSetting::where('type','google_ads')->first();
         if(!$googleads){
             throw new \Exception("Google Ads settings not found");
         }
@@ -54,17 +54,18 @@ class GoogleAdsService
             $modifiedResults = [];
             foreach ($results as $result) {
                 $metrics = $result->getKeywordMetrics();
-                $lowBidMicros = $metrics->getLowTopOfPageBidMicros();
+                if(!$metrics) continue;
+                $lowBidMicros = $metrics->getLowTopOfPageBidMicros() ?? 0;
                 $lowBidRupees = $lowBidMicros / 1000000;
-                $highBidMicros = $metrics->getHighTopOfPageBidMicros();
+                $highBidMicros = $metrics->getHighTopOfPageBidMicros() ?? 0;
                 $highBidRupees = $highBidMicros / 1000000; 
                 $modifiedResults[] = [
                     'text' => $result->getText(),
                     'keywordMetrics' => [
-                        'avgMonthlySearches' => $metrics->getAvgMonthlySearches(),
-                        'monthlySearchVolumes' => $metrics->getMonthlySearchVolumes(),
-                        'competition' => $metrics->getCompetition(),
-                        'competitionIndex' => $metrics->getCompetitionIndex(),
+                        'avgMonthlySearches' => $metrics->getAvgMonthlySearches() ?? 0,
+                        'monthlySearchVolumes' => $metrics->getMonthlySearchVolumes() ?? [],
+                        'competition' => $metrics->getCompetition() ?? null,
+                        'competitionIndex' => $metrics->getCompetitionIndex() ?? null,
                         'lowTopOfPageBidRupees' => $lowBidRupees,
                         'highTopOfPageBidRupees' => $highBidRupees
                     ]

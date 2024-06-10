@@ -14,7 +14,7 @@
                 <a href="#" class="menu-toggle nav-link has-dropdown"><i
                         class="fa-solid fa-person-running"></i><span>Keyword</span></a>
                 <ul class="dropdown-menu">
-                    <li @if (in_array(Request::route()->getName(), ['dashboard'])) class="active" @endif><a
+                    <li @if (in_array(Request::route()->getName(), ['dashboard'])) class="active" @endif><a id="keyword-tracker"
                             href="{{ route('dashboard') }}">Keyword Tracker</a></li>
                     <li @if (in_array(Route::current()->getName(), ['keywords.create'])) class="active" @endif><a
                             href="{{ route('keywords.create') }}">Add Keyword</a></li>

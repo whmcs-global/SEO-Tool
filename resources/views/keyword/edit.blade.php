@@ -9,14 +9,27 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <form @if (isset($keyword) && $keyword->keyword) action="{{ route('keywords.update', $keyword) }}"
-                        @else action="{{ route('keywords.store') }}" @endif method="post">
+                    <form @if (isset($keyword) && $keyword->keyword) action="{{ route('keywords.update', $keyword) }}" @else action="{{ route('keywords.store') }}" @endif method="post">
                         @csrf
                         <div class="mb-3">
                             <label for="keyword" class="form-label">Keyword Name:</label>
                             <input id="keyword" type="text" name="keyword" class="form-control" placeholder="Enter keyword"
                                 @if (isset($keyword) && $keyword->keyword) value="{{ $keyword->keyword }}" @endif>
                             @error('keyword')
+                            <div class="text-danger">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="labels" class="form-label">Labels:</label>
+                            <select id="field2" name="labels[]" class="form-control" multiple>
+                                @foreach($labels as $label)
+                                    <option value="{{ $label->id }}" 
+                                        @if(isset($keyword) && $keyword->labels->contains($label->id)) selected @endif>
+                                        {{ $label->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('labels')
                             <div class="text-danger">{{ $message }}</div>
                             @enderror
                         </div>
@@ -31,3 +44,6 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+<script src="{{ asset('assets/js/custom/multiselect-dropdown.js') }}"></script>
+@endpush
