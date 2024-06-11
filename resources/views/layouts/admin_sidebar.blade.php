@@ -12,7 +12,7 @@
     <ul class="sidebar-menu">
         <li class="dropdown @if (in_array(Request::route()->getName(), ['dashboard'])) active @endif">
                 <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                        class="fa-solid fa-person-running"></i><span>Keyword</span></a>
+                class="fa-brands fa-searchengin"></i><span>Keyword</span></a>
                 <ul class="dropdown-menu">
                     <li @if (in_array(Request::route()->getName(), ['dashboard'])) class="active" @endif><a id="keyword-tracker"
                             href="{{ route('dashboard') }}">Keyword Tracker</a></li>

@@ -12,10 +12,13 @@ Keyword Tracker
     </div>
     @endif
 
-    <div class="mb-3">
-        <form method="GET" action="{{ route('dashboard') }}">
-            <div class="form-group">
-                <label for="labels">Filter by Labels:</label>
+    <div class="mb-4 d-flex justify-content-end">
+    <form method="GET" action="{{ route('dashboard') }}">
+        <div class="form-row align-items-center">
+            <div class="col-auto">
+                <label for="labels" class="font-weight-bold">Filter by Labels:</label>
+            </div>
+            <div class="col">
                 <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true" multiselect-max-items="3">
                     @foreach ($labels as $label)
                         <option value="{{ $label->id }}" {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
@@ -24,10 +27,12 @@ Keyword Tracker
                     @endforeach
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Filter</button>
-        </form>
-    </div>
-
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+    </form>
+</div>
     <div class="mt-5">
         <div id="keywordsChart"></div>
     </div>
@@ -70,7 +75,16 @@ Keyword Tracker
                     @else
                         @foreach($keywords as $keyword)
                         <tr>
-                        <td data-toggle="tooltip" data-placement="top" title="{{ implode(', ', $keyword->labels->pluck('name')->toArray()) }}">{{ $keyword->keyword }}</td>
+                            <td>
+                                <div>
+                                    <span>{{ $keyword->keyword }}</span>
+                                    <div>
+                                        @foreach($keyword->labels as $label)
+                                            <span class="badge badge-info">{{ $label->name }}</span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </td>
                             <td>{{ $keyword->position }}</td>
                             <td>{{ $keyword->search_volume }}</td>
                             <td>{{ $keyword->clicks }}</td>
@@ -123,7 +137,6 @@ Keyword Tracker
                 { targets: -1, orderable: false }
             ]
         });
-        $('[data-toggle="tooltip"]').tooltip();
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>

@@ -9,18 +9,18 @@ use Illuminate\Support\Facades\Validator;
 use GuzzleHttp\Psr7\Request as GzRequest;
 use App\Services\GoogleAnalyticsService;
 use App\Services\GoogleAdsService;
+use App\Services\KeywordDataUpdate;
 
 class KeywordController extends Controller
 {
 
     use KeywordAnalytic;
 
-    protected $googleAnalyticsService;
+    protected $keywordDataUpdate;
 
-    public function __construct(GoogleAnalyticsService $googleAnalyticsService, GoogleAdsService $googleAdsService)
+    public function __construct(KeywordDataUpdate $keywordDataUpdate)
     {
-        $this->googleAnalyticsService = $googleAnalyticsService;
-        $this->googleAdsService = $googleAdsService;
+        $this->keywordDataUpdate = $keywordDataUpdate;
     }
 
     public function show()
@@ -173,11 +173,7 @@ class KeywordController extends Controller
     }
 
     public function refresh_data(){
-        $command = 'php artisan keywords:update-metrics 2>&1';
-        $output = shell_exec($command);
-        if ($output === null) {
-            return response()->json(['error' => 'Command execution failed'], 500);
-        }
+        $this->keywordDataUpdate->update();
         return redirect()->route('dashboard');
     }
 }
