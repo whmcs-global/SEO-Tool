@@ -4,6 +4,10 @@
 Keyword Tracker
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+@endpush
+
 @section('content')
 <section class="section">
     @if(session('message'))
@@ -11,7 +15,15 @@ Keyword Tracker
         <span class="font-weight-bold"></span> {{ session('message') }}
     </div>
     @endif
-
+    <div class="mb-4">
+        <div class="col-auto text-right">
+            <span class="font-weight-bold">Last Updated At:</span> {{ $lastUpdated ?? 'N/A' }}
+        </div>
+        <div class="mb-3">
+            <div class="col-auto text-right">
+            <button id="refreshButton" data-href="{{ route('keywords.refresh') }}" class="btn btn-primary rounded-pill">Refresh Data</button>
+            </div>
+        </div>
     <div class="mb-4 d-flex justify-content-end">
     <form method="GET" action="{{ route('dashboard') }}">
         <div class="form-row align-items-center">
@@ -38,11 +50,6 @@ Keyword Tracker
     </div>
 
     <div class="card">
-        <!-- <div class="mb-3">
-            <div class="col-auto">
-                <a href="{{ route('keywords.refresh') }}" class="btn btn-primary rounded-pill">Refresh Data</a>
-            </div>
-        </div> -->
         @can('Add keyword')
         <div class="mb-3 row justify-content-end">
             <div class="col-auto">
@@ -122,13 +129,10 @@ Keyword Tracker
 </section>
 @endsection
 
-@push('styles')
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-@endpush
-
 @push('scripts')
 <script src="{{ asset('assets/js/custom/multiselect-dropdown.js') }}"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     $(document).ready(function() {
         $('#keywordsTable').DataTable({
@@ -137,11 +141,47 @@ Keyword Tracker
                 { targets: -1, orderable: false }
             ]
         });
+
+        $('#refreshButton').on('click', function() {
+        var url = $(this).data('href');
+        var button = $(this);
+
+        $.ajax({
+                url: url,
+                type: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                beforeSend: function() {
+                    button.prop('disabled', true);
+                    button.append(' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        button.text('Data Refreshed'); 
+                        button.css('background-color', 'green');
+                        button.attr('title', 'Please reload the page to see the changes');
+                        button.tooltip();
+                    } else {
+                        button.prop('disabled', false);
+                        button.text('Refresh Data');
+                        button.css('background-color', '');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    button.prop('disabled', false); 
+                    button.text('Refresh Data');
+                    button.css('background-color', 'red');
+                },
+                complete: function() {
+                    button.find('.spinner-border').remove();
+                }
+            });
+        });
     });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
+
+    document.addEventListener('DOMContentLoaded', function() {
     var data = [
         {{ $ranges['1-10'] }},
         {{ $ranges['11-20'] }},
@@ -225,24 +265,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         },
         colors: ['#1E90FF']
-    };
+        };
 
-    var chart = new ApexCharts(document.querySelector("#keywordsChart"), options);
-    chart.render();
-});
-
-function confirmDelete(id) {
-    swal({
-        title: 'Are you sure?',
-        text: 'You won\'t be able to revert this!',
-        icon: 'warning',
-        buttons: true,
-        dangerMode: true,
-    }).then((willDelete) => {
-        if (willDelete) {
-            document.getElementById('delete-form-' + id).submit();
-        }
+        var chart = new ApexCharts(document.querySelector("#keywordsChart"), options);
+        chart.render();
     });
-}
+
+    function confirmDelete(id) {
+        swal({
+            title: 'Are you sure?',
+            text: 'You won\'t be able to revert this!',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                document.getElementById('delete-form-' + id).submit();
+            }
+        });
+    }
 </script>
 @endpush

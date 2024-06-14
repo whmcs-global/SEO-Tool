@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\{ProfileController, Controller, KeywordController, WebsiteController, LabelController};
+use App\Http\Controllers\{ProfileController, Controller, KeywordController, WebsiteController, LabelController, BacklinkController};
 use App\Http\Controllers\Admin\{RoleController, UserController};
 use Illuminate\Support\Facades\Route;
 use App\Models\Keyword;
@@ -93,6 +93,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Backlinks
+    // Route::get('backlinks/index', [BacklinkController::class, 'index'])->name('backlinks.index');
+    Route::prefix('backlinks')->name('backlinks.')->controller(BacklinkController::class)->group(function(){
+        Route::get('/index', 'index')->name('index');
+        Route::any('create/{id?}', 'storeOrUpdate')->name('create');
+        Route::delete('delete/{id}', 'destroy')->name('delete');
+    });
+    
 });
 
 require __DIR__ . '/auth.php';

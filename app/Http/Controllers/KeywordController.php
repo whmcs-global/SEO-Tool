@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Traits\{KeywordAnalytic};
 use Illuminate\Http\Request;
-use App\Models\{Keyword, AdminSetting, Label, keyword_label};
+use App\Models\{Keyword, AdminSetting, Label, keyword_label, Website_last_updated};
 use Illuminate\Support\Facades\Validator;
 use GuzzleHttp\Psr7\Request as GzRequest;
 use App\Services\GoogleAnalyticsService;
@@ -34,9 +34,10 @@ class KeywordController extends Controller
     }
 
     public function dashboard(Request $request)
-    {
+    {   
+
         $labelIds = $request->input('labels', []);
-        
+        $lastUpdated = Website_last_updated::where('website_id', auth()->user()->website_id)->pluck('last_updated_at')->first();
         $labels = Label::all();
         
         $ranges = [
@@ -72,7 +73,7 @@ class KeywordController extends Controller
                     $ranges['41-50']++;
                 }
             }
-        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds'));
+        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'lastUpdated'));
     }
 
     public function create()
@@ -94,7 +95,6 @@ class KeywordController extends Controller
             'labels' => 'array',
             'labels.*' => 'exists:labels,id'
         ]);
-
         $keyword->keyword = $request->keyword;
         $keyword->save();
 
@@ -106,7 +106,7 @@ class KeywordController extends Controller
 
 
     public function store(Request $request)
-    {
+    {   
         $validator = Validator::make($request->all(), [
             'keywords' => 'required|array',
             'keywords.*' => 'required|string|unique:keywords,keyword,NULL,id,user_id,' . auth()->id() . ',website_id,' . auth()->user()->website_id,
@@ -122,8 +122,9 @@ class KeywordController extends Controller
 
         $ipaddress=$this->getUserIP();
         $keywords = $request->keywords;
+        $keyWordExplode = explode(',', $keywords[0]);
         $labels = $request->label;
-        foreach ($keywords as $keywordValue) {
+        foreach ($keyWordExplode as $keywordValue) {
             $keyword = new Keyword();
             $keyword->user_id = auth()->id();
             $keyword->website_id = auth()->user()->website_id;
@@ -173,7 +174,8 @@ class KeywordController extends Controller
     }
 
     public function refresh_data(){
+        Website_last_updated::updateOrCreate(['website_id' => auth()->user()->website_id], ['last_updated_at' => now()]);
         $this->keywordDataUpdate->update();
-        return redirect()->route('dashboard');
+        return ['success' => 'Data updated successfully','code' => 200];
     }
 }

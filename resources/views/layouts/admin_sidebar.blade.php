@@ -20,9 +20,12 @@
                             href="{{ route('keywords.create') }}">Add Keyword</a></li>
                 </ul>
             </li>
-        <li class="dropdown ">
-            <a href="#" class="nav-link"><i class="fa-solid fa-link"></i></i><span>Backlinks</span></a>
-        </li>
+            <li class="dropdown {{ Route::is('backlinks.*') ? 'active' : '' }} ">
+                <a href="{{ route('backlinks.index') }}" class="nav-link">
+                    <i class="fa-solid fa-link"></i><span>Backlinks</span>
+                </a>
+            </li>
+
     </ul>
     <!-- <ul class="sidebar-menu">
         <li class="dropdown @if (in_array(Request::route()->getName(), ['keywords.show'])) active @endif">

@@ -114,10 +114,9 @@ class KeywordDataUpdate
                 $key = $this->keywords(request(), $keyword);
                 if (isset($key['code'])) {
                     $error_message = $key['message'];
-                    // Log::error($error_message);
+                    Log::error($error_message);
                     continue;
                 }
-                Log::info($key);
                 if ($key) {
                     $keyword->position = (int) $key[0]->position;
                     $keyword->clicks = (int) $key[0]->clicks;

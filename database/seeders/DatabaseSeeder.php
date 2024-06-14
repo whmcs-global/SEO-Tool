@@ -24,52 +24,79 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create the first user with role 'admin'
-        $superadminRole=Role::create(['name' => 'Super Admin']);
-        $adminRole=Role::create(['name' => 'Admin']);
-        $userRole=Role::create(['name' => 'User']);
+        $superadminRole=Role::firstOrCreate(['name' => 'Super Admin']);
+        $adminRole=Role::firstOrCreate(['name' => 'Admin']);
+        $userRole=Role::firstOrCreate(['name' => 'User']);
 
         // Create permissions
-        Permission::create(['name' => 'Keyword list']);
-        Permission::create(['name' => 'Add keyword']);
-        Permission::create(['name' => 'Edit keyword']);
-        Permission::create(['name' => 'Delete keyword']);
-        Permission::create(['name' => 'User list']);
-        Permission::create(['name' => 'Create user']);
-        Permission::create(['name' => 'Edit user']);
-        Permission::create(['name' => 'Delete user']);
-        Permission::create(['name' => 'Role list']);
-        Permission::create(['name' => 'Create role']);
-        Permission::create(['name' => 'Edit role']);
-        Permission::create(['name' => 'Delete role']);
-        Permission::create(['name' => 'Google API']);
+        // Create permissions
+        $permissions = [
+            'Keyword list',
+            'Add keyword',
+            'Edit keyword',
+            'Delete keyword',
+            'User list',
+            'Create user',
+            'Edit user',
+            'Delete user',
+            'Role list',
+            'Create role',
+            'Edit role',
+            'Delete role',
+            'Google API',
+            // Backlink permissions
+            'Backlink list',
+            'Add backlink',
+            'Edit backlink',
+            'Delete backlink',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
 
         $permission = Permission::all();
 
         $userRole->givePermissionTo(['Keyword list','Add keyword','Edit keyword','Delete keyword']);
-        $adminRole->givePermissionTo(['Add keyword','Edit keyword','Delete keyword','Keyword list','Create user','User list','Edit user','Delete user']);
+        $adminRole->givePermissionTo(['Add keyword','Edit keyword','Delete keyword','Keyword list','Create user','User list','Edit user','Delete user','Backlink list','Add backlink','Edit backlink','Delete backlink',]);
         $superadminRole->givePermissionTo($permission);
 
-        $superadmin = User::create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@example.com',
-            'password' => static::$password ?? Hash::make('Shine@123'),
-        ]);
-        $superadmin->assignrole('super admin');
+        // $superadmin = User::create([
+        //     'name' => 'Super Admin',
+        //     'email' => 'superadmin@example.com',
+        //     'password' => static::$password ?? Hash::make('Shine@123'),
+        // ]);
+        // $superadmin->assignrole('super admin');
 
-        $admin = User::create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => static::$password ?? Hash::make('Shine@123'),
-        ]);
+        // Create users and assign roles
+        $users = [
+            [
+                'name' => 'Super Admin',
+                'email' => 'superadmin@example.com',
+                'role' => 'Super Admin',
+            ],
+            [
+                'name' => 'Admin',
+                'email' => 'admin@example.com',
+                'role' => 'Admin',
+            ],
+            [
+                'name' => 'User',
+                'email' => 'user@example.com',
+                'role' => 'User',
+            ],
+        ];
 
-        $admin->assignRole('admin');
+        foreach ($users as $userData) {
+            $user = User::firstOrCreate([
+                'email' => $userData['email']
+            ], [
+                'name' => $userData['name'],
+                'password' => static::$password ?? Hash::make('Shine@123'),
+            ]);
 
-        $user=User::create([
-            'name' => 'User',
-            'email' => 'user@example.com',
-            'password' => static::$password ?? Hash::make('Shine@123'),
-        ]);
-        $user->assignRole('user');
+            $user->assignRole($userData['role']);
+        }
     }
 
 }

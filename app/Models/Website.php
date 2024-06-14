@@ -17,5 +17,11 @@ class Website extends Model
         'GOOGLE_ANALYTICS_CLIENT_SECRET',
         'GOOGLE_ANALYTICS_REDIRECT_URI',
         'API_KEY',
+        'last_updated_at',
     ];
+
+    public function backlinks()
+    {
+        return $this->hasMany(Backlink::class);
+    }
 }

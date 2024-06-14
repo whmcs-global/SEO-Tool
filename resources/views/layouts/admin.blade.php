@@ -19,8 +19,8 @@
     @stack('styles')
     <style>
     .aws-region-select {
-        margin-right: 20px; /* Adjust the value as necessary */
-        height: 38px; /* Ensure it matches the height of other navbar elements */
+        margin-right: 20px;
+        height: 38px;
     }
     </style>
 </head>
@@ -95,6 +95,8 @@
     <script src="{{ asset('assets/js/iziToast.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery-validation.min.js') }}"></script>
     <script src="{{ asset('assets/js/sweetalert.min.js') }}"></script>
+    <script src="{{ asset('assets/js/common.js') }}"></script>
+    <script src="{{ asset('assets/js/custom.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
     @stack('scripts')
     <script>

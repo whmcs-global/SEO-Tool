@@ -129,22 +129,8 @@ class GoogleAdsController extends Controller
 
     public function changeStatus(AdminSetting $adminSetting)
     {
-        $client = new Client();
-
-        $endpoint = 'https://oauth2.googleapis.com/revoke';
         try {
-            $response = $client->post($endpoint, [
-            'form_params' => [
-                'token' => $adminSetting->access_token
-                ]
-            ]);
-            if ($response->getStatusCode() === 200) {
-                $adminSetting->delete();
-                echo "Access token revoked successfully\n";
-            } else {
-                echo "Error revoking access token\n";
-            }
-
+            $adminSetting->delete();
             return redirect()->back()->with('status', 'success')->with('message', 'Google Ads api disconnected successfully.');
         } catch (\Throwable $th) {
             Log::error('Error in changeStatus: ' . $th->getMessage());
