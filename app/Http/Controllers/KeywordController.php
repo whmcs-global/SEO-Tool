@@ -37,7 +37,7 @@ class KeywordController extends Controller
     {   
 
         $labelIds = $request->input('labels', []);
-        $lastUpdated = Website_last_updated::where('website_id', auth()->user()->website_id)->pluck('last_updated_at')->first();
+        // $lastUpdated = Website_last_updated::where('website_id', auth()->user()->website_id)->pluck('last_updated_at')->first();
         $labels = Label::all();
         
         $ranges = [
@@ -73,7 +73,7 @@ class KeywordController extends Controller
                     $ranges['41-50']++;
                 }
             }
-        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'lastUpdated'));
+        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds'));
     }
 
     public function create()

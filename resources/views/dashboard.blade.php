@@ -16,14 +16,14 @@ Keyword Tracker
     </div>
     @endif
     <div class="mb-4">
-        <div class="col-auto text-right">
+        <!-- <div class="col-auto text-right">
             <span class="font-weight-bold">Last Updated At:</span> {{ $lastUpdated ?? 'N/A' }}
         </div>
         <div class="mb-3">
             <div class="col-auto text-right">
             <button id="refreshButton" data-href="{{ route('keywords.refresh') }}" class="btn btn-primary rounded-pill">Refresh Data</button>
             </div>
-        </div>
+        </div> -->
     <div class="mb-4 d-flex justify-content-end">
     <form method="GET" action="{{ route('dashboard') }}">
         <div class="form-row align-items-center">
@@ -140,44 +140,6 @@ Keyword Tracker
             columnDefs: [
                 { targets: -1, orderable: false }
             ]
-        });
-
-        $('#refreshButton').on('click', function() {
-        var url = $(this).data('href');
-        var button = $(this);
-
-        $.ajax({
-                url: url,
-                type: 'GET',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                beforeSend: function() {
-                    button.prop('disabled', true);
-                    button.append(' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
-                },
-                success: function(response) {
-                    if (response.success) {
-                        button.text('Data Refreshed'); 
-                        button.css('background-color', 'green');
-                        button.attr('title', 'Please reload the page to see the changes');
-                        button.tooltip();
-                    } else {
-                        button.prop('disabled', false);
-                        button.text('Refresh Data');
-                        button.css('background-color', '');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                    button.prop('disabled', false); 
-                    button.text('Refresh Data');
-                    button.css('background-color', 'red');
-                },
-                complete: function() {
-                    button.find('.spinner-border').remove();
-                }
-            });
         });
     });
 
