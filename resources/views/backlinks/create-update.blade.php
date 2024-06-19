@@ -14,17 +14,6 @@
                         <form method="POST" id="backlinkForm" action="{{ route('backlinks.create', $backlink) }}">
                             @csrf
                             <div class="mb-3 row">
-                                <label for="date" class="col-md-4 col-form-label text-md-end">{{ __('Date') }}</label>
-                                <div class="col-md-6">
-                                    <input id="date" type="date" class="form-control @error('date') is-invalid @enderror" name="date" value="{{  $backlink ? $backlink->date :   old('date') }}" >
-                                    @error('date')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="mb-3 row">
                                 <label for="website" class="col-md-4 col-form-label text-md-end">{{ __('Website') }}</label>
                                 <!-- <div class="col-md-6">
                                     <select id="website" class="form-control @error('website') is-invalid @enderror" name="website" >

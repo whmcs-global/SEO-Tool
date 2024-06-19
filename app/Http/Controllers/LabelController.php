@@ -8,6 +8,13 @@ use App\Models\Label;
 class LabelController extends Controller
 {
 
+    public function index()
+    {
+        $labels = Label::all();
+
+        return response()->json(['labels' => $labels], 200);
+    }
+
     public function store(Request $request)
     {
         $request->validate([

@@ -3,41 +3,120 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Backlinks,Website};
+use App\Models\{Backlinks,Website, User};
 class BacklinkController extends Controller
-{
-    //
-    public function index()
+{   
+    public function index(Request $request)
     {
-        $backlinks = Backlinks::where('website_id', auth()->user()->website_id)->get();
-        $activelinks = Backlinks::where("status","Active")->where('website_id', auth()->user()->website_id)->count();
-        $inactivelinks = Backlinks::where("status","Inactive")->where('website_id', auth()->user()->website_id)->count();
-        $pendinglinks = Backlinks::where("status","Pending")->where('website_id', auth()->user()->website_id)->count();
-        $declinedlinks = Backlinks::where("status","Declined")->where('website_id', auth()->user()->website_id)->count();
-
-        $pie_data=[];
-        $data_name=['Active','Inactive','Pending','Declined'];
-        array_push($pie_data,["name"=>"Active","value" =>  $activelinks]);
-        array_push($pie_data,["name"=>"Inactive","value" =>  $inactivelinks]);
-        array_push($pie_data,["name"=>"Pending","value" =>  $pendinglinks]);
-        array_push($pie_data,["name"=>"Declined","value" =>  $declinedlinks]);
-
-        $values=[];
-        foreach($backlinks as $data){
-            array_push($values,["name"=>$data->website,"data" => [
-            "url" => $data->website,
-            "da" => $data->domain_authority,
-            "pa" => $data->page_authority
-        ]
-        ]);
-
+        $query = Backlinks::query()->with('user');
+    
+        // Filter backlinks based on user roles
+        if (!auth()->user()->hasRole(['Admin', 'Super Admin'])) {
+            $query->where('user_id', auth()->user()->id)
+                  ->where('website_id', auth()->user()->website_id);
         }
-        $domain_authority = Backlinks::pluck("domain_authority")->sum();
-        $page_authority = Backlinks::pluck("page_authority")->sum();
- 
-       
-        return view('backlinks.list', compact(['backlinks', 'pie_data', 'data_name', 'values','domain_authority','page_authority']));
+    
+        // Apply additional filters if provided
+        if ($request->filled('link_type')) {
+            $query->where('link_type', $request->input('link_type'));
+        }
+    
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+    
+        if ($request->filled('daterange')) {
+            $dates = explode(' - ', $request->input('daterange'));
+            if (count($dates) == 2) {
+                $startDate = date('Y-m-d 00:00:00', strtotime($dates[0]));
+                $endDate = date('Y-m-d 23:59:59', strtotime($dates[1]));
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            }
+        }        
+    
+        if ($request->filled('user')) {
+            $query->where('user_id', $request->input('user'));
+        }
+    
+        // Retrieve backlinks with users who added them
+        $backlinks = $query->get();
+    
+        // Calculate link status counts
+        $activelinks = $backlinks->where("status", "Active")->count();
+        $inactivelinks = $backlinks->where("status", "Inactive")->count();
+        $pendinglinks = $backlinks->where("status", "Pending")->count();
+        $declinedlinks = $backlinks->where("status", "Declined")->count();
+    
+        // Prepare data for pie chart
+        $data_name = ['Active', 'Inactive', 'Pending', 'Declined'];
+        $pie_data = [
+            ["name" => "Active", "value" => $activelinks],
+            ["name" => "Inactive", "value" => $inactivelinks],
+            ["name" => "Pending", "value" => $pendinglinks],
+            ["name" => "Declined", "value" => $declinedlinks],
+        ];
+    
+        // Prepare data for additional information display
+        $values = [];
+        foreach ($backlinks as $data) {
+            $values[] = [
+                "name" => $data->website,
+                "data" => [
+                    "url" => $data->website,
+                    "da" => $data->domain_authority,
+                    "pa" => $data->page_authority
+                ]
+            ];
+        }
+    
+        $domain_authority = $backlinks->sum("domain_authority");
+        $page_authority = $backlinks->sum("page_authority");
+        $users = User::whereIn('id', $backlinks->pluck('user_id')->unique())->get();
+        return view('backlinks.list', compact([
+            'backlinks', 'pie_data', 'data_name', 'values', 'domain_authority', 'page_authority', 'users',
+            'request'
+        ]));
     }
+    
+    
+    // public function index()
+    // {
+    //    if (auth()->user()->hasRole(['Admin', 'Super Admin'])) {
+    //        $backlinks = Backlinks::get();
+    //    } else {
+    //     $backlinks = Backlinks::where('user_id', auth()->user()->id)->where('website_id', auth()->user()->website_id)->get();
+    //    }
+    //    $activelinks = $backlinks->where("status", "Active")->count();
+    //    $inactivelinks = $backlinks->where("status", "Inactive")->count();
+    //    $pendinglinks = $backlinks->where("status", "Pending")->count();
+    //    $declinedlinks = $backlinks->where("status", "Declined")->count();
+    
+    //    $pie_data = [];
+    //    $data_name = ['Active', 'Inactive', 'Pending', 'Declined'];
+    //    $pie_data[] = ["name" => "Active", "value" => $activelinks];
+    //    $pie_data[] = ["name" => "Inactive", "value" => $inactivelinks];
+    //    $pie_data[] = ["name" => "Pending", "value" => $pendinglinks];
+    //    $pie_data[] = ["name" => "Declined", "value" => $declinedlinks];
+    
+    //    $values = [];
+    //    foreach ($backlinks as $data) {
+    //        $values[] = [
+    //            "name" => $data->website,
+    //            "data" => [
+    //                "url" => $data->website,
+    //                "da" => $data->domain_authority,
+    //                "pa" => $data->page_authority
+    //            ]
+    //        ];
+    //    }
+    
+    //    $domain_authority = $backlinks->sum("domain_authority");
+    //    $page_authority = $backlinks->sum("page_authority");
+    
+    //    return view('backlinks.list', compact([
+    //        'backlinks', 'pie_data', 'data_name', 'values', 'domain_authority', 'page_authority'
+    //    ]));
+    // }
 
     public function storeOrUpdate(Request $request,  $id = null)
     {   if($request->method() == 'GET'){
@@ -54,7 +133,6 @@ class BacklinkController extends Controller
         }elseif($request->method() == 'POST'){
             $rules = [
                 'website' => 'required|exists:websites,id',
-                'date' => 'required|date',
                 'website' => 'required|string',
                 'url' => 'required|string',
                 'target_keyword' => 'required|string',
@@ -75,6 +153,7 @@ class BacklinkController extends Controller
                     $message = 'Backlink updated successfully!';
                 } else {
                     $validatedData['website_id'] = auth()->user()->website_id;
+                    $backlink->user_id = auth()->user()->id;
                     $backlink = Backlinks::create($validatedData);
                     $message = 'Backlink created successfully!';
                 }       

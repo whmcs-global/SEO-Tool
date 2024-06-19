@@ -13,19 +13,19 @@ return new class extends Migration
     {
         Schema::create('backlinks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('website_id')->constrained()->onDelete('cascade')->nullable();
-            $table->date('date');
+            $table->unsignedBigInteger('website_id')->nullable()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('website');
             $table->string('url');
             $table->string('target_keyword');
             $table->string('backlink_source');
             $table->enum('link_type', ['Guest Post', 'Infographics', 'Sponsored Content']);
             $table->string('anchor_text');
-            $table->string('domain_authority');
-            $table->string('page_authority');
+            $table->integer('domain_authority')->default(0);
+            $table->integer('page_authority')->default(0);
             $table->string('contact_person');
             $table->text('notes_comments')->nullable();
-            $table->boolean('status')->default(0);
+            $table->enum('status', ['Active', 'Inactive', 'Pending', 'Declined'])->default('Active');
             $table->timestamps();
         });
     }

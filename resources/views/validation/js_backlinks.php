@@ -1,10 +1,6 @@
 <script>
 $(document).ready(function () {
     var rules = {
-        date: {
-                        required: true,
-                        date: true
-                    },
                     website: {
                         required: true,
                         url: true
@@ -44,10 +40,6 @@ $(document).ready(function () {
                 };
 
     var messages = {
-        date: {
-                        required: "Please enter a date",
-                        date: "Please enter a valid date format"
-                    },
                     website: {
                         required: "Please enter a website",
                         url: "Please enter a valid URL format for the website"

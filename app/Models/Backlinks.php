@@ -11,7 +11,8 @@ class Backlinks extends Model
     use HasFactory;
     protected $fillable = [
         'date',
-        'website',
+        'website_id',
+        'user_id',
         'url',
         'target_keyword',
         'backlink_source',
@@ -23,9 +24,21 @@ class Backlinks extends Model
         'notes_comments',
         'status',
     ];
+
+    protected $appends = ['created_by'];
+    
+    public function getCreatedByAttribute()
+    {
+        return $this->user->name;
+    }
     public function website()
     {
         return $this->belongsTo(Website::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     protected static function boot()

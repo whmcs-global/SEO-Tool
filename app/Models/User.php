@@ -51,4 +51,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Keyword::class);
     }
+
+    public function website()
+    {
+        return $this->hasOne(Website::class);
+    }
+
+    public function backlinks()
+    {
+        return $this->hasMany(Backlinks::class);
+    }
 }
