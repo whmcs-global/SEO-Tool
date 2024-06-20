@@ -10,13 +10,11 @@ class BacklinkController extends Controller
     {
         $query = Backlinks::query()->with('user');
     
-        // Filter backlinks based on user roles
         if (!auth()->user()->hasRole(['Admin', 'Super Admin'])) {
             $query->where('user_id', auth()->user()->id)
                   ->where('website_id', auth()->user()->website_id);
         }
     
-        // Apply additional filters if provided
         if ($request->filled('link_type')) {
             $query->where('link_type', $request->input('link_type'));
         }
@@ -38,16 +36,13 @@ class BacklinkController extends Controller
             $query->where('user_id', $request->input('user'));
         }
     
-        // Retrieve backlinks with users who added them
         $backlinks = $query->get();
-    
-        // Calculate link status counts
+        $totallinks = $backlinks->count();
         $activelinks = $backlinks->where("status", "Active")->count();
         $inactivelinks = $backlinks->where("status", "Inactive")->count();
         $pendinglinks = $backlinks->where("status", "Pending")->count();
         $declinedlinks = $backlinks->where("status", "Declined")->count();
-    
-        // Prepare data for pie chart
+
         $data_name = ['Active', 'Inactive', 'Pending', 'Declined'];
         $pie_data = [
             ["name" => "Active", "value" => $activelinks],
@@ -56,7 +51,6 @@ class BacklinkController extends Controller
             ["name" => "Declined", "value" => $declinedlinks],
         ];
     
-        // Prepare data for additional information display
         $values = [];
         foreach ($backlinks as $data) {
             $values[] = [
@@ -74,7 +68,7 @@ class BacklinkController extends Controller
         $users = User::whereIn('id', $backlinks->pluck('user_id')->unique())->get();
         return view('backlinks.list', compact([
             'backlinks', 'pie_data', 'data_name', 'values', 'domain_authority', 'page_authority', 'users',
-            'request', 'activelinks', 'inactivelinks', 'pendinglinks', 'declinedlinks'
+            'request', 'activelinks', 'inactivelinks', 'pendinglinks', 'declinedlinks', 'totallinks'
         ]));
     }
     

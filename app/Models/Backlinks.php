@@ -31,7 +31,12 @@ class Backlinks extends Model
         return str_replace(['http://', 'https://', 'www.'], '', $value);
     }
 
-    protected $appends = ['created_by'];
+    protected $appends = ['created_by','email'];
+
+    public function getEmailAttribute()
+    {
+        return $this->user->email;
+    }
     
     public function getCreatedByAttribute()
     {

@@ -26,13 +26,26 @@
                     <button type="button" id="selectAllButton" class="btn btn-secondary btn-sm">Select All</button>
                 </div>
                 <div class="row">
-                    @foreach ($permissions as $permission)
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="permissions[]" value="{{ $permission->id }}" id="{{ $permission->name }}">
-                                <label class="form-check-label" for="{{ $permission->name }}">
-                                    {{ $permission->name }}
-                                </label>
+                    @foreach ($permissions as $group => $perms)
+                        <div class="col-md-12 mt-3">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h4 class="card-title">{{ $group }}</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        @foreach ($perms as $permission)
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="permissions[]" value="{{ $permission->id }}" id="{{ $permission->name }}">
+                                                    <label class="form-check-label" for="{{ $permission->name }}">
+                                                        {{ $permission->name }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endforeach

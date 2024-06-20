@@ -57,6 +57,8 @@ Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('a
 
     Route::get('/websites/create', [WebsiteController::class, 'create'])->name('websites.create');
     Route::post('/websites', [WebsiteController::class, 'store'])->name('websites.store');
+
+    Route::get('/projects', [WebsiteController::class, 'projects'])->name('projects');
 });
 
 

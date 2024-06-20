@@ -60,11 +60,11 @@
                             @endforeach
                         </select>
                     </li>
-                    @role('Super-admin|Admin')
+                    @can('Add New Project')
                     <li class="nav-item">
                         <a href="{{ route('admin.websites.create') }}" class="btn btn-primary">Add New Project</a>
                     </li>
-                    @endrole
+                    @endcan
                     <li class="nav-item dropdown">
                         <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
                             <img alt="image" src="{{ isset(auth()->user()->userDetails->profile_pic_path) ? asset('storage/'.auth()->user()->userDetails->profile_pic_path) : asset('assets/img/user.png') }}" class="user-img-radious-style">

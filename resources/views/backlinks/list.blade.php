@@ -12,16 +12,28 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-center align-items-center">
-                                <h4>Total Active Links</h4>
+                                <h4>Total Links</h4>
                             </div>
                             <div class="card-body">
                                 <div class="text-center">
-                                    <label><b><h1>{{ $activelinks }}</h1></b></label>
+                                    <label><b><h1>{{ $totallinks }}</h1></b></label>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-center align-items-center">
+                                <h4>Total Declined Links</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <label><b><h1>{{ $declinedlinks }}</h1></b></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-center align-items-center">
                                 <h4>Total Inactive Links</h4>
@@ -32,7 +44,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
@@ -40,11 +52,11 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-center align-items-center">
-                                <h4>Total Declined Links</h4>
+                                <h4>Total Active Links</h4>
                             </div>
                             <div class="card-body">
                                 <div class="text-center">
-                                    <label><b><h1>{{ $declinedlinks }}</h1></b></label>
+                                    <label><b><h1>{{ $activelinks }}</h1></b></label>
                                 </div>
                             </div>
                         </div>
@@ -97,20 +109,62 @@
                             </div>
                         </div>
                         <div class="col-12 col-md-6 col-lg-3">
-                            <div class="form-floating">
-                                <select name="link_type" class="form-control" id="linkTypeSelect">
-                                    <option value="">Select Link Type</option>
-                                    <option value="Guest Post" {{ $request->input('link_type') == 'Guest Post' ? 'selected' : '' }}>
-                                        Guest Post
-                                    </option>
-                                    <option value="Infographics" {{ $request->input('link_type') == 'Infographics' ? 'selected' : '' }}>
-                                        Infographics
-                                    </option>
-                                    <option value="Sponsored Content" {{ $request->input('link_type') == 'Sponsored Content' ? 'selected' : '' }}>
-                                        Sponsored Content
-                                    </option>
-                                </select>
-                            </div>
+                        <div class="form-floating">
+                            <select name="link_type" class="form-control" id="linkTypeSelect">
+                                <option value="">Select Link Type</option>
+                                <option value="Guest Post" {{ $request->input('link_type') == 'Guest Post' ? 'selected' : '' }}>
+                                    Guest Post
+                                </option>
+                                <option value="Infographics" {{ $request->input('link_type') == 'Infographics' ? 'selected' : '' }}>
+                                    Infographics
+                                </option>
+                                <option value="Sponsored Content" {{ $request->input('link_type') == 'Sponsored Content' ? 'selected' : '' }}>
+                                    Sponsored Content
+                                </option>
+                                <option value="Social Bookmarking" {{ $request->input('link_type') == 'Social Bookmarking' ? 'selected' : '' }}>
+                                    Social Bookmarking
+                                </option>
+                                <option value="Infographic Submission" {{ $request->input('link_type') == 'Infographic Submission' ? 'selected' : '' }}>
+                                    Infographic Submission
+                                </option>
+                                <option value="Business Listing" {{ $request->input('link_type') == 'Business Listing' ? 'selected' : '' }}>
+                                    Business Listing
+                                </option>
+                                <option value="Web 2.0" {{ $request->input('link_type') == 'Web 2.0' ? 'selected' : '' }}>
+                                    Web 2.0
+                                </option>
+                                <option value="PPT Submission" {{ $request->input('link_type') == 'PPT Submission' ? 'selected' : '' }}>
+                                    PPT Submission
+                                </option>
+                                <option value="Podcast Submission" {{ $request->input('link_type') == 'Podcast Submission' ? 'selected' : '' }}>
+                                    Podcast Submission
+                                </option>
+                                <option value="PDF Submission" {{ $request->input('link_type') == 'PDF Submission' ? 'selected' : '' }}>
+                                    PDF Submission
+                                </option>
+                                <option value="Article Submission" {{ $request->input('link_type') == 'Article Submission' ? 'selected' : '' }}>
+                                    Article Submission
+                                </option>
+                                <option value="Quora" {{ $request->input('link_type') == 'Quora' ? 'selected' : '' }}>
+                                    Quora
+                                </option>
+                                <option value="Forum Submission" {{ $request->input('link_type') == 'Forum Submission' ? 'selected' : '' }}>
+                                    Forum Submission
+                                </option>
+                                <option value="PR Submission" {{ $request->input('link_type') == 'PR Submission' ? 'selected' : '' }}>
+                                    PR Submission
+                                </option>
+                                <option value="Brand Mentions" {{ $request->input('link_type') == 'Brand Mentions' ? 'selected' : '' }}>
+                                    Brand Mentions
+                                </option>
+                                <option value="Guest Post Submission" {{ $request->input('link_type') == 'Guest Post Submission' ? 'selected' : '' }}>
+                                    Guest Post Submission
+                                </option>
+                                <option value="Broken Link Building" {{ $request->input('link_type') == 'Broken Link Building' ? 'selected' : '' }}>
+                                    Broken Link Building
+                                </option>
+                            </select>
+                        </div>
                         </div>
                         <div class="col-12 col-md-6 col-lg-3">
                             <div class="form-floating">
@@ -175,7 +229,11 @@
                             @foreach ($backlinks as $backlink)
                                 <tr>
                                     @role('Admin|Super Admin')
-                                        <td>{{ $backlink->created_by }}</td>
+                                        <td>
+                                            {{ $backlink->created_by }}
+                                            <br>
+                                            <small class="text-muted">{{ $backlink->email }}</small>
+                                        </td>
                                     @endrole
                                     <td>{{ $backlink->website }}</td>
                                     <td>

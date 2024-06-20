@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder
         $userRole=Role::firstOrCreate(['name' => 'User']);
 
         // Create permissions
-        // Create permissions
         $permissions = [
             'Keyword list',
             'Add keyword',
@@ -43,12 +42,12 @@ class DatabaseSeeder extends Seeder
             'Create role',
             'Edit role',
             'Delete role',
-            'Google API',
-            // Backlink permissions
             'Backlink list',
             'Add backlink',
             'Edit backlink',
             'Delete backlink',
+            'Google API',
+            'Add New Project',
         ];
 
         foreach ($permissions as $permission) {

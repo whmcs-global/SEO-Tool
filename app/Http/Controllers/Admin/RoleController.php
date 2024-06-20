@@ -19,11 +19,28 @@ class RoleController extends Controller
 
     public function create()
     {
-        if(auth()->user()->hasRole('Super Admin')){
-            $permissions = Permission::all();
-        }else{
-            $permissions = Permission::whereNotIn('name', ['Google API'])->get();
+        $permissions = [
+            'Keyword Management' => Permission::whereIn('name', ['Keyword list', 'Add keyword', 'Edit keyword', 'Delete keyword'])->get(),
+            'User Management' => Permission::whereIn('name', ['User list', 'Create user', 'Edit user', 'Delete user'])->get(),
+            'Role Management' => Permission::whereIn('name', ['Role list', 'Create role', 'Edit role', 'Delete role'])->get(),
+            'Backlink Management' => Permission::whereIn('name', ['Backlink list', 'Add backlink', 'Edit backlink', 'Delete backlink'])->get(),
+            'Project Management' => Permission::whereIn('name', ['Add New Project'])->get(),
+            'Google API' => Permission::whereIn('name', ['Google API'])->get(),
+        ];
+
+        if(!auth()->user()->hasRole('Super Admin')){
+            foreach ($permissions as $group => $perms) {
+                $permissions[$group] = $perms->reject(function ($perm) {
+                    return $perm->name === 'Google API';
+                });
+            }
         }
+
+        // Filter out empty permission groups
+        $permissions = array_filter($permissions, function ($perms) {
+            return $perms->isNotEmpty();
+        });
+
         return view('admin.roles.create', compact('permissions'));
     }
 
@@ -45,11 +62,28 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
-        if(auth()->user()->hasRole('Super Admin')){
-            $permissions = Permission::all();
-        }else{
-            $permissions = Permission::whereNotIn('name', ['Google API'])->get();
+        $permissions = [
+            'Keyword Management' => Permission::whereIn('name', ['Keyword list', 'Add keyword', 'Edit keyword', 'Delete keyword'])->get(),
+            'User Management' => Permission::whereIn('name', ['User list', 'Create user', 'Edit user', 'Delete user'])->get(),
+            'Role Management' => Permission::whereIn('name', ['Role list', 'Create role', 'Edit role', 'Delete role'])->get(),
+            'Backlink Management' => Permission::whereIn('name', ['Backlink list', 'Add backlink', 'Edit backlink', 'Delete backlink'])->get(),
+            'Project Management' => Permission::whereIn('name', ['Add New Project'])->get(),
+            'Google API' => Permission::whereIn('name', ['Google API'])->get(),
+        ];
+    
+        if (!auth()->user()->hasRole('Super Admin')) {
+            foreach ($permissions as $group => $perms) {
+                $permissions[$group] = $perms->reject(function ($perm) {
+                    return $perm->name === 'Google API';
+                });
+            }
         }
+    
+        // Filter out empty permission groups
+        $permissions = array_filter($permissions, function ($perms) {
+            return $perms->isNotEmpty();
+        });
+    
         return view('admin.roles.edit', compact('role', 'permissions'));
     }
 

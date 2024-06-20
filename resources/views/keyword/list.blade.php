@@ -26,11 +26,7 @@ Keyword List
                     <thead class="thead-dark bg-primary">
                         <tr>
                             <th scope="col" style="width: 30%;">Keyword</th>
-                            @role('Admin')
-                            <th scope="col">Created By</th>
-                            <th scope="col" style="width: 15%;">IP Address</th>
-                            @endrole
-                            @role('Super Admin')
+                            @role('Admin|Super Admin')
                             <th scope="col">Created By</th>
                             <th scope="col" style="width: 15%;">IP Address</th>
                             @endrole

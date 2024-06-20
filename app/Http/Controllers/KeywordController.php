@@ -39,7 +39,7 @@ class KeywordController extends Controller
         $countries = Country::all();
         $selectedCountry = auth()->user()->country_id ?? 3;
         $labels = Label::all();
-        
+
         $ranges = [
             '1-10' => 0,
             '11-20' => 0,
@@ -47,22 +47,30 @@ class KeywordController extends Controller
             '31-40' => 0,
             '41-50' => 0
         ];
-        
+
+        $user = auth()->user();
+        $isAdmin = $user->hasRole('Admin');
+        $isSuperAdmin = $user->hasRole('Super Admin');
         $keywordsQuery = Keyword::with(['keywordData' => function($query) use ($selectedCountry) {
             $query->where('country_id', $selectedCountry);
-        }])
-        ->forUserAndWebsite(auth()->id(), auth()->user()->website_id);
-    
+        }]);
+
+        if ($isAdmin || $isSuperAdmin) {
+            $keywordsQuery->where('website_id', $user->website_id);
+        } else {
+            $keywordsQuery->forUserAndWebsite($user->id, $user->website_id);
+        }
+
         if (!empty($labelIds)) {
             $keywordsQuery->filterByLabels($labelIds);
         }
-    
+
         $keywords = $keywordsQuery->get();
-    
+
         if ($keywords->isEmpty()) {
             return view('dashboard', compact('keywords', 'labels', 'labelIds', 'ranges', 'countries', 'selectedCountry'));
         }
-    
+
         foreach ($keywords as $keyword) {
             foreach ($keyword->keywordData as $data) {
                 if ($data->position >= 1 && $data->position <= 10) {
@@ -78,7 +86,7 @@ class KeywordController extends Controller
                 }
             }
         }
-    
+
         return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
     }
     
@@ -180,7 +188,8 @@ class KeywordController extends Controller
         return $ip;
     }
 
-    public function refresh_data(){
+    public function refresh_data()
+    {
         Website_last_updated::updateOrCreate(['website_id' => auth()->user()->website_id], ['last_updated_at' => now()]);
         $this->keywordDataUpdate->update();
         return ['success' => 'Data updated successfully','code' => 200];

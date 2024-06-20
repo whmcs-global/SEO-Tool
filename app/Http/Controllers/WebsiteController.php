@@ -49,4 +49,11 @@ class WebsiteController extends Controller
         $user->save();
         return redirect()->back();
     }
+
+    public function projects(Request $request)
+    {
+        $websites = Website::all();
+        // dd('working on it');
+        return view('website.projects', compact('websites'));
+    }
 }
