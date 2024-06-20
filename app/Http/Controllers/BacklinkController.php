@@ -74,7 +74,7 @@ class BacklinkController extends Controller
         $users = User::whereIn('id', $backlinks->pluck('user_id')->unique())->get();
         return view('backlinks.list', compact([
             'backlinks', 'pie_data', 'data_name', 'values', 'domain_authority', 'page_authority', 'users',
-            'request'
+            'request', 'activelinks', 'inactivelinks', 'pendinglinks', 'declinedlinks'
         ]));
     }
     

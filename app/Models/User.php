@@ -22,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'country_id',
+        'website_id',
     ];
 
     /**
@@ -60,5 +62,10 @@ class User extends Authenticatable
     public function backlinks()
     {
         return $this->hasMany(Backlinks::class);
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
     }
 }

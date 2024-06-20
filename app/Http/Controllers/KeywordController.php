@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Traits\{KeywordAnalytic};
 use Illuminate\Http\Request;
-use App\Models\{Keyword, AdminSetting, Label, keyword_label, Website_last_updated};
+use App\Models\{Keyword, AdminSetting, Label, keyword_label, Website_last_updated, Country};
 use Illuminate\Support\Facades\Validator;
 use GuzzleHttp\Psr7\Request as GzRequest;
 use App\Services\GoogleAnalyticsService;
@@ -34,10 +34,10 @@ class KeywordController extends Controller
     }
 
     public function dashboard(Request $request)
-    {   
-
+    {
         $labelIds = $request->input('labels', []);
-        // $lastUpdated = Website_last_updated::where('website_id', auth()->user()->website_id)->pluck('last_updated_at')->first();
+        $countries = Country::all();
+        $selectedCountry = auth()->user()->country_id ?? 3;
         $labels = Label::all();
         
         $ranges = [
@@ -47,34 +47,41 @@ class KeywordController extends Controller
             '31-40' => 0,
             '41-50' => 0
         ];
-        $keywordsQuery = Keyword::where('user_id', auth()->id())
-            ->where('website_id', auth()->user()->website_id);
-
+        
+        $keywordsQuery = Keyword::with(['keywordData' => function($query) use ($selectedCountry) {
+            $query->where('country_id', $selectedCountry);
+        }])
+        ->forUserAndWebsite(auth()->id(), auth()->user()->website_id);
+    
         if (!empty($labelIds)) {
-            $keywordsQuery = $keywordsQuery->whereHas('labels', function($query) use ($labelIds) {
-                $query->whereIn('labels.id', $labelIds);
-            });
+            $keywordsQuery->filterByLabels($labelIds);
         }
+    
         $keywords = $keywordsQuery->get();
-        if($keywords->isEmpty()){
-            return view('dashboard', compact('keywords', 'labels', 'labelIds', 'ranges'));
+    
+        if ($keywords->isEmpty()) {
+            return view('dashboard', compact('keywords', 'labels', 'labelIds', 'ranges', 'countries', 'selectedCountry'));
         }
-
-            foreach ($keywords as $keyword) {
-                if ($keyword->position >= 1 && $keyword->position <= 10) {
+    
+        foreach ($keywords as $keyword) {
+            foreach ($keyword->keywordData as $data) {
+                if ($data->position >= 1 && $data->position <= 10) {
                     $ranges['1-10']++;
-                } elseif ($keyword->position >= 11 && $keyword->position <= 20) {
+                } elseif ($data->position >= 11 && $data->position <= 20) {
                     $ranges['11-20']++;
-                } elseif ($keyword->position >= 21 && $keyword->position <= 30) {
+                } elseif ($data->position >= 21 && $data->position <= 30) {
                     $ranges['21-30']++;
-                } elseif ($keyword->position >= 31 && $keyword->position <= 40) {
+                } elseif ($data->position >= 31 && $data->position <= 40) {
                     $ranges['31-40']++;
-                } elseif ($keyword->position >= 41 && $keyword->position <= 50) {
+                } elseif ($data->position >= 41 && $data->position <= 50) {
                     $ranges['41-50']++;
                 }
             }
-        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds'));
+        }
+    
+        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
     }
+    
 
     public function create()
     {
@@ -177,5 +184,23 @@ class KeywordController extends Controller
         Website_last_updated::updateOrCreate(['website_id' => auth()->user()->website_id], ['last_updated_at' => now()]);
         $this->keywordDataUpdate->update();
         return ['success' => 'Data updated successfully','code' => 200];
+    }
+
+    public function set_country(Request $request)
+    {
+        $request->validate([
+            'country_id' => 'required'
+        ]);
+    
+        $country = Country::where('id', $request->country_id)->first();
+    
+        if (!$country) {
+            return json_encode(['error' => 'Country not found']);
+        }
+        $user = auth()->user();
+        $user->country_id = $country->id;
+        $user->save();
+    
+        return json_encode(['success' => 'Country changed successfully']);
     }
 }

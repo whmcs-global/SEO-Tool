@@ -13,6 +13,7 @@ class Backlinks extends Model
         'date',
         'website_id',
         'user_id',
+        'website',
         'url',
         'target_keyword',
         'backlink_source',
@@ -24,6 +25,11 @@ class Backlinks extends Model
         'notes_comments',
         'status',
     ];
+
+    public function getWebsiteAttribute($value)
+    {
+        return str_replace(['http://', 'https://', 'www.'], '', $value);
+    }
 
     protected $appends = ['created_by'];
     

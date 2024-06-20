@@ -65,8 +65,8 @@ class GoogleAdsService
             ->build();
     }
 
-    public function getKeywordHistoricalMetrics($keywords)
-    {
+    public function getKeywordHistoricalMetrics($keywords , $location_id)
+    {   
         $keywordPlanIdeaServiceClient = $this->client->getKeywordPlanIdeaServiceClient();
 
         try {
@@ -74,7 +74,7 @@ class GoogleAdsService
                 new GenerateKeywordHistoricalMetricsRequest([
                     'customer_id' => config('google-ads.login_customer_id'),
                     'keywords' => $keywords,
-                    'geo_target_constants' => [ResourceNames::forGeoTargetConstant(2840)],
+                    'geo_target_constants' => [ResourceNames::forGeoTargetConstant($location_id)],
                     'keyword_plan_network' => KeywordPlanNetwork::GOOGLE_SEARCH,
                     'language' => ResourceNames::forLanguageConstant(1000)
                 ])

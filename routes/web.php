@@ -11,7 +11,6 @@ Route::get('/', function () {
 
 Route::get('/keyword_tracker', [KeywordController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
-
 Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('admin')->group(function () {
     Route::get('admin', [\App\Http\Controllers\Admin\indexController::class, 'index'])->name('index');
 
@@ -62,7 +61,8 @@ Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('a
 
 
 Route::middleware('auth')->group(function () {
-
+    // chnage country
+    Route::get('/country', [KeywordController::class, 'set_country'])->name('countries.set');
     Route::post('/labels', [LabelController::class, 'store'])->name('labels.store');
 
     // Website

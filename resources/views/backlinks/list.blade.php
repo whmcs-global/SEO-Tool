@@ -12,24 +12,23 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-center align-items-center">
-                                <h4>Total Domain Authority (DA)</h4>
+                                <h4>Total Active Links</h4>
                             </div>
                             <div class="card-body">
                                 <div class="text-center">
-                                    <label><b><h1>{{ $domain_authority }}</h1></b></label>
+                                    <label><b><h1>{{ $activelinks }}</h1></b></label>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-center align-items-center">
-                                <h4>Total Page Authority (PA)</h4>
+                                <h4>Total Inactive Links</h4>
                             </div>
                             <div class="card-body">
                                 <div class="text-center">
-                                    <label><b><h1>{{ $page_authority }}</h1></b></label>
+                                    <label><b><h1>{{ $inactivelinks }}</h1></b></label>
                                 </div>
                             </div>
                         </div>
@@ -37,17 +36,30 @@
                 </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-center align-items-center">
-                        <h4>STATUS COUNT</h4>
-                    </div>
-                    <div class="card-body">
-                        @foreach ($pie_data as $data)
-                            <div class="d-flex justify-content-between align-items-center">
-                                <label>{{ $data['name'] }}</label>
-                                <span>{{ $data['value'] }}</span>
+            <div class="authority d-grid">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-center align-items-center">
+                                <h4>Total Declined Links</h4>
                             </div>
-                        @endforeach
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <label><b><h1>{{ $declinedlinks }}</h1></b></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-center align-items-center">
+                                <h4>Total Pending Links</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <label><b><h1>{{ $pendinglinks }}</h1></b></label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -138,67 +150,71 @@
             <div class="card-body">
                 @can('Backlink list')
                     <div class="table-responsive">
-                        <table id="backlinksTable" class="table table-hover">
-                            <thead class="thead-dark">
+                    <table id="backlinksTable" class="table table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                @role('Admin|Super Admin')
+                                    <th>Added By</th>
+                                @endrole
+                                <th>Website</th>
+                                <th>URL</th>
+                                <th>Target Keyword</th>
+                                <th>Backlink Source</th>
+                                <th>Link Type</th>
+                                <th>Status</th>
+                                <th>Anchor Text</th>
+                                <th>Domain Authority</th>
+                                <th>Page Authority</th>
+                                <th>Contact Person</th>
+                                <th>Notes Comments</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($backlinks as $backlink)
                                 <tr>
-                                    <th>Website</th>
-                                    <th>URL</th>
-                                    <th>Target Keyword</th>
-                                    <th>Backlink Source</th>
-                                    <th>Link Type</th>
-                                    <th>Status</th>
-                                    <th>Anchor Text</th>
-                                    <th>Domain Authority</th>
-                                    <th>Page Authority</th>
                                     @role('Admin|Super Admin')
-                                        <th>Created By</th>
+                                        <td>{{ $backlink->created_by }}</td>
                                     @endrole
-                                    <th>Contact Person</th>
-                                    <th>Notes Comments</th>
-                                    <th>Created At</th>
-                                    <th>Actions</th>
+                                    <td>{{ $backlink->website }}</td>
+                                    <td>
+                                        <a href="{{ $backlink->url }}" target="_blank">
+                                            {{ Str::limit($backlink->url, 20, '...') }}
+                                        </a>
+                                    </td>
+                                    <td>{{ $backlink->target_keyword }}</td>
+                                    <td>{{ $backlink->backlink_source }}</td>
+                                    <td>{{ $backlink->link_type }}</td>
+                                    <td>{{ $backlink->status }}</td>
+                                    <td>{{ $backlink->anchor_text }}</td>
+                                    <td>{{ $backlink->domain_authority }}</td>
+                                    <td>{{ $backlink->page_authority }}</td>
+                                    <td>{{ $backlink->contact_person }}</td>
+                                    <td>{{ $backlink->notes_comments }}</td>
+                                    <td>{{ $backlink->created_at->format('d-m-Y') }}</td>
+                                    <td class="text-right">
+                                        <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
+                                            @can('Edit backlink')
+                                                <a href="{{ route('backlinks.create', $backlink) }}" class="btn btn-secondary rounded-pill mr-2">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            @endcan
+                                            @can('Delete backlink')
+                                                <form method="POST" action="{{ route('backlinks.delete', $backlink) }}" class="d-inline mr-2" id="delete-form-{{ $backlink->id }}">
+                                                    @csrf
+                                                    @method('delete')
+                                                    <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $backlink->id }})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($backlinks as $backlink)
-                                    <tr>
-                                        <td>{{ $backlink->website }}</td>
-                                        <td>{{ $backlink->url }}</td>
-                                        <td>{{ $backlink->target_keyword }}</td>
-                                        <td>{{ $backlink->backlink_source }}</td>
-                                        <td>{{ $backlink->link_type }}</td>
-                                        <td>{{ $backlink->status }}</td>
-                                        <td>{{ $backlink->anchor_text }}</td>
-                                        <td>{{ $backlink->domain_authority }}</td>
-                                        <td>{{ $backlink->page_authority }}</td>
-                                        @role('Admin|Super Admin')
-                                            <td>{{ $backlink->created_by }}</td>
-                                        @endrole
-                                        <td>{{ $backlink->contact_person }}</td>
-                                        <td>{{ $backlink->notes_comments }}</td>
-                                        <td>{{ $backlink->created_at->format('d-m-Y') }}</td>
-                                        <td class="text-right">
-                                            <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
-                                                @can('Edit backlink')
-                                                    <a href="{{ route('backlinks.create', $backlink) }}" class="btn btn-secondary rounded-pill mr-2">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                @endcan
-                                                @can('Delete backlink')
-                                                    <form method="POST" action="{{ route('backlinks.delete', $backlink) }}" class="d-inline mr-2" id="delete-form-{{ $backlink->id }}">
-                                                        @csrf
-                                                        @method('delete')
-                                                        <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $backlink->id }})">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @endcan
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                            @endforeach
+                        </tbody>
+                    </table>
                     </div>
                 @endcan
             </div>
@@ -240,7 +256,13 @@
                 autoUpdateInput: false,
                 locale: {
                     cancelLabel: 'Clear'
-                }
+                },
+                ranges: {
+                        'Today': [moment(), moment()],
+                        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    }
             });
 
             $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {

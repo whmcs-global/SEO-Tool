@@ -33,4 +33,15 @@ class Keyword extends Model
             $query->whereIn('labels.id', $labelIds);
         });
     }
+
+    public function scopeForUserAndWebsite(Builder $query, $userId, $websiteId)
+    {
+        return $query->where('user_id', $userId)
+                     ->where('website_id', $websiteId);
+    }
+
+    public function keywordData()
+    {
+        return $this->hasMany(KeywordData::class);
+    }
 }

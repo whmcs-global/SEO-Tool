@@ -9,10 +9,12 @@ use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request as GzRequest;
+use Illuminate\Support\Facades\Log;
+
 
 trait KeywordAnalytic
 {
-    public function keywords(Request $request, Keyword $keyword)
+    public function keywords(Request $request, Keyword $keyword, $code)
     {
         try {
             $keyword_name = $keyword->keyword;
@@ -60,7 +62,7 @@ trait KeywordAnalytic
                 }
 
                 if ($adminSetting->status) {
-                    $queryData = $this->analyticsQueryData($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type ?? 'web', $keyword->website_id);
+                    $queryData = $this->analyticsQueryData($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type ?? 'web', $keyword->website_id, $code);
                 }
                 return $queryData;
             } else {
@@ -71,12 +73,12 @@ trait KeywordAnalytic
         }
     }
 
-    function analyticsQueryData($startDate, $endDate, $client, $accessToken, $company, $type, $website_id)
+    function analyticsQueryData($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
     {
         try {
             $Query = '{
                 "dimensions": [
-                    "QUERY"
+                    "query"
                 ],
                 "startDate": "' . $startDate . '",
                 "endDate": "' . $endDate . '",
@@ -85,38 +87,43 @@ trait KeywordAnalytic
                         "filters": [
                             {
                                 "operator": "EQUALS",
-                                "dimension": "QUERY",
-                                "expression": "' . $company . '",
+                                "dimension": "query",
+                                "expression": "' . $company . '"
+                            },
+                            {
+                            "dimension": "COUNTRY",
+                            "expression": "'.$code.'",
+                            "operator": "CONTAINS"
                             }
-                            ]
-                        }
-                    ],
-                    "searchType": "' . $type . '"
-                }';
-                $headers = [
-                    'Content-Type' => 'application/json'
-                ];
-                
-            if($website_id){
+                        ]
+                    }
+                ],
+                "searchType": "' . $type . '"
+            }';
+            $headers = [
+                'Content-Type' => 'application/json'
+            ];
+    
+            if ($website_id) {
                 $website = Website::where('id', $website_id)->first();
                 $web_url = $website->url;
                 $key = $website->API_KEY;
-            }else{
+            } else {
                 $web_url = 'www.hostingseekers.com';
                 $key = config('google.key');
             }
-            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F'.$web_url.'%2F/searchAnalytics/query?key='.$key.'&access_token=' . $accessToken, $headers, $Query);
+            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken, $headers, $Query);
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
-
+    
             if ($res->getStatusCode() != 200) {
                 throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
             }
-
+    
             if (isset($analyticsData->error)) {
                 throw new Exception("Error in fetching analytics data: " . $analyticsData->error->message);
             }
-
+    
             $analyticsData = $analyticsData->rows ?? [];
             return $analyticsData;
         } catch (\Throwable $th) {
