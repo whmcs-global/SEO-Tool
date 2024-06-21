@@ -48,6 +48,9 @@ class DatabaseSeeder extends Seeder
             'Delete backlink',
             'Google API',
             'Add New Project',
+            'Edit Project',
+            'Delete Project',
+            'Project list',
         ];
 
         foreach ($permissions as $permission) {

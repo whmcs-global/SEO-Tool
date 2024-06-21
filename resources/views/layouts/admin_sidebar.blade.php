@@ -43,21 +43,26 @@
     </ul>
     @endcan
 
-    @can('Google API')
     <ul class="sidebar-menu">
+    @canany(['Google API', 'Project list'])
         <li class="dropdown @if (in_array(Request::route()->getName(), ['admin.settings', 'admin.projects'])) active @endif">
             <a href="#" class="menu-toggle nav-link has-dropdown">
                 <i class="fa-solid fa-gear"></i><span>Settings</span>
             </a>
             <ul class="dropdown-menu">
-                <li @if (in_array(Request::route()->getName(), ['admin.settings'])) class="active" @endif>
-                    <a href="{{ route('admin.settings') }}">Google API</a>
-                </li>
-                <li @if (in_array(Request::route()->getName(), ['admin.projects'])) class="active" @endif>
-                    <a href="{{ route('admin.projects') }}">Manage Project</a>
-                </li>
+                @can('Google API')
+                    <li @if (in_array(Request::route()->getName(), ['admin.settings'])) class="active" @endif>
+                        <a href="{{ route('admin.settings') }}">Google API</a>
+                    </li>
+                @endcan
+                @can('Project list')
+                    <li @if (in_array(Request::route()->getName(), ['admin.projects'])) class="active" @endif>
+                        <a href="{{ route('admin.projects') }}">Manage Project</a>
+                    </li>
+                @endcan
             </ul>
         </li>
-    </ul>
-    @endcan
+    @endcanany
+</ul>
+
 </aside>

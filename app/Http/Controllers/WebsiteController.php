@@ -56,4 +56,34 @@ class WebsiteController extends Controller
         // dd('working on it');
         return view('website.projects', compact('websites'));
     }
+
+    public function delete(Website $website)
+    {
+        $website->delete();
+        return redirect()->back()->with(['status' => 'success', 'message'=> 'Website deleted successfully!']);
+    }
+
+    public function edit($id)
+    {
+        $website = Website::findOrFail($id);
+        return view('website.edit', compact('website'));
+    }
+    
+    public function update(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'url' => 'required|url|max:255',
+            'GOOGLE_ANALYTICS_CLIENT_ID' => 'required|string|max:255',
+            'GOOGLE_ANALYTICS_CLIENT_SECRET' => 'required|string|max:255',
+            'GOOGLE_ANALYTICS_REDIRECT_URI' => 'required|url|max:255',
+            'API_KEY' => 'required|string|max:255',
+        ]);
+    
+        $website = Website::findOrFail($id);
+        $website->update($validatedData);
+    
+        return redirect()->route('admin.projects')->with(['status' => 'success', 'message'=> 'Website updated successfully!']);
+        
+    }
 }

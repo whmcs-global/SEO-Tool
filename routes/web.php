@@ -11,7 +11,7 @@ Route::get('/', function () {
 
 Route::get('/keyword_tracker', [KeywordController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('admin')->group(function () {
+Route::middleware(['auth'])->name('admin.')->prefix('admin')->group(function () {
     Route::get('admin', [\App\Http\Controllers\Admin\indexController::class, 'index'])->name('index');
 
     // roles permission
@@ -41,7 +41,7 @@ Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('a
     Route::post('/permissions/{permission}/roles', [\App\Http\Controllers\Admin\PermissionController::class, 'assignRole'])->name('permissions.roles');
     Route::delete('/permissions/{permission}/roles/{role}', [\App\Http\Controllers\Admin\PermissionController::class, 'removeRole'])->name('permissions.roles.remove');
 
-
+    // users
     Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->middleware(['permission:User list'])->name('users.index');
     Route::get('/user/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->middleware(['permission:Create user'])->name('user.create');
     Route::post('/user/store', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('user.store');
@@ -55,10 +55,13 @@ Route::middleware(['auth', 'role:Admin|Super Admin'])->name('admin.')->prefix('a
     Route::delete('/users/{user}/permissions/{permission}', [UserController::class, 'revokePermission'])->name('users.permissions.revoke');
     Route::get('/settings', [\App\Http\Controllers\Admin\GoogleAnalyticsController::class, 'configGoogleAnalytics'])->middleware(['permission:Google API'])->name('settings');
 
-    Route::get('/websites/create', [WebsiteController::class, 'create'])->name('websites.create');
-    Route::post('/websites', [WebsiteController::class, 'store'])->name('websites.store');
-
-    Route::get('/projects', [WebsiteController::class, 'projects'])->name('projects');
+    // projects
+    Route::get('/websites/create', [WebsiteController::class, 'create'])->middleware(['permission:Add New Project'])->name('websites.create');
+    Route::post('/websites', [WebsiteController::class, 'store'])->middleware(['permission:Add New Project'])->name('websites.store');
+    Route::delete('/websites/{website}', [WebsiteController::class, 'delete'])->middleware(['permission:Delete Project'])->name('websites.delete');
+    Route::get('/websites/{id}/edit', [WebsiteController::class, 'edit'])->middleware(['permission:Edit Project'])->name('websites.edit');
+    Route::put('/websites/{id}', [WebsiteController::class, 'update'])->middleware(['permission:Edit Project'])->name('websites.update');
+    Route::get('/projects', [WebsiteController::class, 'projects'])->middleware(['permission:Project list'])->name('projects');
 });
 
 

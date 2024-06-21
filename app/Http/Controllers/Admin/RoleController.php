@@ -24,7 +24,7 @@ class RoleController extends Controller
             'User Management' => Permission::whereIn('name', ['User list', 'Create user', 'Edit user', 'Delete user'])->get(),
             'Role Management' => Permission::whereIn('name', ['Role list', 'Create role', 'Edit role', 'Delete role'])->get(),
             'Backlink Management' => Permission::whereIn('name', ['Backlink list', 'Add backlink', 'Edit backlink', 'Delete backlink'])->get(),
-            'Project Management' => Permission::whereIn('name', ['Add New Project'])->get(),
+            'Project Management' => Permission::whereIn('name', ['Add New Project','Edit Project','Delete Project','Project list'])->get(),
             'Google API' => Permission::whereIn('name', ['Google API'])->get(),
         ];
 
@@ -67,7 +67,7 @@ class RoleController extends Controller
             'User Management' => Permission::whereIn('name', ['User list', 'Create user', 'Edit user', 'Delete user'])->get(),
             'Role Management' => Permission::whereIn('name', ['Role list', 'Create role', 'Edit role', 'Delete role'])->get(),
             'Backlink Management' => Permission::whereIn('name', ['Backlink list', 'Add backlink', 'Edit backlink', 'Delete backlink'])->get(),
-            'Project Management' => Permission::whereIn('name', ['Add New Project'])->get(),
+            'Project Management' => Permission::whereIn('name', ['Add New Project','Edit Project','Delete Project','Project list'])->get(),
             'Google API' => Permission::whereIn('name', ['Google API'])->get(),
         ];
     
