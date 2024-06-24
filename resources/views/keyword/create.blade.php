@@ -179,8 +179,9 @@
     </form>
   </div>
 </div>
+@endsection
 
-
+@push('scripts')
 <script src="{{ asset('assets/js/custom/multiselect-dropdown.js') }}"></script>
 <script>
   $(document).ready(function() {
@@ -301,4 +302,4 @@
     });
   });
 </script>
-@endsection
+@endpush

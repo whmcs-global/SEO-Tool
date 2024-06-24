@@ -89,7 +89,7 @@
                             <tbody>
                                 @if ($keywords->isEmpty())
                                     <tr>
-                                        <td colspan="9" class="text-center">No keywords found</td>
+                                        <td colspan="9" class="text-center">No keywords</td>
                                     </tr>
                                 @else
                                     @foreach ($keywords as $keyword)
