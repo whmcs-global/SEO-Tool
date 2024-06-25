@@ -12,42 +12,52 @@ use GuzzleHttp\Psr7\Request as GzRequest;
 use Illuminate\Support\Facades\Log;
 
 
-trait KeywordAnalytic
+trait KeywordDaterange
 {
-    public function keywords(Request $request, Keyword $keyword, $code)
+    /**
+     * Fetches keyword analytics data based on date range and other parameters.
+     *
+     * @param Keyword $keyword The keyword model instance.
+     * @param string $code The code for the query.
+     * @param string|null $startDate The start date of the date range.
+     * @param string|null $endDate The end date of the date range.
+     * @return array The keyword analytics data fetched from the API.
+     */
+    public function keywordbydate(Keyword $keyword, $code, $startDate = null, $endDate = null)
     {
         try {
             $keyword_name = $keyword->keyword;
-            $dateFilter = $request->filled('date_filter') ? $request->date_filter : '';
-            $startDate = null;
-            $endDate = null;
-
-            // Parse the date range if dateFilter is not empty
-            if ($dateFilter) {
-                $dates = explode(' / ', $dateFilter);
-                $startDate = Carbon::parse($dates[0])->format('Y-m-d');
-                $endDate = Carbon::parse($dates[1])->format('Y-m-d');
+            if (is_null($startDate) || is_null($endDate)) {
+                $startDate = Carbon::now()->subDays(30)->format('Y-m-d');
+                $endDate = Carbon::now()->format('Y-m-d');
             } else {
-                $startDate = new DateTime();
-                $startDate = $startDate->modify('-30 days')->format('Y-m-d');
-                $end = new DateTime();
-                $endDate = $end->format('Y-m-d');
+                $startDate = Carbon::parse($startDate)->format('Y-m-d');
+                $endDate = Carbon::parse($endDate)->format('Y-m-d');
             }
-            $dateFilter= $startDate.' / '.$endDate;
+    
+            $dateFilter = $startDate . ' / ' . $endDate;
             $client = new Client();
-
-            $adminSetting = AdminSetting::where('website_id',$keyword->website_id)->where('type', 'google')->first();
+    
+            $adminSetting = AdminSetting::where('website_id', $keyword->website_id)
+                                         ->where('type', 'google')
+                                         ->first();
+    
             $queryData = $dateData = [];
             if (!is_null($adminSetting)) {
-
                 $expiryTimeMinutes = $adminSetting->expiry_time;
                 $pastUpdatedAccessTokenTime = Carbon::parse($adminSetting->created_at);
                 $expirationTime = $pastUpdatedAccessTokenTime->copy()->addSeconds((int)$expiryTimeMinutes);
-
+    
                 $currentTime = Carbon::now();
                 $accessToken = $adminSetting->access_token;
                 if ($expirationTime->lessThan($currentTime) && ($adminSetting->status)) {
-                    $tokenResponse = $this->createToken($client, jsdecode_userdata($adminSetting->client_id), jsdecode_userdata($adminSetting->client_secret_id), $adminSetting->redirect_url, $adminSetting->refresh_token);
+                    $tokenResponse = $this->createToken(
+                        $client,
+                        jsdecode_userdata($adminSetting->client_id),
+                        jsdecode_userdata($adminSetting->client_secret_id),
+                        $adminSetting->redirect_url,
+                        $adminSetting->refresh_token
+                    );
                     if ($tokenResponse) {
                         $details = $tokenResponse;
                         $adminSetting->update([
@@ -55,51 +65,73 @@ trait KeywordAnalytic
                             'expiry_time' => $details['expires_in'],
                             'created_at' => Carbon::now(),
                         ]);
-                        $accessToken =  $details['access_token'];
+                        $accessToken = $details['access_token'];
                     }
                 } else {
                     $accessToken = $adminSetting->access_token;
                 }
-
+    
                 if ($adminSetting->status) {
-                    $queryData = $this->analyticsQueryData($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type ?? 'web', $keyword->website_id, $code);
+                    $queryData = $this->analyticsQueryDatabyDate(
+                        $startDate,
+                        $endDate,
+                        $client,
+                        $accessToken,
+                        $keyword_name,
+                        'web',
+                        $keyword->website_id,
+                        $code
+                    );
                 }
                 return $queryData;
             } else {
-                return redirect()->route('dashboard')->with('status', 'error')->with('message', 'Admin setting not found');
+                return redirect()->route('dashboard')->with('status', 'error')->with('message', 'Google API settings not found.');
             }
         } catch (RequestException $e) {
             return redirect()->route('dashboard')->with('status', 'error')->with('message', $e->getMessage());
         }
     }
+    
 
-    function analyticsQueryData($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
+    /**
+     * Queries the Google Analytics API to fetch analytics data based on date range and other parameters.
+     *
+     * @param string $startDate The start date of the date range.
+     * @param string $endDate The end date of the date range.
+     * @param object $client The GuzzleHttp client instance.
+     * @param string $accessToken The access token for authentication.
+     * @param string $company The company name for filtering the data.
+     * @param string $type The search type for the query.
+     * @param int $website_id The ID of the website.
+     * @param string $code The code for the query.
+     * @return array The analytics data fetched from the API.
+     */
+    function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
     {
         try {
-            $Query = '{
-                "dimensions": [
-                    "query"
+            $Query = [
+                "dimensions" => [
+                    "QUERY",
+                    "DATE"
                 ],
-                "startDate": "' . $startDate . '",
-                "endDate": "' . $endDate . '",
-                "dimensionFilterGroups": [
-                    {
-                        "filters": [
-                            {
-                                "operator": "EQUALS",
-                                "dimension": "query",
-                                "expression": "' . $company . '"
-                            },
-                            {
-                            "dimension": "COUNTRY",
-                            "expression": "'.$code.'",
-                            "operator": "CONTAINS"
-                            }
+                "startDate" => $startDate,
+                "endDate" => $endDate,
+                "dimensionFilterGroups" => [
+                    [
+                        "filters" => [
+                            [
+                                "operator" => "EQUALS",
+                                "dimension" => "QUERY",
+                                "expression" => $company
+                            ]
                         ]
-                    }
+                    ]
                 ],
-                "searchType": "' . $type . '"
-            }';
+                "searchType" => $type
+            ];
+    
+            $jsonQuery = json_encode($Query);
+    
             $headers = [
                 'Content-Type' => 'application/json'
             ];
@@ -112,18 +144,23 @@ trait KeywordAnalytic
                 $web_url = 'www.hostingseekers.com';
                 $key = config('google.key');
             }
-            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken, $headers, $Query);
-            $res = $client->sendAsync($request)->wait();
-            $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
     
+            $requestUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken;
+    
+            $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
+    
+            $res = $client->sendAsync($request)->wait();
+
+            $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
+
             if ($res->getStatusCode() != 200) {
                 throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
             }
-    
+
             if (isset($analyticsData->error)) {
                 throw new Exception("Error in fetching analytics data: " . $analyticsData->error->message);
             }
-    
+
             $analyticsData = $analyticsData->rows ?? [];
             return $analyticsData;
         } catch (\Throwable $th) {
@@ -133,7 +170,19 @@ trait KeywordAnalytic
             ];
         }
     }
+    
 
+    /**
+     * Creates an access token using the provided credentials and refresh token.
+     *
+     * @param object $client The HTTP client instance.
+     * @param string $clientId The client ID.
+     * @param string $clientSecret The client secret.
+     * @param string $redirectUrl The redirect URL.
+     * @param string $refreshToken The refresh token.
+     * @return array|null The access token data if successful, null otherwise.
+     * @throws Exception If there is an error obtaining the access token.
+     */
     public function createToken($client, $clientId, $clientSecret, $redirectUrl, $refreshToken) {
         try {
             $response = $client->post('https://oauth2.googleapis.com/token', [
@@ -160,11 +209,8 @@ trait KeywordAnalytic
             $errorData = json_decode($errorResponse, true);
 
             if (isset($errorData['error']) && $errorData['error'] === 'invalid_grant') {
-                // Handle specific case where the refresh token is expired or revoked
                 error_log('Refresh token has expired or been revoked.');
-                // Notify the system/user to re-authenticate
             } else {
-                // Log other errors
                 error_log('Error: ' . $e->getMessage());
             }
 

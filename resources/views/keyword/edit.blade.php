@@ -34,12 +34,12 @@
                             @enderror
                         </div>
                         <button type="submit" class="btn btn-primary">Save</button>
+                        <a href="{{ url()->previous() }}" class="btn btn-secondary" >
+                                        {{ __('Back') }}
+                                </a>
                     </form>
                 </div>
             </div>
-        </div>
-        <div class="text-white card-footer">
-            <a href="{{ route('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
         </div>
     </div>
 </div>

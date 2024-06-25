@@ -68,7 +68,7 @@ class KeywordDataUpdate
                         $keywordDataValues['clicks'] = (int) $key[0]->clicks;
                         $keywordDataValues['impression'] = $key[0]->impressions;
                     } else {
-                        $keywordDataValues['position'] = 0;
+                        $keywordDataValues['position'] = null;
                         $keywordDataValues['clicks'] = 0;
                         $keywordDataValues['impression'] = 0;
                     }

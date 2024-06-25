@@ -19,6 +19,7 @@ class KeywordData extends Model
         'competition',
         'bid_rate_low',
         'bid_rate_high',
+        'response',
     ];
 
     public function keyword()

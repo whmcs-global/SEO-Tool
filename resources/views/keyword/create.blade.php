@@ -128,9 +128,6 @@
       <div class="col-auto">
         <h3 class="font-semibold">Add Keywords</h3>
       </div>
-      <div class="col-auto ml-auto">
-        <a href="{{ route('dashboard') }}" class="btn btn-primary rounded-pill">Back</a>
-      </div>
     </div>
 
     <form id="keyword-form" action="{{ route('keywords.store') }}" method="post">
@@ -153,6 +150,9 @@
       </div>
       <div class="form-group">
         <button type="submit" class="btn btn-primary rounded-pill">Save Keywords</button>
+        <a href="{{ url()->previous() }}" class="btn btn-secondary" >
+                                        {{ __('Back') }}
+                                </a>
       </div>
       <span class="text-sm text-danger"></span>
     </form>

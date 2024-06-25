@@ -9,9 +9,136 @@ use GuzzleHttp\Psr7\Request as GzRequest;
 use App\Services\GoogleAnalyticsService;
 use App\Services\GoogleAdsService;
 use App\Services\KeywordDataUpdate;
+use App\Traits\KeywordDaterange;
+use Carbon\Carbon;
 
 class KeywordController extends Controller
 {
+    use KeywordDaterange;
+
+    public function keywords_detail(Request $request) 
+    {
+        $countries = Country::all();
+        $user = auth()->user();
+        $isAdmin = $user->hasRole('Admin');
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $selectedCountry = $user->country_id ?? 3;
+    
+        $startDate = null;
+        $endDate = null;
+    
+        if ($request->has('daterange') && !empty($request->get('daterange'))) {
+            list($start, $end) = explode(' - ', $request->get('daterange'));
+            $startDate = Carbon::parse($start)->format('Y-m-d');
+            $endDate = Carbon::parse($end)->format('Y-m-d');
+        }
+    
+        $keywordsQuery = Keyword::with(['keywordData']);
+    
+        if ($isAdmin || $isSuperAdmin) {
+            $keywordsQuery->where('website_id', $user->website_id);
+        } else {
+            $keywordsQuery->forUserAndWebsite($user->id, $user->website_id);
+        }
+    
+        if ($request->has('labelIds')) {
+            $labelIds = $request->get('labelIds');
+            $keywordsQuery->filterByLabels($labelIds);
+        }
+    
+        $keywords = $keywordsQuery->get();
+        $totalKeywords = $keywords->count();
+    
+        $countryRanges = [];
+        foreach ($countries as $country) {
+            $countryRanges[$country->id] = [
+                'top_1' => ['count' => 0, 'percentage' => 0],
+                'top_3' => ['count' => 0, 'percentage' => 0],
+                'top_5' => ['count' => 0, 'percentage' => 0],
+                'top_10' => ['count' => 0, 'percentage' => 0],
+                'top_30' => ['count' => 0, 'percentage' => 0],
+                'top_100' => ['count' => 0, 'percentage' => 0],
+            ];
+        }
+    
+        $allDates = [];
+        $keywordData = [];
+    
+        foreach ($keywords as $keyword) {
+            foreach ($keyword->keywordData as $data) {
+                $response = json_decode($data->response, true);
+                $positionDates = [];
+    
+                foreach ($response as $entry) {
+                    if (isset($entry['keys'][1], $entry['position'])) {
+                        $date = $entry['keys'][1];
+                        $positionDates[$date] = $entry['position'];
+                        $allDates[] = $date;
+                    }
+                }
+    
+                if ($data->country_id == $selectedCountry) {
+                    $keywordData[] = [
+                        'keyword' => $keyword->keyword,
+                        'country' => $data->country->name,
+                        'country_id' => $data->country_id,
+                        'search_volume' => $data->search_volume,
+                        'impression' => $data->impression,
+                        'competition' => $data->competition,
+                        'positions' => $positionDates,
+                    ];
+                }
+    
+                $ranges = &$countryRanges[$data->country_id];
+    
+                if ($data->position == 1 && $data->position != null) {
+                    $ranges['top_1']['count']++;
+                    $ranges['top_3']['count']++;
+                    $ranges['top_5']['count']++;
+                    $ranges['top_10']['count']++;
+                    $ranges['top_30']['count']++;
+                    $ranges['top_100']['count']++;
+                } elseif ($data->position <= 3 && $data->position != null) {
+                    $ranges['top_3']['count']++;
+                    $ranges['top_5']['count']++;
+                    $ranges['top_10']['count']++;
+                    $ranges['top_30']['count']++;
+                    $ranges['top_100']['count']++;
+                } elseif ($data->position <= 5 && $data->position != null) {
+                    $ranges['top_5']['count']++;
+                    $ranges['top_10']['count']++;
+                    $ranges['top_30']['count']++;
+                    $ranges['top_100']['count']++;
+                } elseif ($data->position <= 10 && $data->position != null) {
+                    $ranges['top_10']['count']++;
+                    $ranges['top_30']['count']++;
+                    $ranges['top_100']['count']++;
+                } elseif ($data->position <= 30 && $data->position != null) {
+                    $ranges['top_30']['count']++;
+                    $ranges['top_100']['count']++;
+                } elseif ($data->position <= 100 && $data->position != null) {
+                    $ranges['top_100']['count']++;
+                }
+            }
+        }
+    
+        foreach ($countryRanges as &$ranges) {
+            $countryTotal = $ranges['top_100']['count'];
+            foreach ($ranges as &$range) {
+                if ($countryTotal > 0) {
+                    $range['percentage'] = ($range['count'] / $countryTotal) * 100;
+                }
+            }
+        }
+    
+        $allDates = array_unique($allDates);
+        sort($allDates);
+    
+        return view('keyword.details', compact('keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry'));
+    }
+
+    
+    
 
     public function show()
     {
@@ -259,5 +386,20 @@ class KeywordController extends Controller
         $user->save();
     
         return json_encode(['success' => 'Country changed successfully']);
+    }
+
+    public function keyword_data()
+    {
+        $keywords = Keyword::with(['keywordData' => function($query) {
+            $query->with('country');
+        }])->get();
+
+        foreach($keywords as $keyword){
+            foreach($keyword->keywordData as $data){
+                $response = $this->keywordbydate($keyword, $data->country->Google_Code);
+                $data['response'] = $response;
+                $data->save();
+            }
+        }
     }
 }

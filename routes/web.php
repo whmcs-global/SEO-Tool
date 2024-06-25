@@ -9,7 +9,6 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 })->name('home');
 
-Route::get('/keyword_tracker', [KeywordController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth'])->name('admin.')->prefix('admin')->group(function () {
     Route::get('admin', [\App\Http\Controllers\Admin\indexController::class, 'index'])->name('index');
@@ -85,6 +84,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/google_ads/callback', [\App\Http\Controllers\Admin\GoogleAdsController::class, 'callbackToGoogle'])->name('googleAdsAuthCallback');
 
     // Keywords
+    Route::get('/keyword_tracker', [KeywordController::class, 'dashboard'])->name('dashboard');
+    Route::get('/keywords_detail', [KeywordController::class, 'keywords_detail'])->name('keywords.details');
     Route::get('/keywords/{keyword}/analytics', [\App\Http\Controllers\GoogleAnalyticController::class, 'redirectToGoogle'])->name('keywords.analytics');
     Route::delete('/keywords/{keyword}', [KeywordController::class, 'destroy'])->name('keywords.destroy');
     Route::get('/keywords/{keyword}/edit', [KeywordController::class, 'edit'])->name('keywords.edit');
@@ -93,6 +94,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/keywords', [KeywordController::class, 'store'])->name('keywords.store');
     Route::get('/keywords}', [KeywordController::class, 'show'])->name('keywords.show');
     Route::get('/refresh_keyword_data', [WebsiteController::class, 'refresh_data'])->name('keywords.refresh');
+    Route::get('/keyword_data', [KeywordController::class, 'keyword_data'])->name('keywords.data');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('competition', 8, 2)->nullable();
             $table->decimal('bid_rate_low', 8, 2)->nullable();
             $table->decimal('bid_rate_high', 8, 2)->nullable();
+            $table->json('response')->nullable();
             $table->timestamps();
         });
     }
