@@ -11,4 +11,8 @@ class User_project extends Model
 
     protected $fillable = ['user_id', 'website_id'];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

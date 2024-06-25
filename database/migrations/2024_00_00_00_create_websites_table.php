@@ -20,6 +20,12 @@ return new class extends Migration
             $table->string('GOOGLE_ANALYTICS_CLIENT_SECRET');
             $table->string('GOOGLE_ANALYTICS_REDIRECT_URI');
             $table->string('API_KEY');
+            $table->string('GOOGLE_ADS_DEVELOPER_TOKEN');
+            $table->string('GOOGLE_ADS_CLIENT_ID');
+            $table->string('GOOGLE_ADS_CLIENT_SECRET');
+            $table->string('GOOGLE_ADS_REDIRECT_URI');
+            $table->string('GOOGLE_ADS_KEY');
+            $table->string('GOOGLE_ADS_LOGIN_CUSTOMER_ID');
             $table->timestamps();
         });
     }

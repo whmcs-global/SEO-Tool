@@ -71,10 +71,13 @@ class GoogleAnalyticsController extends Controller
         try {
             // Replace these values with your Google OAuth credentials
             if(!auth()->user()->website_id){
-                $clientID = config('google.client_id');
-                $redirectUri = config('google.redirect_url');
+                // $clientID = config('google.client_id');
+                // $redirectUri = config('google.redirect_url');
+                return redirect()->back()->with('error', 'Please add website first.');
             }
             else {
+                $web_id = auth()->user()->website_id;
+                $website = Website::where('id', $web_id)->first();
                 $clientID = $website->GOOGLE_ANALYTICS_CLIENT_ID;
                 $redirectUri = $website->GOOGLE_ANALYTICS_REDIRECT_URI;
             }

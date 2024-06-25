@@ -92,7 +92,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/keywords/create', [KeywordController::class, 'create'])->name('keywords.create');
     Route::post('/keywords', [KeywordController::class, 'store'])->name('keywords.store');
     Route::get('/keywords}', [KeywordController::class, 'show'])->name('keywords.show');
-    Route::get('/refresh_keyword_data', [KeywordController::class, 'refresh_data'])->name('keywords.refresh');
+    Route::get('/refresh_keyword_data', [WebsiteController::class, 'refresh_data'])->name('keywords.refresh');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -49,7 +49,7 @@ Settings
 
                         <div class="mb-0 form-group row">
                             <div class="col-md-6 offset-md-4">
-                                @if ($adminSetting)
+                                @if ($adminSetting && auth()->user()->website_id)
                                 <button id="disconnect_google" class="btn btn-danger">
                                     Disconnect
                                 </button>
@@ -95,7 +95,7 @@ Settings
 
                         <div class="mb-0 form-group row">
                             <div class="col-md-6 offset-md-4">
-                                @if ($googleads)
+                                @if (isset($googleads))
                                 <button id="disconnect_google_ads" class="btn btn-danger">
                                     Disconnect
                                 </button>
@@ -141,7 +141,7 @@ $("#disconnect_google_ads").click(function () {
     })
     .then((willDelete) => {
         if (willDelete) {
-            @if ($googleads)
+            @if (isset($googleads))
             window.location.href = "{{ route('googleAdsStatus', [ 'adminSetting'  => $googleads]) }}";
             @endif
         }

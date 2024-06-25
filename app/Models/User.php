@@ -49,6 +49,22 @@ class User extends Authenticatable
         ];
     }
 
+
+    // if website_id is null then check user_project and first website_id
+    public function getWebsiteIdAttribute($value)
+    {
+        if ($value) {
+            return $value;
+        }
+        $website = $this->User_project()->first();
+        return $website ? $website->id : null;
+    }
+
+    public function User_project()
+    {
+        return $this->hasMany(User_project::class);
+    }
+
     public function keywords()
     {
         return $this->hasMany(Keyword::class);

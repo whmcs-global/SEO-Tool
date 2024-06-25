@@ -48,6 +48,7 @@ trait KeywordAnalytic
                 $accessToken = $adminSetting->access_token;
                 if ($expirationTime->lessThan($currentTime) && ($adminSetting->status)) {
                     $tokenResponse = $this->createToken($client, jsdecode_userdata($adminSetting->client_id), jsdecode_userdata($adminSetting->client_secret_id), $adminSetting->redirect_url, $adminSetting->refresh_token);
+                    Log::info('Token Response: ' . json_encode($tokenResponse));
                     if ($tokenResponse) {
                         $details = $tokenResponse;
                         $adminSetting->update([
@@ -140,7 +141,7 @@ trait KeywordAnalytic
                 'form_params' => [
                     'client_id' => $clientId,
                     'client_secret' => $clientSecret,
-                    'redirect_uri' => $redirectUrl, // Use the provided redirect URL
+                    'redirect_uri' => $redirectUrl,
                     'grant_type' => 'refresh_token',
                     'refresh_token' => $refreshToken,
                     'scope' => 'https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/userinfo.email',

@@ -66,16 +66,18 @@ class GoogleAdsController extends Controller
     {
 
     if(!auth()->user()->website_id){
-        $clientID = config('google-ads.client_id');
-        $clientSecret = config('google-ads.client_secret');
-        $redirectUri = config('google-ads.redirect_url');
+        // $clientID = config('google-ads.client_id');
+        // $clientSecret = config('google-ads.client_secret');
+        // $redirectUri = config('google-ads.redirect_url');
+
+        return redirect()->route('dashboard')->with('status', 'error')->with('message', 'no website found.');
     }
     else {
         $web_id = auth()->user()->website_id;
         $website = Website::where('id', $web_id)->first();
-        $clientSecret = $website->GOOGLE_ANALYTICS_CLIENT_SECRET;
-        $clientID = $website->GOOGLE_ANALYTICS_CLIENT_ID;
-        $redirectUri = $website->GOOGLE_ANALYTICS_REDIRECT_URI;
+        $clientSecret = $website->GOOGLE_ADS_CLIENT_SECRET;
+        $clientID = $website->GOOGLE_ADS_CLIENT_ID;
+        $redirectUri = $website->GOOGLE_ADS_REDIRECT_URI;
     }
        try {
             // Initialize Guzzle client

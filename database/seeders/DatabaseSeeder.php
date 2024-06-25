@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\keyword;
 use App\Models\User;
 use App\Models\AdminSetting;
-
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Database\Factories\keywordFactory;
 use Illuminate\Database\Seeder;
@@ -99,6 +98,8 @@ class DatabaseSeeder extends Seeder
 
             $user->assignRole($userData['role']);
         }
+
+        $this->call(CountrySeeder::class);
     }
 
 }

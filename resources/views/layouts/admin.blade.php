@@ -47,19 +47,19 @@
                         </button>
                         <span class="small-text font-weight-bold">Last Updated At: {{ $lastUpdated ?? 'N/A' }}</span>
                     </li>
-                    <li class="nav-item">
-                        <label for="aws-region-select" style="margin-top: 10px; margin-right: 10px;">Project</label>
-                    </li>
-                    <li class="nav-item" style="margin-right: 10px;">
-                        <select class="form-control aws-region-select" id="aws-region-select">
-                            <option data-href="{{ route('websites.default') }}">HostingSeekers</option>
-                            @foreach ($websites as $website)
-                                <option data-href="{{ route('websites.set', $website) }}" @if(auth()->user()->website_id == $website->id) selected @endif>
-                                    {{ $website->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </li>
+                        <li class="nav-item">
+                            <label for="aws-region-select" style="margin-top: 10px; margin-right: 10px;">Project</label>
+                        </li>
+                        <li class="nav-item" style="margin-right: 10px;">
+                            <select class="form-control aws-region-select" id="aws-region-select">
+                                <!-- <option data-href="{{ route('websites.default') }}">HostingSeekers</option> -->                         
+                                @foreach ($websites as $website)
+                                    <option data-href="{{ route('websites.set', $website) }}" @if(auth()->user()->website_id == $website->id) selected @endif>
+                                        {{ $website->name }}
+                                    </option>
+                                @endforeach  
+                            </select>
+                        </li>
                     @can('Add New Project')
                     <li class="nav-item">
                         <a href="{{ route('admin.websites.create') }}" class="btn btn-primary">Add New Project</a>

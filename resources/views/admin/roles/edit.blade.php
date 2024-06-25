@@ -49,6 +49,9 @@
         </div>
 
         <button type="submit" class="btn btn-primary rounded-pill">Submit</button>
+        <a href="{{ url()->previous() }}" class="btn btn-secondary" >
+                                        {{ __('Back') }}
+                                </a>
     </form>
 </div>
 @endsection

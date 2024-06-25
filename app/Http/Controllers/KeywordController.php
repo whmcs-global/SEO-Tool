@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Traits\{KeywordAnalytic};
 use Illuminate\Http\Request;
 use App\Models\{Keyword, AdminSetting, Label, keyword_label, Website_last_updated, Country};
 use Illuminate\Support\Facades\Validator;
@@ -13,15 +12,6 @@ use App\Services\KeywordDataUpdate;
 
 class KeywordController extends Controller
 {
-
-    use KeywordAnalytic;
-
-    protected $keywordDataUpdate;
-
-    public function __construct(KeywordDataUpdate $keywordDataUpdate)
-    {
-        $this->keywordDataUpdate = $keywordDataUpdate;
-    }
 
     public function show()
     {
@@ -89,70 +79,70 @@ class KeywordController extends Controller
     //     return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
     // }
     public function dashboard(Request $request)
-{
-    $labelIds = $request->input('labels', []);
-    $countries = Country::all();
-    $selectedCountry = auth()->user()->country_id ?? 3;
-    $labels = Label::all();
+    {
+        $labelIds = $request->input('labels', []);
+        $countries = Country::all();
+        $selectedCountry = auth()->user()->country_id ?? 3;
+        $labels = Label::all();
 
-    $ranges = [
-        '1-10' => 0,
-        '11-20' => 0,
-        '21-30' => 0,
-        '31-40' => 0,
-        '41-50' => 0
-    ];
+        $ranges = [
+            '1-10' => 0,
+            '11-20' => 0,
+            '21-30' => 0,
+            '31-40' => 0,
+            '41-50' => 0
+        ];
 
-    $user = auth()->user();
-    $isAdmin = $user->hasRole('Admin');
-    $isSuperAdmin = $user->hasRole('Super Admin');
+        $user = auth()->user();
+        $isAdmin = $user->hasRole('Admin');
+        $isSuperAdmin = $user->hasRole('Super Admin');
 
-    $keywordsQuery = Keyword::with(['keywordData' => function($query) use ($selectedCountry) {
-        $query->where('country_id', $selectedCountry);
-    }]);
+        $keywordsQuery = Keyword::with(['keywordData' => function($query) use ($selectedCountry) {
+            $query->where('country_id', $selectedCountry);
+        }]);
 
-    if ($isAdmin || $isSuperAdmin) {
-        $keywordsQuery->where('website_id', $user->website_id);
-    } else {
-        $keywordsQuery->forUserAndWebsite($user->id, $user->website_id);
-    }
-
-    if (!empty($labelIds)) {
-        $keywordsQuery->filterByLabels($labelIds);
-    }
-
-    $keywords = $keywordsQuery->get();
-
-    foreach ($keywords as $keyword) {
-        if ($keyword->keywordData->isEmpty()) {
-            $keyword->keywordData = collect([ (object)[
-                'position' => 0,
-                'search_volume' => 0,
-                'clicks' => 0,
-                'impression' => 0,
-                'competition' => 0,
-                'bid_rate_low' => 0,
-                'bid_rate_high' => 0
-            ]]);
+        if ($isAdmin || $isSuperAdmin) {
+            $keywordsQuery->where('website_id', $user->website_id);
         } else {
-            foreach ($keyword->keywordData as $data) {
-                if ($data->position >= 1 && $data->position <= 10) {
-                    $ranges['1-10']++;
-                } elseif ($data->position >= 11 && $data->position <= 20) {
-                    $ranges['11-20']++;
-                } elseif ($data->position >= 21 && $data->position <= 30) {
-                    $ranges['21-30']++;
-                } elseif ($data->position >= 31 && $data->position <= 40) {
-                    $ranges['31-40']++;
-                } elseif ($data->position >= 41 && $data->position <= 50) {
-                    $ranges['41-50']++;
+            $keywordsQuery->forUserAndWebsite($user->id, $user->website_id);
+        }
+
+        if (!empty($labelIds)) {
+            $keywordsQuery->filterByLabels($labelIds);
+        }
+
+        $keywords = $keywordsQuery->get();
+
+        foreach ($keywords as $keyword) {
+            if ($keyword->keywordData->isEmpty()) {
+                $keyword->keywordData = collect([ (object)[
+                    'position' => 0,
+                    'search_volume' => 0,
+                    'clicks' => 0,
+                    'impression' => 0,
+                    'competition' => 0,
+                    'bid_rate_low' => 0,
+                    'bid_rate_high' => 0
+                ]]);
+            } else {
+                foreach ($keyword->keywordData as $data) {
+                    if ($data->position >= 1 && $data->position <= 10) {
+                        $ranges['1-10']++;
+                    } elseif ($data->position >= 11 && $data->position <= 20) {
+                        $ranges['11-20']++;
+                    } elseif ($data->position >= 21 && $data->position <= 30) {
+                        $ranges['21-30']++;
+                    } elseif ($data->position >= 31 && $data->position <= 40) {
+                        $ranges['31-40']++;
+                    } elseif ($data->position >= 41 && $data->position <= 50) {
+                        $ranges['41-50']++;
+                    }
                 }
             }
         }
-    }
 
-    return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
-}
+        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
+    }
 
 
     public function create()
@@ -252,12 +242,6 @@ class KeywordController extends Controller
         return $ip;
     }
 
-    public function refresh_data()
-    {
-        Website_last_updated::updateOrCreate(['website_id' => auth()->user()->website_id], ['last_updated_at' => now()]);
-        $this->keywordDataUpdate->update();
-        return ['success' => 'Data updated successfully','code' => 200];
-    }
 
     public function set_country(Request $request)
     {

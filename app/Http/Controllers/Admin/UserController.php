@@ -66,7 +66,12 @@ class UserController extends Controller
                 $user_project->save();
             }
         }
-
+        $first_project = $projects[0];
+        if($first_project){
+            $user->update([
+                'website_id' => $first_project
+            ]);
+        }
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
 

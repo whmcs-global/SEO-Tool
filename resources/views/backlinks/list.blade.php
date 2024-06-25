@@ -81,37 +81,21 @@
 
         <div class="card">
         @can('Add backlink')
-            <div class="row mb-3 justify-content-between align-items-center">
-                <div class="col-auto">
-                    <button id="filterButton" class="btn btn-secondary">
-                        <i class="fas fa-filter"></i> Filters
-                    </button>
+        <div id="filterForm" class="mb-3">
+            <form method="GET" action="{{ route('backlinks.index') }}" class="d-flex flex-wrap align-items-center">
+                <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
+                    <select name="user" class="form-control" id="userSelect">
+                        <option value="">Created By</option>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->id }}" {{ $request->input('user') == $user->id ? 'selected' : '' }}>
+                                {{ $user->name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
-                <div class="col-auto">
-                    <a href="{{ route('backlinks.create') }}" class="btn btn-primary rounded-pill">
-                        Add Backlink
-                    </a>
-                </div>
-            </div>
-            <div id="filterForm" class="mb-3 card card-body border-primary" style="display: none;">
-                <form method="GET" action="{{ route('backlinks.index') }}">
-                    <div class="row g-3">
-                        <div class="col-12 col-md-6 col-lg-3">
-                            <div class="form-floating">
-                                <select name="user" class="form-control" id="userSelect">
-                                    <option value="">Created By</option>
-                                    @foreach ($users as $user)
-                                        <option value="{{ $user->id }}" {{ $request->input('user') == $user->id ? 'selected' : '' }}>
-                                            {{ $user->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6 col-lg-3">
-                        <div class="form-floating">
-                            <select name="link_type" class="form-control" id="linkTypeSelect">
-                                <option value="">Select Link Type</option>
+                <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
+                    <select name="link_type" class="form-control" id="linkTypeSelect">
+                    <option value="">Select Link Type</option>
                                 <option value="Guest Post" {{ $request->input('link_type') == 'Guest Post' ? 'selected' : '' }}>
                                     Guest Post
                                 </option>
@@ -163,42 +147,38 @@
                                 <option value="Broken Link Building" {{ $request->input('link_type') == 'Broken Link Building' ? 'selected' : '' }}>
                                     Broken Link Building
                                 </option>
-                            </select>
-                        </div>
-                        </div>
-                        <div class="col-12 col-md-6 col-lg-3">
-                            <div class="form-floating">
-                                <select name="status" class="form-control" id="statusSelect">
-                                    <option value="">Select Status</option>
-                                    <option value="Active" {{ $request->input('status') == 'Active' ? 'selected' : '' }}>
-                                        Active
-                                    </option>
-                                    <option value="Inactive" {{ $request->input('status') == 'Inactive' ? 'selected' : '' }}>
-                                        Inactive
-                                    </option>
-                                    <option value="Pending" {{ $request->input('status') == 'Pending' ? 'selected' : '' }}>
-                                        Pending
-                                    </option>
-                                    <option value="Declined" {{ $request->input('status') == 'Declined' ? 'selected' : '' }}>
-                                        Declined
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6 col-lg-3">
-                            <div class="form-floating">
-                                <input type="text" name="daterange" class="form-control" id="dateRangeInput" placeholder="Select Date Range"
-                                    value="{{ $request->input('daterange') }}" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12 text-end">
-                            <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
-                            <a href="{{ route('backlinks.index') }}" class="btn btn-secondary">Clear Filters</a>
-                        </div>
-                    </div>
-                </form>
+                    </select>
+                </div>
+                <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
+                    <select name="status" class="form-control" id="statusSelect">
+                        <option value="">Select Status</option>
+                        <option value="Active" {{ $request->input('status') == 'Active' ? 'selected' : '' }}>Active</option>
+                        <option value="Inactive" {{ $request->input('status') == 'Inactive' ? 'selected' : '' }}>Inactive</option>
+                        <option value="Pending" {{ $request->input('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="Declined" {{ $request->input('status') == 'Declined' ? 'selected' : '' }}>Declined</option>
+                    </select>
+                </div>
+                <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
+                    <input type="text" name="daterange" class="form-control" id="dateRangeInput" placeholder="Select Date Range"
+                        value="{{ $request->input('daterange') }}" />
+                </div>
+                <div class="d-flex">
+                    <button type="submit" class="btn btn-primary me-2">Apply</button>
+                    <a href="{{ route('backlinks.index') }}" class="btn btn-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+            <div class="row mb-3 justify-content-between align-items-center">
+                <!-- <div class="col-auto">
+                    <button id="filterButton" class="btn btn-secondary">
+                        <i class="fas fa-filter"></i> Filters
+                    </button>
+                </div> -->
+                <div class="col-auto">
+                    <a href="{{ route('backlinks.create') }}" class="btn btn-primary rounded-pill">
+                        Add Backlink
+                    </a>
+                </div>
             </div>
         @endcan
             <div class="card-body">
@@ -299,9 +279,9 @@
                 }]
             });
 
-            $('#filterButton').on('click', function() {
-                $('#filterForm').toggle();
-            });
+            // $('#filterButton').on('click', function() {
+            //     $('#filterForm').toggle();
+            // });
 
             $('#clearFilters').on('click', function() {
                 $('select[name="user"]').val('');

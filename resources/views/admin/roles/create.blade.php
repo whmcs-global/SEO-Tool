@@ -6,9 +6,6 @@
             <div class="col-md-6 mt-2 mb-2">
                 <h2>Form</h2>
             </div>
-            <div class="col-md-6 mt-2 mb-2 text-md-right">
-                <a href="{{ route('admin.roles.index') }}" class="btn btn-primary rounded-3xl">Back</a>
-            </div>
         </div>
         <form action="{{ route('admin.roles.store') }}" method="post">
             @csrf
@@ -54,6 +51,9 @@
 
             <div class="form-group">
                 <button type="submit" class="btn btn-primary rounded-3xl">Create</button>
+                <a href="{{ url()->previous() }}" class="btn btn-secondary" >
+                                        {{ __('Back') }}
+                                </a>
             </div>
         </form>
         <div class="bg-blue-600 mt-4 rounded-3xl"></div>
