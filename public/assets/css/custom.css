@@ -167,7 +167,7 @@ label.error-messages {
     justify-content: center;
     align-items: center;
 }
-.sidebar-mini .main-sidebar .sidebar-brand a .header-logo {    
+.sidebar-mini .main-sidebar .sidebar-brand a .header-logo {
     display: none;
 }
 .sidebar-mini .main-sidebar .sidebar-brand a img.side-logo {
@@ -175,7 +175,7 @@ label.error-messages {
     height: 40px;
 }
 .main-sidebar .sidebar-brand a .header-logo {
-    height: 60px;    
+    height: 60px;
 }
 .sidebar-mini .main-sidebar .sidebar-brand a .header-logo {
     height: 30px;
@@ -244,3 +244,4 @@ input#customFile {
         margin: 0 12px 0 0;
     }
 }
+

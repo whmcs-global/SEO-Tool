@@ -1,63 +1,63 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container mt-4">
-    <div class="mb-4 d-flex justify-content">
-        <div class="form-row align-items-center">
-            <div class="col">
-                <select name="country" id="country" class="form-control">
-                    @foreach ($countries as $country)
-                        <option value="{{ $country->id }}" {{ $country->id == $selectedCountry ? 'selected' : '' }}>
-                            <img src="https://flagcdn.com/32x24/{{ strtolower($country->code) }}.png" 
-                                 alt="{{ $country->name }} flag" 
-                                 class="me-1">
-                            {{ $country->name }}
-                        </option>
-                    @endforeach
-                </select>
+<div class="container">
+    <div class="filter-country-main">
+        <div class="mb-4 d-flex justify-content-end align-items-center">
+            <div class="me-2 mb-2 mb-md-0 position-relative" style="width:100%">
+                <form action="{{ route('keywords.details') }}" method="GET" id="filterForm">
+                     <div class="filter-country-inner">
+                        <h5>Position Filters for All Countries:</h5>
+                        <input type="text" readonly name="daterange" class="form-control" id="dateRangeInput" placeholder="Select Date Range" value="{{ $startDate && $endDate ?  $startDate. ' - ' .$endDate  : '' }}"  style="width: 250px !important; "/>
+                    </div>
+                    <input type="hidden" name="positionFilter" id="positionFilter" value="{{ $positionFilter ?? '' }}">
+                    <input type="hidden" name="country" value="{{ $selectedCountry }}">
+                </form>
             </div>
         </div>
-        <div class="me-2 mb-2 mb-md-0">
-            <form action="{{ route('keywords.details') }}" method="GET">
-                <input type="text" readonly name="daterange" class="form-control" id="dateRangeInput" placeholder="Select Date Range" value="{{ $startDate && $endDate ? $startDate . ' - ' . $endDate : '' }}" />
-            </form>
-        </div>
-    </div>
 
-    <h5>Position Filters for All Countries:</h5>
-    <div class="overflow-auto">
-        @foreach ($countries as $country)
-            <h6>
-                <img src="https://flagcdn.com/32x24/{{ strtolower($country->code) }}.png" 
-                     alt="{{ $country->name }} flag" 
-                     class="me-1">
-                {{ $country->name }}
-            </h6>
-            <div class="d-flex gap-2 mb-3">
-                <button class="position-filter-btn btn btn-light border flex-shrink-0">
-                    <span class="small">ALL</span>
-                    <strong>{{ $countryRanges[$country->id]['top_100']['count'] }}</strong>
-                </button>
-                @foreach (['top_1', 'top_3', 'top_5', 'top_10', 'top_30', 'top_100'] as $range)
-                    <button class="position-filter-btn btn btn-light border flex-shrink-0">
-                        <span class="small">{{ strtoupper(str_replace('_', ' ', $range)) }}</span>
+        <div class="overflow-auto">
+            @foreach ($countries as $country)
+                <h6>
+                    <img src="https://flagcdn.com/32x24/{{ strtolower($country->code) }}.png"
+                         alt="{{ $country->name }} flag"
+                         class="me-1">
+                    {{ $country->name }}
+                </h6>
+                <div class="d-flex gap-2 mb-3 filter-countries-row">
+                    <div class="country_filter">
+                        <small class="text-muted text-hidden">
+                            test
+                        </small>
+                        <button type="button" class="position-filter-btn btn btn-light border flex-shrink-0 {{ $positionFilter == 'all' && $country->id == $selectedCountry ? 'active' : '' }}" onclick="applyFilter('{{ $country->id }}', 'all')">
+                            <span class="small">ALL</span>
+                        </button>
+                        <strong>{{ $totalKeywords }}</strong>
+                    </div>
+                    @foreach (['top_1', 'top_3', 'top_5', 'top_10', 'top_30', 'top_100'] as $range)
+                    <div class="country_filter">
+                    <small class="text-muted">{{ number_format($countryRanges[$country->id][$range]['percentage'], 2) }}%</small>
+                        <button type="button" class="position-filter-btn btn btn-light border flex-shrink-0 {{ $positionFilter == $range && $country->id == $selectedCountry ? 'active' : '' }}" onclick="applyFilter('{{ $country->id }}', '{{ $range }}')">
+                            <span class="small">{{ strtoupper(str_replace('_', ' ', $range)) }}</span>
+                        </button>
                         <strong>{{ $countryRanges[$country->id][$range]['count'] }}</strong>
-                        <small class="text-muted">{{ number_format($countryRanges[$country->id][$range]['percentage'], 2) }}%</small>
-                    </button>
-                @endforeach
-            </div>
-        @endforeach
+                    </div>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
     </div>
 
+    <div class="filter-country-main">
     <!-- Keyword Table -->
     <h5>
-        <img src="https://flagcdn.com/32x24/{{ strtolower($countries->firstWhere('id', $selectedCountry)->code) }}.png" 
-             alt="{{ $countries->firstWhere('id', $selectedCountry)->name }} flag" 
+        <img src="https://flagcdn.com/32x24/{{ strtolower($countries->firstWhere('id', $selectedCountry)->code) }}.png"
+             alt="{{ $countries->firstWhere('id', $selectedCountry)->name }} flag"
              class="me-1">
         Keyword Data for {{ $countries->firstWhere('id', $selectedCountry)->name }}:
     </h5>
     <div class="table-responsive mt-4">
-        <table class="table table-striped table-bordered">
+        <table class="table table-striped table-bordered keyword-data-countries">
             <thead>
                 <tr>
                     <th class="sticky-col">KEYWORDS</th>
@@ -76,23 +76,46 @@
                     <td>{{ $data['search_volume'] }}</td>
                     <td>{{ $data['impression'] }}</td>
                     <td>{{ $data['competition'] }}</td>
-                    @foreach ($allDates as $date)
-                        <td>{{ round(floatval($data['positions'][$date] ?? '-')) }}</td>
+                    @foreach ($allDates as $index => $date)
+                    <td>
+                        @php
+                            $currentPosition = $data['positions'][$date] ?? '-';
+                            $previousPosition = $index > 0 ? $data['positions'][$allDates[$index - 1]] ?? '-' : '-';
+                            $positionChange = is_numeric($currentPosition) && is_numeric($previousPosition)
+                                                ? (int)($currentPosition - $previousPosition)
+                                                : null;
+                        @endphp
+                        {{ is_numeric($currentPosition) ? (int)$currentPosition : $currentPosition }}
+                        @if (is_numeric($positionChange) && $positionChange != 0)
+                            <small class="{{ $positionChange < 0 ? 'text-success' : 'text-danger' }}">
+                                {{ $positionChange < 0 ? '▲' : '▼' }} {{ abs($positionChange) }}
+                            </small>
+                        @endif
+                    </td>
                     @endforeach
                 </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
+        </div>
 </div>
 @endsection
 
 @push('styles')
 <style>
+.filter-country-inner{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.filter-country-inner h5 {
+    margin-bottom: 0;
+}
     .sticky-col {
         position: sticky;
         left: 0;
-        background-color: #fff;
+        background-color: #fff !important;
         z-index: 1;
     }
     .table-responsive {
@@ -105,6 +128,39 @@
         background-position: 5px center;
         background-size: 20px;
     }
+
+    .position-filter-btn.active {
+        background-color: #007bff;
+        color: white;
+    }
+    .filter-countries-row {
+        gap: 10px;
+    }
+    .country_filter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.keyword-data-countries td, .keyword-data-countries th {
+    border-color: #cccccc !important;
+}
+.table.keyword-data-countries:not(.table-sm) thead th {
+    border: 1px solid #cccccc;
+}
+.text-muted.text-hidden {
+    visibility: hidden;
+}
+.country_filter .active {
+    color: #ffffff !important;
+    background-color: #6778f0 !important;
+}
+.filter-country-main {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
 </style>
 @endpush
 
@@ -118,6 +174,7 @@ $(document).ready(function() {
             format: 'YYYY-MM-DD',
             cancelLabel: 'Clear'
         },
+        maxDate: moment(), //.subtract(3, 'days')
         ranges: {
             'Today': [moment(), moment()],
             'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -128,35 +185,24 @@ $(document).ready(function() {
 
     $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {
         $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-        $(this).closest('form').submit();
+        $('#filterForm').submit();
     });
 
     $('input[name="daterange"]').on('cancel.daterangepicker', function(ev, picker) {
         $(this).val('');
-        $(this).closest('form').submit();
-    });
-
-    $('#country').change(function() {
-        var countryId = $(this).val();
-        var selectedOption = $(this).find('option:selected');
-        var flagUrl = selectedOption.find('img').attr('src');
-        $(this).css('background-image', 'url(' + flagUrl + ')');
-        $.ajax({
-            url: '{{ route('countries.set') }}',
-            type: 'GET',
-            data: { country_id: countryId },
-            success: function(response) {
-                location.reload();
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error: ' + status + error);
-            }
-        });
+        $('#filterForm').submit();
     });
 
     var selectedOption = $('#country').find('option:selected');
-    var flagUrl = selectedOption.find('img').attr('src');
+    var flagUrl = selectedOption.data('flag');
     $('#country').css('background-image', 'url(' + flagUrl + ')');
 });
+
+function applyFilter(countryId, filter) {
+    $('input[name="country"]').val(countryId);
+    $('input[name="positionFilter"]').val(filter);
+    $('#filterForm').submit();
+}
+
 </script>
 @endpush

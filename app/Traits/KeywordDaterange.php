@@ -18,7 +18,7 @@ trait KeywordDaterange
      * Fetches keyword analytics data based on date range and other parameters.
      *
      * @param Keyword $keyword The keyword model instance.
-     * @param string $code The code for the query.
+     * @param string $code The countey code by google for the query.
      * @param string|null $startDate The start date of the date range.
      * @param string|null $endDate The end date of the date range.
      * @return array The keyword analytics data fetched from the API.
