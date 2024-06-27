@@ -25,8 +25,8 @@ class KeywordController extends Controller
         $isSuperAdmin = $user->hasRole('Super Admin');
         $selectedCountry = $request->get('country', $user->country_id ?? 3);
     
-        $startDate = Carbon::yesterday()->subDays(3)->format('Y-m-d');
-        $endDate = Carbon::today()->subDays(3)->format('Y-m-d');
+        $startDate = Carbon::yesterday()->subDays(1)->format('Y-m-d');
+        $endDate = Carbon::today()->subDays(1)->format('Y-m-d');
     
         if ($request->has('daterange') && !empty($request->get('daterange'))) {
             list($start, $end) = explode(' - ', $request->get('daterange'));

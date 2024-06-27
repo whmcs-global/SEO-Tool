@@ -98,7 +98,8 @@ trait KeywordAnalytic
                         ]
                     }
                 ],
-                "searchType": "' . $type . '"
+                "searchType": "' . $type . '",
+                "dataState" => "ALL"
             }';
             $headers = [
                 'Content-Type' => 'application/json'
