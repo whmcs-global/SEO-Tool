@@ -8,6 +8,7 @@
                 <form action="{{ route('keywords.details') }}" method="GET" id="filterForm">
                      <div class="filter-country-inner">
                         <h5>Position Filters for All Countries:</h5>
+                        <h6 style="margin-left: 360px;">select date range</h6>
                         <input type="text" readonly name="daterange" class="form-control" id="dateRangeInput" placeholder="Select Date Range" value="{{ $startDate && $endDate ?  $startDate. ' - ' .$endDate  : '' }}"  style="width: 250px !important; "/>
                     </div>
                     <input type="hidden" name="positionFilter" id="positionFilter" value="{{ $positionFilter ?? '' }}">
@@ -17,34 +18,52 @@
         </div>
 
         <div class="overflow-auto">
-            @foreach ($countries as $country)
-                <h6>
-                    <img src="https://flagcdn.com/32x24/{{ strtolower($country->code) }}.png"
-                         alt="{{ $country->name }} flag"
-                         class="me-1">
-                    {{ $country->name }}
-                </h6>
-                <div class="d-flex gap-2 mb-3 filter-countries-row">
-                    <div class="country_filter">
-                        <small class="text-muted text-hidden">
-                            test
-                        </small>
-                        <button type="button" class="position-filter-btn btn btn-light border flex-shrink-0 {{ $positionFilter == 'all' && $country->id == $selectedCountry ? 'active' : '' }}" onclick="applyFilter('{{ $country->id }}', 'all')">
-                            <span class="small">ALL</span>
-                        </button>
-                        <strong>{{ $totalKeywords }}</strong>
-                    </div>
-                    @foreach (['top_1', 'top_3', 'top_5', 'top_10', 'top_30', 'top_100'] as $range)
-                    <div class="country_filter">
-                    <small class="text-muted">{{ number_format($countryRanges[$country->id][$range]['percentage'], 2) }}%</small>
-                        <button type="button" class="position-filter-btn btn btn-light border flex-shrink-0 {{ $positionFilter == $range && $country->id == $selectedCountry ? 'active' : '' }}" onclick="applyFilter('{{ $country->id }}', '{{ $range }}')">
-                            <span class="small">{{ strtoupper(str_replace('_', ' ', $range)) }}</span>
-                        </button>
-                        <strong>{{ $countryRanges[$country->id][$range]['count'] }}</strong>
-                    </div>
-                    @endforeach
+        @php
+    $ranges = ['all', 'top_1', 'top_3', 'top_5', 'top_10', 'top_30', 'top_100'];
+@endphp
+
+@foreach ($countries as $country)
+    <div class="position-filters mb-4">
+        <h6>
+            <img src="https://flagcdn.com/32x24/{{ strtolower($country->code) }}.png"
+                 alt="{{ $country->name }} flag"
+                 class="me-1">
+            {{ $country->name }}
+        </h6>
+        <div class="d-flex gap-2 mb-3 filter-countries-row">
+            @foreach ($ranges as $range)
+                @php
+                    if ($range === 'all') {
+                        $count = $totalKeywords;
+                        $percentage = 100;
+                        $difference = 0;
+                    } else {
+                        $count = $countryRanges[$country->id][$range]['end_count'];
+                        $startCount = $countryRanges[$country->id][$range]['start_count'];
+                        $difference = $count - $startCount;
+                        $percentage = $totalKeywords > 0 ? ($count / $totalKeywords * 100) : 0;
+                    }
+                @endphp
+                <div class="country_filter">
+                    <small class="text-muted">
+                        {{ $range === 'top_100' ? '>' : '' }}{{ number_format($percentage, 0) }}%
+                    </small>
+                    <button type="button" class="position-filter-btn btn btn-light border flex-shrink-0 {{ $positionFilter == $range && $country->id == $selectedCountry ? 'active' : '' }}" onclick="applyFilter('{{ $country->id }}', '{{ $range }}')">
+                        <span class="small">{{ strtoupper(str_replace('_', ' ', $range)) }}</span>
+                    </button>
+                    <strong>
+                        {{ $count }}
+                        @if ($difference > 0)
+                            <span class="text-success">▲ {{ $difference }}</span>
+                        @elseif ($difference < 0)
+                            <span class="text-danger">▼ {{ abs($difference) }}</span>
+                        @endif
+                    </strong>
                 </div>
             @endforeach
+        </div>
+    </div>
+@endforeach
         </div>
     </div>
 

@@ -28,7 +28,7 @@ trait KeywordDaterange
         try {
             $keyword_name = $keyword->keyword;
             if (is_null($startDate) || is_null($endDate)) {
-                $startDate = Carbon::now()->subDays(30)->format('Y-m-d');
+                $startDate = Carbon::now()->subDays(90)->format('Y-m-d');
                 $endDate = Carbon::now()->format('Y-m-d');
             } else {
                 $startDate = Carbon::parse($startDate)->format('Y-m-d');
@@ -109,6 +109,7 @@ trait KeywordDaterange
     function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
     {
         try {
+
             $Query = [
                 "dimensions" => [
                     "QUERY",
@@ -123,6 +124,11 @@ trait KeywordDaterange
                                 "operator" => "EQUALS",
                                 "dimension" => "QUERY",
                                 "expression" => $company
+                            ],
+                            [
+                                "operator" => "CONTAINS",
+                                "dimension" => "COUNTRY",
+                                "expression" => $code
                             ]
                         ]
                     ]

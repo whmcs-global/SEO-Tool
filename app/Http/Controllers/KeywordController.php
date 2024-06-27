@@ -16,6 +16,7 @@ class KeywordController extends Controller
 {
     use KeywordDaterange;
 
+
     public function keywords_detail(Request $request) 
     {
         $countries = Country::all();
@@ -26,7 +27,7 @@ class KeywordController extends Controller
     
         $startDate = Carbon::yesterday()->subDays(3)->format('Y-m-d');
         $endDate = Carbon::today()->subDays(3)->format('Y-m-d');
-
+    
         if ($request->has('daterange') && !empty($request->get('daterange'))) {
             list($start, $end) = explode(' - ', $request->get('daterange'));
             $startDate = Carbon::parse($start)->format('Y-m-d');
@@ -50,15 +51,16 @@ class KeywordController extends Controller
     
         $keywords = $keywordsQuery->get();
         $totalKeywords = $keywords->count();
+    
         $countryRanges = [];
         foreach ($countries as $country) {
             $countryRanges[$country->id] = [
-                'top_1' => ['count' => 0, 'percentage' => 0],
-                'top_3' => ['count' => 0, 'percentage' => 0],
-                'top_5' => ['count' => 0, 'percentage' => 0],
-                'top_10' => ['count' => 0, 'percentage' => 0],
-                'top_30' => ['count' => 0, 'percentage' => 0],
-                'top_100' => ['count' => 0, 'percentage' => 0],
+                'top_1' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+                'top_3' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+                'top_5' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+                'top_10' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+                'top_30' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+                'top_100' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
             ];
         }
     
@@ -66,8 +68,14 @@ class KeywordController extends Controller
         $keywordData = [];
     
         foreach ($keywords as $keyword) {
+            if (!$keyword->keywordData) {
+                continue; // Skip this keyword if keywordData is null
+            }
             foreach ($keyword->keywordData as $data) {
                 $response = json_decode($data->response, true);
+                if (!is_array($response)) {
+                    continue; // Skip this data if response is not a valid JSON array
+                }
                 $positionDates = [];
     
                 foreach ($response as $entry) {
@@ -88,10 +96,10 @@ class KeywordController extends Controller
                         ($positionFilter == 'top_10' && $data->position <= 10) || 
                         ($positionFilter == 'top_30' && $data->position <= 30) || 
                         ($positionFilter == 'top_100' && $data->position <= 100)) {
-                        if($positionDates!=null || $positionFilter == 'all'){
+                        if(!empty($positionDates) || $positionFilter == 'all'){
                             $keywordData[] = [
                                 'keyword' => $keyword->keyword,
-                                'country' => $data->country->name,
+                                'country' => $data->country->name ?? 'Unknown',
                                 'country_id' => $data->country_id,
                                 'search_volume' => $data->search_volume,
                                 'impression' => $data->impression,
@@ -102,52 +110,61 @@ class KeywordController extends Controller
                     }
                 }
     
-                $ranges = &$countryRanges[$data->country_id];
-    
-                if ($data->position == 1 && $data->position != null) {
-                    $ranges['top_1']['count']++;
-                    $ranges['top_3']['count']++;
-                    $ranges['top_5']['count']++;
-                    $ranges['top_10']['count']++;
-                    $ranges['top_30']['count']++;
-                    $ranges['top_100']['count']++;
-                } elseif ($data->position <= 3 && $data->position != null) {
-                    $ranges['top_3']['count']++;
-                    $ranges['top_5']['count']++;
-                    $ranges['top_10']['count']++;
-                    $ranges['top_30']['count']++;
-                    $ranges['top_100']['count']++;
-                } elseif ($data->position <= 5 && $data->position != null) {
-                    $ranges['top_5']['count']++;
-                    $ranges['top_10']['count']++;
-                    $ranges['top_30']['count']++;
-                    $ranges['top_100']['count']++;
-                } elseif ($data->position <= 10 && $data->position != null) {
-                    $ranges['top_10']['count']++;
-                    $ranges['top_30']['count']++;
-                    $ranges['top_100']['count']++;
-                } elseif ($data->position <= 30 && $data->position != null) {
-                    $ranges['top_30']['count']++;
-                    $ranges['top_100']['count']++;
-                } elseif ($data->position <= 100 && $data->position != null) {
-                    $ranges['top_100']['count']++;
+                if (isset($countryRanges[$data->country_id])) {
+                    $this->updateCountryRanges($countryRanges, $data->country_id, $positionDates, $startDate, $endDate);
                 }
             }
         }
     
         foreach ($countryRanges as &$ranges) {
-            $countryTotal = $totalKeywords; //$ranges['top_100']['count'];
+            $countryTotal = $totalKeywords;
             foreach ($ranges as &$range) {
                 if ($countryTotal > 0) {
-                    $range['percentage'] = ($range['count'] / $countryTotal) * 100;
+                    $range['start_percentage'] = ($range['start_count'] / $countryTotal) * 100;
+                    $range['end_percentage'] = ($range['end_count'] / $countryTotal) * 100;
                 }
             }
         }
+    
         $allDates = array_unique($allDates);
         sort($allDates);
-    
+        // dd($countryRanges);
         return view('keyword.details', compact('keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter'));
     }
+    
+    private function updateCountryRanges(&$countryRanges, $countryId, $positionDates, $startDate, $endDate)
+    {
+        $startPosition = $positionDates[$startDate] ?? null;
+        $endPosition = $positionDates[$endDate] ?? null;
+    
+        $this->updateRangeCount($countryRanges[$countryId], $startPosition, 'start_count');
+        $this->updateRangeCount($countryRanges[$countryId], $endPosition, 'end_count');
+    }
+    
+    private function updateRangeCount(&$ranges, $position, $countType)
+    {
+        if ($position === null) return;
+    
+        if ($position <= 1) {
+            $ranges['top_1'][$countType]++;
+        }
+        if ($position <= 3) {
+            $ranges['top_3'][$countType]++;
+        }
+        if ($position <= 5) {
+            $ranges['top_5'][$countType]++;
+        }
+        if ($position <= 10) {
+            $ranges['top_10'][$countType]++;
+        }
+        if ($position <= 30) {
+            $ranges['top_30'][$countType]++;
+        }
+        if ($position <= 100) {
+            $ranges['top_100'][$countType]++;
+        }
+    }
+    
 
     // public function keywords_detail(Request $request)
     // {
@@ -508,7 +525,7 @@ class KeywordController extends Controller
 
         foreach($keywords as $keyword){
             foreach($keyword->keywordData as $data){
-                $response = $this->keywordbydate($keyword, $data->country->Google_Code);
+                $response = $this->keywordbydate($keyword, $data->country->code);
                 $data['response'] = $response;
                 $data->save();
             }
