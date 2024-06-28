@@ -193,12 +193,13 @@ $(document).ready(function() {
             format: 'YYYY-MM-DD',
             cancelLabel: 'Clear'
         },
-        maxDate: moment(), //.subtract(3, 'days')
+        minDate: moment().subtract(90, 'days'),
+        maxDate: moment().subtract(1, 'days'),
         ranges: {
-            'Today': [moment(), moment()],
             'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'Last 7 Days': [moment().subtract(7, 'days'), moment().subtract(1, 'days')],
+            'Last 30 Days': [moment().subtract(30, 'days'), moment().subtract(1, 'days')],
+            'Last 90 Days': [moment().subtract(90, 'days'), moment().subtract(1, 'days')],
         }
     });
 

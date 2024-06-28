@@ -28,8 +28,8 @@ trait KeywordDaterange
         try {
             $keyword_name = $keyword->keyword;
             if (is_null($startDate) || is_null($endDate)) {
-                $startDate = Carbon::now()->subDays(90)->format('Y-m-d');
-                $endDate = Carbon::now()->format('Y-m-d');
+                $startDate = Carbon::now()->subDays(91)->format('Y-m-d');
+                $endDate = Carbon::now()->subDays(1)->format('Y-m-d');
             } else {
                 $startDate = Carbon::parse($startDate)->format('Y-m-d');
                 $endDate = Carbon::parse($endDate)->format('Y-m-d');
