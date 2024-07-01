@@ -1,13 +1,13 @@
 <aside id="sidebar-wrapper">
     <div class="sidebar-brand">
-        <a href="{{ route('dashboard') }}">
+        <a href="{{ route('home') }}">
             <img alt="image" src="{{ asset('assets/img/logo.png') }}" class="header-logo" />
             <span class="logo-name">SEO Tool</span>
         </a>
     </div>
 
     <ul class="sidebar-menu">
-        <li class="dropdown @if (in_array(Request::route()->getName(), ['dashboard', 'keywords.create'])) active @endif">
+        <li class="dropdown @if (in_array(Request::route()->getName(), ['dashboard', 'keywords.create', 'keywords.details'])) active @endif">
             <a href="#" class="menu-toggle nav-link has-dropdown">
                 <i class="fa-brands fa-searchengin"></i><span>Keyword</span>
             </a>

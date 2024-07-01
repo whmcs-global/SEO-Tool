@@ -29,6 +29,10 @@
         display: block;
         margin-top: 2px;
     }
+    .btn-black {
+        background: black;
+        color: white;
+    }
     </style>
 </head>
 <body>

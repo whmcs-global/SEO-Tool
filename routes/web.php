@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Keyword;
 
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    return redirect()->route('keywords.details');
 })->name('home');
 
 

@@ -433,43 +433,62 @@ class KeywordController extends Controller
 
 
     public function store(Request $request)
-    {   
+    {
         $validator = Validator::make($request->all(), [
-            'keywords' => 'required|array',
-            'keywords.*' => 'required|string|unique:keywords,keyword,NULL,id,user_id,' . auth()->id() . ',website_id,' . auth()->user()->website_id,
+            'keywords' => 'required|string',
         ], [
             'keywords.required' => 'Please enter at least one keyword',
-            'keywords.*.required' => 'Please enter a keyword',
-            'keywords.*.unique' => 'The keyword has already been added.',
         ]);
-
+    
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            $errors = $validator->errors()->first();
+            session()->flash('message', $errors);
+            return redirect()->back()->withErrors($validator)->withInput();
         }
-
-        $ipaddress=$this->getUserIP();
-        $keywords = $request->keywords;
-        $keyWordExplode = explode(',', $keywords[0]);
+    
+        $ipaddress = $this->getUserIP();
+        $keywordsString = $request->keywords;
+        $keywordsArray = explode(',', $keywordsString);
         $labels = $request->label;
-        foreach ($keyWordExplode as $keywordValue) {
+        $userId = auth()->id();
+        $websiteId = auth()->user()->website_id;
+    
+        foreach ($keywordsArray as $keywordValue) {
+            $keywordValue = trim($keywordValue);
+            $existingKeyword = Keyword::where('user_id', $userId)
+                                      ->where('website_id', $websiteId)
+                                      ->where('keyword', $keywordValue)
+                                      ->first();
+            if ($existingKeyword) {
+                session()->flash('message', 'The keyword "' . $keywordValue . '" has already been added.');
+                return redirect()->back();
+            }
+        }
+    
+        foreach ($keywordsArray as $keywordValue) {
+            $keywordValue = trim($keywordValue);
             $keyword = new Keyword();
-            $keyword->user_id = auth()->id();
-            $keyword->website_id = auth()->user()->website_id;
+            $keyword->user_id = $userId;
+            $keyword->website_id = $websiteId;
             $keyword->keyword = $keywordValue;
             $keyword->ip_address = $ipaddress;
             $keyword->save();
-            if($labels){
+    
+            if ($labels) {
                 foreach ($labels as $label) {
-                    $keyword_label = new keyword_label();
-                    $keyword_label->keyword_id = $keyword->id;
-                    $keyword_label->label_id = $label;
-                    $keyword_label->save();
+                    $keywordLabel = new keyword_label();
+                    $keywordLabel->keyword_id = $keyword->id;
+                    $keywordLabel->label_id = $label;
+                    $keywordLabel->save();
                 }
             }
         }
+    
         session()->flash('message', 'Keywords saved successfully');
-        return response()->json(['success' => 'Keywords saved successfully'], 200);
+        return redirect()->route('keywords.details');
     }
+    
+    
 
     public function destroy(Keyword $keyword)
     {

@@ -123,41 +123,51 @@
 </style>
 
 <div class="container py-5">
-  <div class="p-6 mx-auto bg-blue-200 max-w-7xl rounded-3xl">
-    <div class="mb-4 row">
-      <div class="col-auto">
-        <h3 class="font-semibold">Add Keywords</h3>
-      </div>
-    </div>
+    @if (session('message'))
+        @if ($errors->any())
+            <div class="alert alert-danger" role="alert">
+                <span class="font-weight-bold">Error:</span> {{ session('message') }}
+            </div>
+        @else
+            <div class="alert alert-success" role="alert">
+                <span class="font-weight-bold">Success:</span> {{ session('message') }}
+            </div>
+        @endif
+    @endif
 
-    <form id="keyword-form" action="{{ route('keywords.store') }}" method="post">
-      @csrf
-      <div class="form-group">
-        <label for="keyword-textarea" class="font-weight-bold">Enter Keywords (press Enter after each keyword)</label>
-        <textarea id="keyword-textarea" name="keyword-textarea" class="form-control rounded-pill" rows="3"></textarea>
-      </div>
-      <div id="keyword-preview" class="mt-4"></div>
-      <div class="form-group">
-        <label for="field2" class="font-weight-bold">Select Label</label>
-        <div class="select-container">
-          <select name="label[]" id="field2" multiple multiselect-search="true" multiselect-max-items="3">
-            @foreach($labels as $label)
-            <option value="{{ $label->id }}">{{ $label->name }}</option>
-            @endforeach
-          </select>
+    <div class="p-6 mx-auto bg-blue-200 max-w-7xl rounded-3xl">
+        <div class="mb-4 row">
+            <div class="col-auto">
+                <h3 class="font-semibold">Add Keywords</h3>
+            </div>
         </div>
-        <button type="button" id="create-label-btn" class="btn btn-secondary">Create Label</button>
-      </div>
-      <div class="form-group">
-        <button type="submit" class="btn btn-primary rounded-pill">Save Keywords</button>
-        <a href="{{ url()->previous() }}" class="btn btn-secondary" >
-                                        {{ __('Back') }}
-                                </a>
-      </div>
-      <span class="text-sm text-danger"></span>
-    </form>
-  </div>
+
+        <form id="keyword-form" action="{{ route('keywords.store') }}" method="post">
+            @csrf
+            <div class="form-group">
+                <label for="keyword-textarea" class="font-weight-bold">Enter Keywords (comma-separated)</label>
+                <input id="keyword-textarea" name="keywords" class="form-control" rows="1"></input>
+            </div>
+            <div class="form-group">
+                <label for="field2" class="font-weight-bold">Select Label</label>
+                <div class="select-container">
+                    <select name="label[]" id="field2" multiple multiselect-search="true" multiselect-max-items="3">
+                        @foreach($labels as $label)
+                            <option value="{{ $label->id }}">{{ $label->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="button" id="create-label-btn" class="btn btn-secondary">Create Label</button>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Save Keywords</button>
+                <a href="{{ url()->previous() }}" class="btn btn-black">Back</a>
+            </div>
+            <span class="text-sm text-danger"></span>
+        </form>
+    </div>
 </div>
+
 
 <!-- Modal -->
 <div id="createLabelModal" class="modal">
@@ -185,71 +195,6 @@
 <script src="{{ asset('assets/js/custom/multiselect-dropdown.js') }}"></script>
 <script>
   $(document).ready(function() {
-    var keywords = [];
-
-    function updatePreview() {
-      $('#keyword-preview').html('');
-      for (var i = 0; i < keywords.length; i++) {
-        $('#keyword-preview').append('<span class="keyword-preview">' + keywords[i] + '<span class="delete" data-index="' + i + '">&#10005;</span></span>');
-      }
-    }
-
-    $('#keyword-textarea').on('keydown', function(e) {
-      if (e.key === 'Enter') {
-        var keyword = $(this).val().trim();
-        if (keyword !== '') {
-          if (!keywords.includes(keyword)) {
-            keywords.push(keyword);
-          }
-          $(this).val('');
-          updatePreview();
-        }
-        e.preventDefault();
-      }
-    });
-
-    $(document).on('click', '.keyword-preview .delete', function() {
-      var index = $(this).data('index');
-      keywords.splice(index, 1);
-      updatePreview();
-    });
-
-    $('#keyword-form').submit(function(e) {
-      e.preventDefault();
-      var keywordTextarea = $('#keyword-textarea').val().trim();
-      if (keywordTextarea !== '') {
-        keywords = keywords.concat(keywordTextarea.split('\n'));
-      }
-
-      var selectedOptions = $('#field2').val();
-      var csrfToken = $('meta[name="csrf-token"]').attr('content');
-      var formData = {
-        keywords: keywords,
-        label: selectedOptions,
-        _token: csrfToken
-      };
-
-      $.ajax({
-        url: "{{ route('keywords.store') }}",
-        type: "POST",
-        data: formData,
-        success: function(response) {
-          window.location.href = "{{ route('dashboard') }}";
-        },
-        error: function(xhr, status, error) {
-          if (xhr.status === 400) {
-            var errorData = xhr.responseJSON.error;
-            var errorMessages = '';
-            for (var field in errorData) {
-              errorMessages += errorData[field].join('<br>');
-            }
-            $('#keyword-form span.text-danger').html(errorMessages);
-          } else {
-            console.error(error);
-          }
-        }
-      });
-    });
 
     var modal = document.getElementById("createLabelModal");
     var btn = document.getElementById("create-label-btn");

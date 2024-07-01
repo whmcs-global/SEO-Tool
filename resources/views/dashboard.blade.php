@@ -6,6 +6,20 @@
 
 @push('styles')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <style>
+        /* Multiselect Dropdown Styles */
+        .multiselect-dropdown {
+            width: 100%;
+            min-height: 46px;
+            font-size: 15px !important;
+            color: #323232;
+            letter-spacing: 0.2px;
+            border: 1px solid #9F9FA0;
+            border-radius: 6px;
+            background-color: white !important;
+            max-width: 120px;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -16,8 +30,7 @@
             </div>
         @endif
         <div class="mb-4">
-            <!-- add here select box to select country -->
-            <div class="mb-4 d-flex justify-content">
+            <div class="mb-4 d-flex justify-content-between align-items-center">
                 <div class="form-row align-items-center">
                     <div class="col-auto">
                         <label for="country" class="font-weight-bold">Select Country:</label>
@@ -33,27 +46,23 @@
                         </select>
                     </div>
                 </div>
-            </div>
-            <div class="mb-4 d-flex justify-content-end">
-                <form method="GET" action="{{ route('dashboard') }}">
-                    <div class="form-row align-items-center">
-                        <div class="col-auto">
-                            <label for="labels" class="font-weight-bold">Filter by Labels:</label>
-                        </div>
-                        <div class="col">
-                            <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true"
-                                multiselect-max-items="3">
-                                @foreach ($labels as $label)
-                                    <option value="{{ $label->id }}"
-                                        {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
-                                        {{ $label->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-auto">
-                            <button type="submit" class="btn btn-primary">Filter</button>
-                        </div>
+                <form method="GET" action="{{ route('dashboard') }}" class="form-row align-items-center">
+                    <div class="col-auto">
+                        <label for="labels" class="font-weight-bold">Filter by Labels:</label>
+                    </div>
+                    <div class="col">
+                        <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true"
+                            multiselect-max-items="3">
+                            @foreach ($labels as $label)
+                                <option value="{{ $label->id }}"
+                                    {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
+                                    {{ $label->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filter</button>
                     </div>
                 </form>
             </div>
@@ -172,7 +181,6 @@
                 });
             });
         });
-
 
         document.addEventListener('DOMContentLoaded', function() {
             var data = [

@@ -103,7 +103,7 @@
                                             {{ __('Save') }}
                                         @endisset
                                     </button>
-                                    <a href="{{ url()->previous() }}" class="btn btn-secondary" >
+                                    <a href="{{ url()->previous() }}" class="btn btn-black" >
                                         {{ __('Back') }}
                                     </a>
                                 </div>

@@ -20,7 +20,7 @@
             <div class="form-group ml-2">
                 <label>Permissions</label>
                 <div class="mb-2">
-                    <button type="button" id="selectAllButton" class="btn btn-secondary btn-sm">Select All</button>
+                    <button type="button" id="selectAllButton" class="btn btn-black btn-sm">Select All</button>
                 </div>
                 <div class="row">
                     @foreach ($permissions as $group => $perms)

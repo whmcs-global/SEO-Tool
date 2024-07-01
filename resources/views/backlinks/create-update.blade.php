@@ -194,7 +194,7 @@
                                     <button type="submit" class="btn btn-primary">
                                         {{ __('Save') }}
                                     </button>
-                                    <a href="{{ url()->previous() }}" class="btn btn-secondary" >
+                                    <a href="{{ url()->previous() }}" class="btn btn-black" >
                                         {{ __('Back') }}
                                     </a>
                                 </div>
