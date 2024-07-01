@@ -1,26 +1,54 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container">
+<div class="card">
     <div class="filter-country-main">
         <div class="mb-4 d-flex justify-content-end align-items-center">
             <div class="me-2 mb-2 mb-md-0 position-relative" style="width:100%">
                 <form action="{{ route('keywords.details') }}" method="GET" id="filterForm">
                      <div class="filter-country-inner">
                         <h5>Position Filters for All Countries:</h5>
-                        <h6 style="margin-left: 360px;">select date range</h6>
-                        <input type="text" readonly name="daterange" class="form-control" id="dateRangeInput" placeholder="Select Date Range" value="{{ $startDate && $endDate ?  $startDate. ' - ' .$endDate  : '' }}"  style="width: 250px !important; "/>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                    <label for="dateRangeInput" class="form-label">Select Date Range</label>
+                    <div class="input-group">
+                        <input type="text" 
+                               readonly 
+                               name="daterange" 
+                               class="form-control" 
+                               id="dateRangeInput" 
+                               placeholder="Select Date Range" 
+                               value="{{ $startDate && $endDate ?  $startDate. ' - ' .$endDate  : '' }}">
+                    </div>
+                </div>
+                    </div>
+                    <div class="form-row align-items-center">
+                        <div class="col-auto">
+                            <label for="labels" class="font-weight-bold">Filter by Labels:</label>
+                        </div>
+                        <div class="col">
+                            <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true"
+                                multiselect-max-items="3">
+                                @foreach ($labels as $label)
+                                    <option value="{{ $label->id }}"
+                                        {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
+                                        {{ $label->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </div>
                     </div>
                     <input type="hidden" name="positionFilter" id="positionFilter" value="{{ $positionFilter ?? '' }}">
                     <input type="hidden" name="country" value="{{ $selectedCountry }}">
                 </form>
             </div>
         </div>
-
         <div class="overflow-auto">
         @php
-    $ranges = ['all', 'top_1', 'top_3', 'top_5', 'top_10', 'top_30', 'top_100'];
-@endphp
+            $ranges = ['all', 'top_1', 'top_3', 'top_5', 'top_10', 'top_30', 'top_100'];
+        @endphp
 
 @foreach ($countries as $country)
     <div class="position-filters mb-4">
@@ -89,9 +117,18 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($keywordData as $data)
+            @foreach($keywordData as $data)
                 <tr>
-                    <td class="sticky-col">{{ $data['keyword'] }}</td>
+                    <td class="sticky-col">
+                        <div>
+                            <span>{{ $data['keyword'] }}</span>
+                            <div>
+                                @foreach ($data['keyword_label'] as $label)
+                                    <span class="badge badge-info">{{ $label }}</span>
+                                @endforeach
+                            </div>
+                        </div>
+                    </td>
                     <td>{{ $data['search_volume'] }}</td>
                     <td>{{ $data['impression'] }}</td>
                     <td>{{ $data['competition'] }}</td>
@@ -113,7 +150,7 @@
                     </td>
                     @endforeach
                 </tr>
-                @endforeach
+            @endforeach
             </tbody>
         </table>
     </div>
@@ -184,6 +221,7 @@
 @endpush
 
 @push('scripts')
+<script src="{{ asset('assets/js/custom/multiselect-dropdown.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <script>
 $(document).ready(function() {
@@ -205,7 +243,7 @@ $(document).ready(function() {
 
     $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {
         $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-        $('#filterForm').submit();
+        // $('#filterForm').submit();
     });
 
     $('input[name="daterange"]').on('cancel.daterangepicker', function(ev, picker) {

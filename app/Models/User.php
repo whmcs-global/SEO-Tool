@@ -19,6 +19,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'parent_id',
         'name',
         'email',
         'password',
@@ -83,5 +84,15 @@ class User extends Authenticatable
     public function country()
     {
         return $this->belongsTo(Country::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(User::class, 'parent_id');
+    }
+
+    public function getParentNameAttribute()
+    {
+        return $this->parent ? $this->parent->name : null;
     }
 }

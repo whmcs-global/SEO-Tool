@@ -4,7 +4,7 @@ $(document).ready(function () {
         website: {
             required: true
         },
-        target_keyword: {
+        keyword_id: {
             required: true
         },
         url: {
@@ -29,9 +29,6 @@ $(document).ready(function () {
         contact_person: {
             required: true
         },
-        notes_comments: {
-            required: true
-        },
         status: {
             required: true
         }
@@ -45,8 +42,8 @@ $(document).ready(function () {
             required: "Please enter a URL",
             url: "Please enter a valid URL format"
         },
-        target_keyword: {
-            required: "Please enter a target keyword"
+        keyword_id: {
+            required: "Please select keyword"
         },
         backlink_source: {
             required: "Please enter a backlink source"

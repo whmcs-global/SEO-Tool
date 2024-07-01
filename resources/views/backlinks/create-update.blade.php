@@ -39,7 +39,7 @@
                                 </div>
                             </div>
                             
-                            <div class="mb-3 row">
+                            <!-- <div class="mb-3 row">
                                 <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
                                 <div class="col-md-6">
                                     <input id="target_keyword" placeholder="e.g., best SEO practices" type="text" class="form-control @error('target_keyword') is-invalid @enderror" name="target_keyword" value="{{ $backlink ? $backlink->target_keyword : old('target_keyword') }}" >
@@ -49,7 +49,27 @@
                                         </span>
                                     @enderror
                                 </div>
+                            </div> -->
+                            <div class="mb-3 row">
+                                <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
+                                <div class="col-md-6">
+                                    <select name="keyword_id" class="form-control">
+                                    <option value="">Select Keyword</option>
+                                        @foreach ($keywords as $keyword)
+                                            <option value="{{ $keyword->id }}" 
+                                                {{ $backlink && $backlink->keyword_id == $keyword->id ? 'selected' : '' }}>
+                                                {{ $keyword->keyword }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('target_keyword')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
                             </div>
+
                             
                             <div class="mb-3 row">
                                 <label for="backlink_source" class="col-md-4 col-form-label text-md-end">{{ __('Backlink Source') }}</label>

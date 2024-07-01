@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Backlinks,Website, User};
+use App\Models\{Backlinks,Website, User, Keyword};
 class BacklinkController extends Controller
 {   
     public function index(Request $request)
@@ -112,34 +112,35 @@ class BacklinkController extends Controller
     //    ]));
     // }
 
-    public function storeOrUpdate(Request $request,  $id = null)
-    {   if($request->method() == 'GET'){
+    public function storeOrUpdate(Request $request, $id = null)
+    {
+        if ($request->isMethod('GET')) {
             try {
                 $websites = Website::all();
-                $backlink = '';
-                if($id) {
-                    $backlink = Backlinks::findOrFail($id);
-                }
-                return view('backlinks.create-update', compact('websites', 'backlink'));
+                $keywords = Keyword::where('website_id', auth()->user()->website_id)->get();
+                $backlink = $id ? Backlinks::findOrFail($id) : null;
+                return view('backlinks.create-update', compact('websites', 'backlink', 'keywords'));
             } catch (\Exception $e) {
-                return redirect()->route('backlinks.index')->with(['status' => 'danger', 'message' => 'An error occurred while fetching the data!']);
+                return redirect()->route('backlinks.index')->with([
+                    'status' => 'danger',
+                    'message' => 'An error occurred while fetching the data!'
+                ]);
             }
-        }elseif($request->method() == 'POST'){
+        } elseif ($request->isMethod('POST') || $request->isMethod('PUT')) {
             $rules = [
-                'website' => 'required|exists:websites,id',
+                'keyword_id' => 'required|exists:keywords,id',
                 'website' => 'required|string',
                 'url' => 'required|string',
-                'target_keyword' => 'required|string',
                 'backlink_source' => 'required|string',
-                'link_type' => 'required|in:Guest Post,Infographics,Sponsored Content',
+                'link_type' => 'required|string',
                 'anchor_text' => 'required|string',
-                'domain_authority' => 'required|string',
-                'page_authority' => 'required|string',
+                'domain_authority' => 'required|integer',
+                'page_authority' => 'required|integer',
                 'contact_person' => 'required|string',
-                'notes_comments' => 'required|string',
-                'status' => 'required',
+                'status' => 'required|string',
             ];
             $validatedData = $request->validate($rules);
+    
             try {
                 if ($id) {
                     $backlink = Backlinks::findOrFail($id);
@@ -147,16 +148,25 @@ class BacklinkController extends Controller
                     $message = 'Backlink updated successfully!';
                 } else {
                     $validatedData['website_id'] = auth()->user()->website_id;
-                    $backlink->user_id = auth()->user()->id;
+                    $validatedData['user_id'] = auth()->user()->id;
                     $backlink = Backlinks::create($validatedData);
                     $message = 'Backlink created successfully!';
-                }       
-                return redirect()->route('backlinks.index')->with(['status' => 'success', 'message'=> $message]);
-            }catch(\Exception $e){
-                return redirect()->route('backlinks.index')->with(['status' => 'danger', 'message' => 'An error occurred while fetching the data!']);
+                }
+    
+                return redirect()->route('backlinks.index')->with([
+                    'status' => 'success',
+                    'message' => $message
+                ]);
+            } catch (\Exception $e) {
+                return redirect()->route('backlinks.index')->with([
+                    'status' => 'danger',
+                    'message' => 'An error occurred while processing the data!'
+                ]);
             }
         }
     }
+    
+    
 
     public function destroy(Request $request,  $id = null)
     {

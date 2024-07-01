@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('website_id')->nullable()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('keyword_id')->constrained()->onDelete('cascade');
             $table->string('website');
             $table->string('url');
-            $table->string('target_keyword');
             $table->string('backlink_source');
-            $table->enum('link_type', ['Guest Post', 'Infographics', 'Sponsored Content']);
+            $table->string('link_type');
             $table->string('anchor_text');
             $table->integer('domain_authority')->default(0);
             $table->integer('page_authority')->default(0);

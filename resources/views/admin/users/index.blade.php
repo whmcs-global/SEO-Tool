@@ -28,6 +28,8 @@
                                 <tr>
                                     <th scope="col">Name</th>
                                     <th scope="col">Email</th>
+                                    <th scope="col">Added By</th>
+                                    <th scope="col">Projects</th>
                                     <th scope="col" class="text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -36,6 +38,21 @@
                                     <tr>
                                         <td>{{ $user->name }}</td>
                                         <td>{{ $user->email }}</td>
+                                        <td>
+                                            @if($user->parent)
+                                                {{ $user->parent->name }} <br>
+                                                <small>({{ $user->parent->email }})</small>
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @foreach($user->User_project as $project)
+                                                <div>
+                                                    {{ $project->website->name }} ({{ $project->website->url }})
+                                                </div>
+                                            @endforeach
+                                        </td>
                                         <td class="text-right">
                                             <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
                                                 @can('Edit user')

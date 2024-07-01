@@ -136,7 +136,6 @@ trait KeywordDaterange
                 "searchType" => $type,
                 "dataState" => "ALL"
             ];
-    
             $jsonQuery = json_encode($Query);
     
             $headers = [

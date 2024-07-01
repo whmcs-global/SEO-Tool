@@ -14,10 +14,14 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::whereNotIn('id', [1])->get();
-
+        $users = User::whereNotIn('id', [1])
+                     ->with(['parent', 'User_project.website'])
+                     ->get();
+        
         return view('admin.users.index', compact('users'));
     }
+    
+    
 
     public function create(){
 
@@ -43,6 +47,7 @@ class UserController extends Controller
         ]);
 
         $user->update([
+            // 'parent_id' => auth()->user()->id,
             'name' => $validated['name'],
         ]);
 
@@ -65,13 +70,11 @@ class UserController extends Controller
                 $user_project->website_id = $project;
                 $user_project->save();
             }
+            $first_project = $projects[0];
         }
-        $first_project = $projects[0];
-        if($first_project){
-            $user->update([
-                'website_id' => $first_project
-            ]);
-        }
+        $user->update([
+            'website_id' => $first_project ?? null,
+        ]);
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
 
@@ -112,6 +115,7 @@ class UserController extends Controller
         ]);
 
         $user = User::create([
+            'parent_id' => auth()->user()->id,
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
@@ -127,7 +131,11 @@ class UserController extends Controller
                 $user_project->website_id = $project;
                 $user_project->save();
             }
+            $first_project = $projects[0];
         }
+        $user->update([
+            'website_id' => $first_project ?? null,
+        ]);
         return redirect(route('admin.users.index'));
     }
 

@@ -13,9 +13,9 @@ class Backlinks extends Model
         'date',
         'website_id',
         'user_id',
+        'keyword_id',
         'website',
         'url',
-        'target_keyword',
         'backlink_source',
         'link_type',
         'anchor_text',
@@ -35,13 +35,14 @@ class Backlinks extends Model
 
     public function getEmailAttribute()
     {
-        return $this->user->email;
+        return $this->user ? $this->user->email : null;
     }
     
     public function getCreatedByAttribute()
     {
-        return $this->user->name;
+        return $this->user ? $this->user->name : null;
     }
+    
     public function website()
     {
         return $this->belongsTo(Website::class);

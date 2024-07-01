@@ -19,6 +19,8 @@ class KeywordController extends Controller
 
     public function keywords_detail(Request $request) 
     {
+        $labelIds = $request->input('labels', []);
+        $labels = Label::all();
         $countries = Country::all();
         $user = auth()->user();
         $isAdmin = $user->hasRole('Admin');
@@ -44,8 +46,7 @@ class KeywordController extends Controller
             $keywordsQuery->forUserAndWebsite($user->id, $user->website_id);
         }
     
-        if ($request->has('labelIds')) {
-            $labelIds = $request->get('labelIds');
+        if (!empty($labelIds)) {
             $keywordsQuery->filterByLabels($labelIds);
         }
     
@@ -99,6 +100,7 @@ class KeywordController extends Controller
                         if(!empty($positionDates) || $positionFilter == 'all'){
                             $keywordData[] = [
                                 'keyword' => $keyword->keyword,
+                                'keyword_label' => $keyword->labels->pluck('name')->toArray(),
                                 'country' => $data->country->name ?? 'Unknown',
                                 'country_id' => $data->country_id,
                                 'search_volume' => $data->search_volume,
@@ -129,7 +131,7 @@ class KeywordController extends Controller
         $allDates = array_unique($allDates);
         sort($allDates);
         // dd($countryRanges);
-        return view('keyword.details', compact('keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter'));
+        return view('keyword.details', compact('keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter', 'labels', 'labelIds'));
     }
     
     private function updateCountryRanges(&$countryRanges, $countryId, $positionDates, $startDate, $endDate)
