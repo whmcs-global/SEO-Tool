@@ -82,7 +82,7 @@
         <div class="card">
         @can('Add backlink')
         <div id="filterForm" class="mb-3">
-            <form method="GET" action="{{ route('backlinks.index') }}" class="d-flex flex-wrap align-items-center">
+            <form method="GET" action="{{ route('backlinks.index') }}" class="filter-form-box" style="gap:10px;">
                 <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
                     <select name="user" class="form-control" id="userSelect">
                         <option value="">Created By</option>
@@ -162,13 +162,13 @@
                     <input type="text" name="daterange" class="form-control" id="dateRangeInput" placeholder="Select Date Range"
                         value="{{ $request->input('daterange') }}" />
                 </div>
-                <div class="d-flex">
+                <div class="d-flex" style="gap:10px;">
                     <button type="submit" class="btn btn-primary me-2">Apply</button>
                     <a href="{{ route('backlinks.index') }}" class="btn btn-secondary">Clear</a>
                 </div>
             </form>
         </div>
-            <div class="row mb-3 justify-content-between align-items-center">
+            <div class="row mb-3 justify-content-between align-items-center" style="padding: 0px 10px;">
                 <!-- <div class="col-auto">
                     <button id="filterButton" class="btn btn-secondary">
                         <i class="fas fa-filter"></i> Filters
@@ -263,6 +263,15 @@
 @push('styles')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <style>
+        .filter-form-box{
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
 @endpush
 
 @push('scripts')

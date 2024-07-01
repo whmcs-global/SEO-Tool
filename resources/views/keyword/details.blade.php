@@ -8,40 +8,44 @@
                 <form action="{{ route('keywords.details') }}" method="GET" id="filterForm">
                      <div class="filter-country-inner">
                         <h5>Position Filters for All Countries:</h5>
-                        <div class="col-md-4 mb-3 mb-md-0">
-                    <label for="dateRangeInput" class="form-label">Select Date Range</label>
-                    <div class="input-group">
-                        <input type="text" 
-                               readonly 
-                               name="daterange" 
-                               class="form-control" 
-                               id="dateRangeInput" 
-                               placeholder="Select Date Range" 
-                               value="{{ $startDate && $endDate ?  $startDate. ' - ' .$endDate  : '' }}">
-                    </div>
-                </div>
-                    </div>
-                    <div class="form-row align-items-center">
-                        <div class="col-auto">
-                            <label for="labels" class="font-weight-bold">Filter by Labels:</label>
+                        <div class=" mb-3 mb-md-0" style="display:flex; align-items:center; gap:10px;">
+                            <label for="dateRangeInput" class="form-label">Select Date Range</label>
+                            <div >
+                                <div class="input-group">
+                                    <input type="text" 
+                                        readonly 
+                                        name="daterange" 
+                                        class="form-control" 
+                                        id="dateRangeInput" 
+                                        placeholder="Select Date Range" 
+                                        value="{{ $startDate && $endDate ?  $startDate. ' - ' .$endDate  : '' }}">
+                                </div>
+                                    
+                            </div>
+                            <div class="form-row align-items-center">
+                                    <div class="col-auto">
+                                        <label for="labels" class="font-weight-bold">Filter by Labels:</label>
+                                    </div>
+                                    <div class="col">
+                                        <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true"
+                                            multiselect-max-items="3">
+                                            @foreach ($labels as $label)
+                                                <option value="{{ $label->id }}"
+                                                    {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
+                                                    {{ $label->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="submit" class="btn btn-primary">Filter</button>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="positionFilter" id="positionFilter" value="{{ $positionFilter ?? '' }}">
+                                <input type="hidden" name="country" value="{{ $selectedCountry }}">
                         </div>
-                        <div class="col">
-                            <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true"
-                                multiselect-max-items="3">
-                                @foreach ($labels as $label)
-                                    <option value="{{ $label->id }}"
-                                        {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
-                                        {{ $label->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-auto">
-                            <button type="submit" class="btn btn-primary">Filter</button>
-                        </div>
-                    </div>
-                    <input type="hidden" name="positionFilter" id="positionFilter" value="{{ $positionFilter ?? '' }}">
-                    <input type="hidden" name="country" value="{{ $selectedCountry }}">
+                     </div>
+                    
                 </form>
             </div>
         </div>
@@ -160,61 +164,122 @@
 
 @push('styles')
 <style>
-.filter-country-inner{
+/* General Styles */
+.filter-country-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
+
 .filter-country-inner h5 {
     margin-bottom: 0;
 }
-    .sticky-col {
-        position: sticky;
-        left: 0;
-        background-color: #fff !important;
-        z-index: 1;
-    }
-    .table-responsive {
-        overflow-x: auto;
-        max-width: 100%;
-    }
-    #country {
-        padding-left: 30px;
-        background-repeat: no-repeat;
-        background-position: 5px center;
-        background-size: 20px;
-    }
 
-    .position-filter-btn.active {
-        background-color: #007bff;
-        color: white;
-    }
-    .filter-countries-row {
-        gap: 10px;
-    }
-    .country_filter {
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background-color: #fff !important;
+    z-index: 1;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+#country {
+    padding-left: 30px;
+    background-repeat: no-repeat;
+    background-position: 5px center;
+    background-size: 20px;
+}
+
+/* Button Styles */
+.position-filter-btn.active, .country_filter .active {
+    background-color: #6778f0 !important;
+    color: white !important;
+}
+
+.position-filter-btn.active {
+    background-color: #007bff;
+}
+
+/* Country Filter Styles */
+.country_filter {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
+.filter-countries-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Table Styles */
 .keyword-data-countries td, .keyword-data-countries th {
     border-color: #cccccc !important;
 }
+
 .table.keyword-data-countries:not(.table-sm) thead th {
     border: 1px solid #cccccc;
 }
+
 .text-muted.text-hidden {
     visibility: hidden;
 }
-.country_filter .active {
-    color: #ffffff !important;
-    background-color: #6778f0 !important;
-}
+
+/* Filter Country Main Styles */
 .filter-country-main {
     background: #fff;
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 20px;
+}
+
+/* Multiselect Dropdown Styles */
+.multiselect-dropdown {
+    width: 100%;
+    min-height: 46px;
+    font-size: 13px;
+    color: #323232;
+    letter-spacing: 0.2px;
+    border: 1px solid #9F9FA0;
+    border-radius: 6px;
+    padding: 9px 20px;
+    background-color: whitesmoke !important;
+    max-width: 120px;
+}
+
+/* Position Filters Styles */
+.position-filters {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.position-filters.mb-4 {
+    justify-content: space-between;
+    /* flex-wrap: wrap; */
+}
+
+.position-filters h6 {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    margin: 0;
+    min-width: 150px;
+}
+
+.position-filters > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    flex-wrap: wrap;
 }
 
 </style>
