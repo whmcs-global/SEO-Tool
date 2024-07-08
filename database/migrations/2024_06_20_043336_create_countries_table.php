@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('code', 2);
+            $table->string('ISO_CODE',3);
             $table->string('Google_Code');
             $table->timestamps();
         });

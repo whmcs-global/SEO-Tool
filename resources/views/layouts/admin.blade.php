@@ -19,7 +19,7 @@
 
     <!-- Stack styles -->
     @stack('styles')
-    <style>    
+    <style>
     .aws-region-select {
         margin-right: 20px;
         height: 30px;
@@ -32,6 +32,15 @@
     .btn-black {
         background: black;
         color: white;
+    }
+
+    .multiselect-dropdown {
+        width: 320px;
+        min-height: 46px;
+        font-size: 16px;
+        color: #323232;
+        border: 1px solid #9F9FA0;
+        border-radius: 6px;
     }
     </style>
 </head>
@@ -56,12 +65,12 @@
                         </li>
                         <li class="nav-item" style="margin-right: 10px;">
                             <select class="form-control aws-region-select" id="aws-region-select">
-                                <!-- <option data-href="{{ route('websites.default') }}">HostingSeekers</option> -->                         
+                                <!-- <option data-href="{{ route('websites.default') }}">HostingSeekers</option> -->
                                 @foreach ($websites as $website)
                                     <option data-href="{{ route('websites.set', $website) }}" @if(auth()->user()->website_id == $website->id) selected @endif>
                                         {{ $website->name }}
                                     </option>
-                                @endforeach  
+                                @endforeach
                             </select>
                         </li>
                     @can('Add New Project')
@@ -137,7 +146,7 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            button.text('Data Refreshed'); 
+                            button.text('Data Refreshed');
                             button.css('background-color', 'green');
                             button.attr('title', 'Please reload the page to see the changes');
                             button.tooltip();
@@ -149,7 +158,7 @@
                     },
                     error: function(xhr, status, error) {
                         console.error('Error:', error);
-                        button.prop('disabled', false); 
+                        button.prop('disabled', false);
                         button.text('Refresh Data');
                         button.css('background-color', 'red');
                     },

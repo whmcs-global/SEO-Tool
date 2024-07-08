@@ -71,12 +71,12 @@ class KeywordController extends Controller
 
         foreach ($keywords as $keyword) {
             if (!$keyword->keywordData) {
-                continue; // Skip this keyword if keywordData is null
+                continue;
             }
             foreach ($keyword->keywordData as $data) {
                 $response = json_decode($data->response, true);
                 if (!is_array($response)) {
-                    continue; // Skip this data if response is not a valid JSON array
+                    continue;
                 }
                 $positionDates = [];
 
@@ -104,7 +104,7 @@ class KeywordController extends Controller
                             'positions' => $positionDates,
                         ];
                     }
-                }}  
+                }}
 
                 if (isset($countryRanges[$data->country_id])) {
                     $this->updateCountryRanges($countryRanges, $data->country_id, $positionDates, $startDate, $endDate);
@@ -393,7 +393,7 @@ class KeywordController extends Controller
 
         foreach($keywords as $keyword){
             foreach($keyword->keywordData as $data){
-                $response = $this->keywordbydate($keyword, $data->country->code);
+                $response = $this->keywordbydate($keyword, $data->country->ISO_CODE);
                 $data['response'] = $response;
                 $data->save();
             }

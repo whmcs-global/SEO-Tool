@@ -13,11 +13,10 @@ class CountrySeeder extends Seeder
     public function run(): void
     {
         $countries = [
-            ['name' => 'United States', 'code' => 'US', 'Google_Code' => '2840'],
-            ['name' => 'United Kingdom', 'code' => 'GB', 'Google_Code' => '20339'],
-            ['name' => 'India', 'code'=> 'IN', 'Google_code' => '2356']
+            ['name' => 'United States', 'code' => 'US', 'Google_Code' => '2840', 'ISO_CODE' => 'USA'],
+            ['name' => 'United Kingdom', 'code' => 'GB', 'Google_Code' => '20339', 'ISO_CODE' => 'GBR'],
+            ['name' => 'India', 'code'=> 'IN', 'Google_code' => '2356','ISO_CODE'=> 'IND']
         ];
-
         foreach ($countries as $country) {
             \App\Models\Country::create($country);
         }

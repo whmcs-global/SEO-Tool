@@ -76,35 +76,33 @@ trait KeywordAnalytic
     function analyticsQueryData($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
     {
         try {
-            $Query = '{
-                "dimensions": [
-                    "query"
-                ],
-                "startDate": "' . $startDate . '",
-                "endDate": "' . $endDate . '",
-                "dimensionFilterGroups": [
-                    {
-                        "filters": [
-                            {
-                                "operator": "EQUALS",
-                                "dimension": "query",
-                                "expression": "' . $company . '"
-                            },
-                            {
-                            "dimension": "COUNTRY",
-                            "expression": "'.$code.'",
-                            "operator": "CONTAINS"
-                            }
+            $query = [
+                'dimensions' => ['query'],
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'dimensionFilterGroups' => [
+                    [
+                        'filters' => [
+                            [
+                                'operator' => 'EQUALS',
+                                'dimension' => 'query',
+                                'expression' => $company
+                            ],
+                            [
+                                'dimension' => 'COUNTRY',
+                                'expression' => $code,
+                                'operator' => 'CONTAINS'
+                            ]
                         ]
-                    }
+                    ]
                 ],
-                "searchType": "' . $type . '",
-                "dataState" => "ALL"
-            }';
+                'searchType' => $type
+            ];
+
             $headers = [
                 'Content-Type' => 'application/json'
             ];
-    
+
             if ($website_id) {
                 $website = Website::where('id', $website_id)->first();
                 $web_url = $website->url;
@@ -113,20 +111,26 @@ trait KeywordAnalytic
                 $web_url = 'www.hostingseekers.com';
                 $key = config('google.key');
             }
-            $request = new GzRequest('POST', 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken, $headers, $Query);
+
+            $request = new GzRequest(
+                'POST',
+                'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken,
+                $headers,
+                json_encode($query)
+            );
+
             $res = $client->sendAsync($request)->wait();
-            $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
-    
+            $analyticsData = json_decode($res->getBody()->getContents(), true);
+
             if ($res->getStatusCode() != 200) {
                 throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
             }
-    
-            if (isset($analyticsData->error)) {
-                throw new Exception("Error in fetching analytics data: " . $analyticsData->error->message);
+
+            if (isset($analyticsData['error'])) {
+                throw new Exception("Error in fetching analytics data: " . $analyticsData['error']['message']);
             }
-    
-            $analyticsData = $analyticsData->rows ?? [];
-            return $analyticsData;
+
+            return $analyticsData['rows'] ?? [];
         } catch (\Throwable $th) {
             return [
                 'code' => $th->getCode(),
@@ -134,6 +138,7 @@ trait KeywordAnalytic
             ];
         }
     }
+
 
     public function createToken($client, $clientId, $clientSecret, $redirectUrl, $refreshToken) {
         try {

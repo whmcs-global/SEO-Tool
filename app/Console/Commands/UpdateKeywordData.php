@@ -38,7 +38,7 @@ class UpdateKeywordData extends Command
 
         foreach($keywords as $keyword){
             foreach($keyword->keywordData as $data){
-                $response = $this->keywordbydate($keyword, $data->country->code);
+                $response = $this->keywordbydate($keyword, $data->country->ISO_CODE);
                 $data['response'] = $response;
                 $data->save();
             }
