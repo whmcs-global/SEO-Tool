@@ -221,7 +221,7 @@
                                             {{ Str::limit($backlink->url, 20, '...') }}
                                         </a>
                                     </td>
-                                    <td>{{ $backlink->target_keyword }}</td>
+                                    <td>{{ $backlink->keyword_value }}</td>
                                     <td>{{ $backlink->backlink_source }}</td>
                                     <td>{{ $backlink->link_type }}</td>
                                     <td>{{ $backlink->status }}</td>

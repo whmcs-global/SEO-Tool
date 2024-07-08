@@ -3,10 +3,8 @@ namespace App\Services;
 
 use App\Services\GoogleAdsService;
 use Illuminate\Http\Request;
-use App\Traits\{KeywordAnalytic};
+use App\Traits\KeywordAnalytic;
 use App\Models\{Keyword, AdminSetting, Label, keyword_label, Country, KeywordData};
-use Illuminate\Support\Facades\Validator;
-use GuzzleHttp\Psr7\Request as GzRequest;
 use Illuminate\Support\Facades\Log;
 
 class KeywordDataUpdate
@@ -63,6 +61,10 @@ class KeywordDataUpdate
                         Log::error($error_message);
                         continue;
                     }
+                    if (isset($key['error'])) {
+                        Log::error($key['error']);
+                        continue;
+                    }
                     if ($key) {
                         $keywordDataValues['position'] = (int) $key[0]->position;
                         $keywordDataValues['clicks'] = (int) $key[0]->clicks;
@@ -82,5 +84,4 @@ class KeywordDataUpdate
             }
         }
     }
-    
 }

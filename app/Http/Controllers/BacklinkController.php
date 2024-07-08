@@ -71,46 +71,7 @@ class BacklinkController extends Controller
             'request', 'activelinks', 'inactivelinks', 'pendinglinks', 'declinedlinks', 'totallinks'
         ]));
     }
-    
-    
-    // public function index()
-    // {
-    //    if (auth()->user()->hasRole(['Admin', 'Super Admin'])) {
-    //        $backlinks = Backlinks::get();
-    //    } else {
-    //     $backlinks = Backlinks::where('user_id', auth()->user()->id)->where('website_id', auth()->user()->website_id)->get();
-    //    }
-    //    $activelinks = $backlinks->where("status", "Active")->count();
-    //    $inactivelinks = $backlinks->where("status", "Inactive")->count();
-    //    $pendinglinks = $backlinks->where("status", "Pending")->count();
-    //    $declinedlinks = $backlinks->where("status", "Declined")->count();
-    
-    //    $pie_data = [];
-    //    $data_name = ['Active', 'Inactive', 'Pending', 'Declined'];
-    //    $pie_data[] = ["name" => "Active", "value" => $activelinks];
-    //    $pie_data[] = ["name" => "Inactive", "value" => $inactivelinks];
-    //    $pie_data[] = ["name" => "Pending", "value" => $pendinglinks];
-    //    $pie_data[] = ["name" => "Declined", "value" => $declinedlinks];
-    
-    //    $values = [];
-    //    foreach ($backlinks as $data) {
-    //        $values[] = [
-    //            "name" => $data->website,
-    //            "data" => [
-    //                "url" => $data->website,
-    //                "da" => $data->domain_authority,
-    //                "pa" => $data->page_authority
-    //            ]
-    //        ];
-    //    }
-    
-    //    $domain_authority = $backlinks->sum("domain_authority");
-    //    $page_authority = $backlinks->sum("page_authority");
-    
-    //    return view('backlinks.list', compact([
-    //        'backlinks', 'pie_data', 'data_name', 'values', 'domain_authority', 'page_authority'
-    //    ]));
-    // }
+
 
     public function storeOrUpdate(Request $request, $id = null)
     {

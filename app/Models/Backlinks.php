@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder; // Use the correct Builder class
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 class Backlinks extends Model
 {
@@ -31,7 +31,7 @@ class Backlinks extends Model
         return str_replace(['http://', 'https://', 'www.'], '', $value);
     }
 
-    protected $appends = ['created_by','email'];
+    protected $appends = ['created_by','email', 'keyword_value'];
 
     public function getEmailAttribute()
     {
@@ -46,6 +46,16 @@ class Backlinks extends Model
     public function website()
     {
         return $this->belongsTo(Website::class);
+    }
+
+    public function keyword()
+    {
+        return $this->belongsTo(Keyword::class);
+    }
+
+    public function getKeywordValueAttribute()
+    {
+        return $this->keyword()->first() ? $this->keyword()->first()->keyword : null;
     }
 
     public function user()

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Traits;
+
 use Illuminate\Http\Request;
 use App\Models\{Keyword, AdminSetting, Website};
 use Auth, DateTime;
@@ -10,7 +11,6 @@ use Exception;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request as GzRequest;
 use Illuminate\Support\Facades\Log;
-
 
 trait KeywordAnalytic
 {
@@ -66,10 +66,10 @@ trait KeywordAnalytic
                 }
                 return $queryData;
             } else {
-                return redirect()->route('dashboard')->with('status', 'error')->with('message', 'Admin setting not found');
+                return ['error' => 'Admin setting not found'];
             }
         } catch (RequestException $e) {
-            return redirect()->route('dashboard')->with('status', 'error')->with('message', $e->getMessage());
+            return ['error' => $e->getMessage()];
         }
     }
 

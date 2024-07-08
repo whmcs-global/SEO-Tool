@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Tracker')
+
 @section('content')
 <div class="card">
     <div class="filter-country-main">
@@ -12,15 +14,15 @@
                             <label for="dateRangeInput" class="form-label">Select Date Range</label>
                             <div >
                                 <div class="input-group">
-                                    <input type="text" 
-                                        readonly 
-                                        name="daterange" 
-                                        class="form-control" 
-                                        id="dateRangeInput" 
-                                        placeholder="Select Date Range" 
+                                    <input type="text"
+                                        readonly
+                                        name="daterange"
+                                        class="form-control"
+                                        id="dateRangeInput"
+                                        placeholder="Select Date Range"
                                         value="{{ $startDate && $endDate ?  $startDate. ' - ' .$endDate  : '' }}">
                                 </div>
-                                    
+
                             </div>
                             <div class="form-row align-items-center">
                                     <div class="col-auto">
@@ -45,7 +47,7 @@
                                 <input type="hidden" name="country" value="{{ $selectedCountry }}">
                         </div>
                      </div>
-                    
+
                 </form>
             </div>
         </div>

@@ -34,20 +34,20 @@ trait KeywordDaterange
                 $startDate = Carbon::parse($startDate)->format('Y-m-d');
                 $endDate = Carbon::parse($endDate)->format('Y-m-d');
             }
-    
+
             $dateFilter = $startDate . ' / ' . $endDate;
             $client = new Client();
-    
+
             $adminSetting = AdminSetting::where('website_id', $keyword->website_id)
                                          ->where('type', 'google')
                                          ->first();
-    
+
             $queryData = $dateData = [];
             if (!is_null($adminSetting)) {
                 $expiryTimeMinutes = $adminSetting->expiry_time;
                 $pastUpdatedAccessTokenTime = Carbon::parse($adminSetting->created_at);
                 $expirationTime = $pastUpdatedAccessTokenTime->copy()->addSeconds((int)$expiryTimeMinutes);
-    
+
                 $currentTime = Carbon::now();
                 $accessToken = $adminSetting->access_token;
                 if ($expirationTime->lessThan($currentTime) && ($adminSetting->status)) {
@@ -70,7 +70,7 @@ trait KeywordDaterange
                 } else {
                     $accessToken = $adminSetting->access_token;
                 }
-    
+
                 if ($adminSetting->status) {
                     $queryData = $this->analyticsQueryDatabyDate(
                         $startDate,
@@ -91,7 +91,7 @@ trait KeywordDaterange
             return redirect()->route('dashboard')->with('status', 'error')->with('message', $e->getMessage());
         }
     }
-    
+
 
     /**
      * Queries the Google Analytics API to fetch analytics data based on date range and other parameters.
@@ -137,11 +137,11 @@ trait KeywordDaterange
                 "dataState" => "ALL"
             ];
             $jsonQuery = json_encode($Query);
-    
+
             $headers = [
                 'Content-Type' => 'application/json'
             ];
-    
+
             if ($website_id) {
                 $website = Website::where('id', $website_id)->first();
                 $web_url = $website->url;
@@ -150,11 +150,11 @@ trait KeywordDaterange
                 $web_url = 'www.hostingseekers.com';
                 $key = config('google.key');
             }
-    
+
             $requestUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken;
-    
+
             $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
-    
+
             $res = $client->sendAsync($request)->wait();
 
             $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
@@ -176,7 +176,7 @@ trait KeywordDaterange
             ];
         }
     }
-    
+
 
     /**
      * Creates an access token using the provided credentials and refresh token.

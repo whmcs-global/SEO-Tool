@@ -31,7 +31,7 @@ class WebsiteController extends Controller
             'GOOGLE_ADS_KEY' => 'required|string|max:255',
             'GOOGLE_ADS_LOGIN_CUSTOMER_ID' => 'required|string|max:255',
         ]);
-    
+
         $website = Website::create([
             'name' => $validatedData['name'],
             'user_id' => auth()->user()->id,
@@ -86,7 +86,7 @@ class WebsiteController extends Controller
         $website = Website::findOrFail($id);
         return view('website.edit', compact('website'));
     }
-    
+
     public function update(Request $request, $id)
     {
         $validatedData = $request->validate([
@@ -103,10 +103,10 @@ class WebsiteController extends Controller
             'GOOGLE_ADS_KEY' => 'required|string|max:255',
             'GOOGLE_ADS_LOGIN_CUSTOMER_ID' => 'required|string|max:255',
         ]);
-    
+
         $website = Website::findOrFail($id);
         $website->update($validatedData);
-    
+
         return redirect()->route('admin.projects')->with(['status' => 'success', 'message'=> 'Website updated successfully!']);
     }
 
