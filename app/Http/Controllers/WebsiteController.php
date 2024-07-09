@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Website, Website_last_updated};
+use App\Models\{Website, Website_last_updated, User};
 use App\Services\KeywordDataUpdate;
 
 class WebsiteController extends Controller
@@ -12,6 +12,8 @@ class WebsiteController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+        // dd($user->projectconfig_status());
         return view('website.create');
     }
 
@@ -51,7 +53,7 @@ class WebsiteController extends Controller
         $user = auth()->user();
         $user->website_id = $website->id;
         $user->save();
-        return redirect()->route('home')->with('success', 'Website added successfully!');
+        return redirect()->route('admin.settings')->with('success', 'Website added successfully!');
     }
 
     public function set_website(Website $website)
@@ -77,7 +79,13 @@ class WebsiteController extends Controller
 
     public function delete(Website $website)
     {
+        $all_users = User::where('website_id', $website->id)->get();
+        foreach ($all_users as $user) {
+            $user->website_id = $user->User_project()->first()->id ?? null;
+            $user->save();
+        }
         $website->delete();
+
         return redirect()->back()->with(['status' => 'success', 'message'=> 'Website deleted successfully!']);
     }
 

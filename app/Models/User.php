@@ -61,6 +61,12 @@ class User extends Authenticatable
         return $website ? $website->id : null;
     }
 
+    public function projectconfig_status()
+    {
+        // AdminSetting where 'website_id', $this->website_id' if count is 2 then return true else false
+        return AdminSetting::where('website_id', $this->website_id)->count() == 2;
+    }
+
     public function User_project()
     {
         return $this->hasMany(User_project::class);

@@ -83,7 +83,6 @@ trait KeywordDaterange
                         $code
                     );
                 }
-                Log::info('queryData: '.json_encode($queryData));
                 return $queryData;
             } else {
                 return redirect()->route('dashboard')->with('status', 'error')->with('message', 'Google API settings not found.');

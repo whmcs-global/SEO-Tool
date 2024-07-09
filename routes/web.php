@@ -10,31 +10,17 @@ Route::get('/', function () {
 })->name('home');
 
 
-Route::middleware(['auth'])->name('admin.')->prefix('admin')->group(function () {
+Route::middleware(['auth', 'project_status'])->name('admin.')->prefix('admin')->group(function () {
     Route::get('admin', [\App\Http\Controllers\Admin\indexController::class, 'index'])->name('index');
 
     // roles permission
-    Route::get('roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])
-        ->name('roles.index')
-        ->middleware('permission:Role list');
-    Route::get('roles/create', [\App\Http\Controllers\Admin\RoleController::class, 'create'])
-        ->name('roles.create')
-        ->middleware('permission:Create role');
-    Route::post('roles', [\App\Http\Controllers\Admin\RoleController::class, 'store'])
-        ->name('roles.store')
-        ->middleware('permission:Create role');
-    Route::get('roles/{role}/edit', [\App\Http\Controllers\Admin\RoleController::class, 'edit'])
-        ->name('roles.edit')
-        ->middleware('permission:Edit role');
-    Route::put('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])
-        ->name('roles.update')
-        ->middleware('permission:Edit role');
-    Route::delete('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])
-        ->name('roles.destroy')
-        ->middleware('permission:Delete role');
-    Route::post('/roles/{role}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'givePermission'])
-        ->name('roles.permissions')
-        ->middleware('permission:Edit role');
+    Route::get('roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index')->middleware('permission:Role list');
+    Route::get('roles/create', [\App\Http\Controllers\Admin\RoleController::class, 'create'])->name('roles.create')->middleware('permission:Create role');
+    Route::post('roles', [\App\Http\Controllers\Admin\RoleController::class, 'store'])->name('roles.store')->middleware('permission:Create role');
+    Route::get('roles/{role}/edit', [\App\Http\Controllers\Admin\RoleController::class, 'edit'])->name('roles.edit')->middleware('permission:Edit role');
+    Route::put('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])->name('roles.update')->middleware('permission:Edit role');
+    Route::delete('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->name('roles.destroy')->middleware('permission:Delete role');
+    Route::post('/roles/{role}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'givePermission'])->name('roles.permissions')->middleware('permission:Edit role');
     Route::delete('/roles/{role}/permissions/{permission}', [RoleController::class, 'revokePermission'])->name('roles.permissions.revoke');
     Route::resource('permissions', \App\Http\Controllers\Admin\PermissionController::class)->except('show');
     Route::post('/permissions/{permission}/roles', [\App\Http\Controllers\Admin\PermissionController::class, 'assignRole'])->name('permissions.roles');
@@ -64,7 +50,7 @@ Route::middleware(['auth'])->name('admin.')->prefix('admin')->group(function () 
 });
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'project_status'])->group(function () {
     // chnage country
     Route::get('/country', [KeywordController::class, 'set_country'])->name('countries.set');
     Route::post('/labels', [LabelController::class, 'store'])->name('labels.store');
@@ -108,7 +94,11 @@ Route::middleware('auth')->group(function () {
         Route::any('create/{id?}', 'storeOrUpdate')->name('create');
         Route::delete('delete/{id}', 'destroy')->name('delete');
     });
-    
+
 });
+
+Route::get('/error', function () {
+    return view('error');
+})->name('error.page');
 
 require __DIR__ . '/auth.php';
