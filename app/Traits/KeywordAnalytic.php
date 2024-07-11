@@ -62,7 +62,7 @@ trait KeywordAnalytic
                 }
 
                 if ($adminSetting->status) {
-                    $queryData = $this->analyticsQueryData($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type ?? 'web', $keyword->website_id, $code);
+                    $queryData = $this->analyticsQueryData($startDate, $endDate, $client, $accessToken, $keyword_name, $request->type ?? 'WEB', $keyword->website_id, $code);
                 }
                 return $queryData;
             } else {
@@ -73,9 +73,76 @@ trait KeywordAnalytic
         }
     }
 
+    // function analyticsQueryData($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
+    // {
+    //     try {
+    //         $query = [
+    //             'dimensions' => ['query'],
+    //             'startDate' => $startDate,
+    //             'endDate' => $endDate,
+    //             'dimensionFilterGroups' => [
+    //                 [
+    //                     'filters' => [
+    //                         [
+    //                             'operator' => 'EQUALS',
+    //                             'dimension' => 'query',
+    //                             'expression' => $company
+    //                         ],
+    //                         [
+    //                             'dimension' => 'COUNTRY',
+    //                             'expression' => $code,
+    //                             'operator' => 'CONTAINS'
+    //                         ]
+    //                     ]
+    //                 ]
+    //             ],
+    //             'searchType' => $type
+    //         ];
+
+    //         $headers = [
+    //             'Content-Type' => 'application/json'
+    //         ];
+
+    //         if ($website_id) {
+    //             $website = Website::where('id', $website_id)->first();
+    //             $web_url = $website->url;
+    //             $key = $website->API_KEY;
+    //         } else {
+    //             $web_url = 'www.hostingseekers.com';
+    //             $key = config('google.key');
+    //         }
+
+    //         $request = new GzRequest(
+    //             'POST',
+    //             'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken,
+    //             $headers,
+    //             json_encode($query)
+    //         );
+
+    //         $res = $client->sendAsync($request)->wait();
+    //         $analyticsData = json_decode($res->getBody()->getContents(), true);
+
+    //         if ($res->getStatusCode() != 200) {
+    //             throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
+    //         }
+
+    //         if (isset($analyticsData['error'])) {
+    //             throw new Exception("Error in fetching analytics data: " . $analyticsData['error']['message']);
+    //         }
+
+    //         return $analyticsData['rows'] ?? [];
+    //     } catch (\Throwable $th) {
+    //         return [
+    //             'code' => $th->getCode(),
+    //             'message' => $th->getMessage(),
+    //         ];
+    //     }
+    // }
+
     function analyticsQueryData($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
     {
         try {
+            // Constructing the query
             $query = [
                 'dimensions' => ['query'],
                 'startDate' => $startDate,
@@ -107,14 +174,25 @@ trait KeywordAnalytic
                 $website = Website::where('id', $website_id)->first();
                 $web_url = $website->url;
                 $key = $website->API_KEY;
+                $property_type = $website->property_type;
             } else {
                 $web_url = 'www.hostingseekers.com';
                 $key = config('google.key');
+                $property_type = 'url_prefix';
             }
 
+            if ($property_type == 'url_prefix') {
+                $encoded_url = urlencode($web_url);
+            } else if ($property_type == 'domain') {
+                $encoded_url = 'sc-domain:' . $web_url;
+            } else {
+                throw new Exception("Invalid property type: " . $property_type);
+            }
+
+            // Constructing the request
             $request = new GzRequest(
                 'POST',
-                'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken,
+                'https://searchconsole.googleapis.com/webmasters/v3/sites/' . $encoded_url . '/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken,
                 $headers,
                 json_encode($query)
             );
@@ -138,7 +216,6 @@ trait KeywordAnalytic
             ];
         }
     }
-
 
     public function createToken($client, $clientId, $clientSecret, $redirectUrl, $refreshToken) {
         try {

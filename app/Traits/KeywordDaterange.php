@@ -78,7 +78,7 @@ trait KeywordDaterange
                         $client,
                         $accessToken,
                         $keyword_name,
-                        'web',
+                        'WEB',
                         $keyword->website_id,
                         $code
                     );
@@ -106,76 +106,163 @@ trait KeywordDaterange
      * @param string $code The code for the query.
      * @return array The analytics data fetched from the API.
      */
-    function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
-    {
-        try {
 
-            $Query = [
-                "dimensions" => [
-                    "QUERY",
-                    "DATE"
-                ],
-                "startDate" => $startDate,
-                "endDate" => $endDate,
-                "dimensionFilterGroups" => [
-                    [
-                        "filters" => [
-                            [
-                                "operator" => "EQUALS",
-                                "dimension" => "QUERY",
-                                "expression" => $company
-                            ],
-                            [
-                                "operator" => "CONTAINS",
-                                "dimension" => "COUNTRY",
-                                "expression" => $code
-                            ]
+    // function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
+    // {
+    //     try {
+
+    //         $Query = [
+    //             "dimensions" => [
+    //                 "QUERY",
+    //                 "DATE"
+    //             ],
+    //             "startDate" => $startDate,
+    //             "endDate" => $endDate,
+    //             "dimensionFilterGroups" => [
+    //                 [
+    //                     "filters" => [
+    //                         [
+    //                             "operator" => "EQUALS",
+    //                             "dimension" => "QUERY",
+    //                             "expression" => $company
+    //                         ],
+    //                         [
+    //                             "operator" => "CONTAINS",
+    //                             "dimension" => "COUNTRY",
+    //                             "expression" => $code
+    //                         ]
+    //                     ]
+    //                 ]
+    //             ],
+    //             "searchType" => $type,
+    //             "dataState" => "ALL"
+    //         ];
+    //         $jsonQuery = json_encode($Query);
+
+    //         $headers = [
+    //             'Content-Type' => 'application/json'
+    //         ];
+
+    //         if ($website_id) {
+    //             $website = Website::where('id', $website_id)->first();
+    //             $web_url = $website->url;
+    //             $key = $website->API_KEY;
+    //         } else {
+    //             $web_url = 'www.hostingseekers.com';
+    //             $key = config('google.key');
+    //         }
+
+    //         $requestUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken;
+
+    //         $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
+
+    //         $res = $client->sendAsync($request)->wait();
+
+    //         $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
+
+    //         if ($res->getStatusCode() != 200) {
+    //             throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
+    //         }
+
+    //         if (isset($analyticsData->error)) {
+    //             throw new Exception("Error in fetching analytics data: " . $analyticsData->error->message);
+    //         }
+
+    //         $analyticsData = $analyticsData->rows ?? [];
+    //         return $analyticsData;
+    //     } catch (\Throwable $th) {
+    //         return [
+    //             'code' => $th->getCode(),
+    //             'message' => $th->getMessage(),
+    //         ];
+    //     }
+    // }
+
+    function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
+{
+    try {
+        // Constructing the query
+        $query = [
+            "dimensions" => [
+                "QUERY",
+                "DATE"
+            ],
+            "startDate" => $startDate,
+            "endDate" => $endDate,
+            "dimensionFilterGroups" => [
+                [
+                    "filters" => [
+                        [
+                            "operator" => "EQUALS",
+                            "dimension" => "QUERY",
+                            "expression" => $company
+                        ],
+                        [
+                            "operator" => "CONTAINS",
+                            "dimension" => "COUNTRY",
+                            "expression" => $code
                         ]
                     ]
-                ],
-                "searchType" => $type,
-                "dataState" => "ALL"
-            ];
-            $jsonQuery = json_encode($Query);
+                ]
+            ],
+            "searchType" => $type,
+            "dataState" => "ALL"
+        ];
+        $jsonQuery = json_encode($query);
 
-            $headers = [
-                'Content-Type' => 'application/json'
-            ];
+        // Setting headers
+        $headers = [
+            'Content-Type' => 'application/json'
+        ];
 
-            if ($website_id) {
-                $website = Website::where('id', $website_id)->first();
-                $web_url = $website->url;
-                $key = $website->API_KEY;
-            } else {
-                $web_url = 'www.hostingseekers.com';
-                $key = config('google.key');
-            }
-
-            $requestUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken;
-
-            $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
-
-            $res = $client->sendAsync($request)->wait();
-
-            $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
-
-            if ($res->getStatusCode() != 200) {
-                throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
-            }
-
-            if (isset($analyticsData->error)) {
-                throw new Exception("Error in fetching analytics data: " . $analyticsData->error->message);
-            }
-
-            $analyticsData = $analyticsData->rows ?? [];
-            return $analyticsData;
-        } catch (\Throwable $th) {
-            return [
-                'code' => $th->getCode(),
-                'message' => $th->getMessage(),
-            ];
+        // Determining the URL, API key, and property type
+        if ($website_id) {
+            $website = Website::where('id', $website_id)->first();
+            $web_url = $website->url;
+            $key = $website->API_KEY;
+            $property_type = $website->property_type;
+        } else {
+            $web_url = 'www.hostingseekers.com';
+            $key = config('google.key');
+            $property_type = 'url_prefix'; // Default to 'url_prefix' if no website_id
         }
+
+        // Handling property type
+        if ($property_type == 'url_prefix') {
+            $encoded_url = urlencode($web_url);
+        } else if ($property_type == 'domain') {
+            $encoded_url = 'sc-domain:' . $web_url;
+        } else {
+            throw new Exception("Invalid property type: " . $property_type);
+        }
+
+        // Constructing the request URL
+        $requestUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/' . $encoded_url . '/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken;
+
+        // Constructing the request
+        $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
+
+        // Sending the request
+        $res = $client->sendAsync($request)->wait();
+        $analyticsData = json_decode($res->getBody()->getContents(), true);
+
+        // Error handling
+        if ($res->getStatusCode() != 200) {
+            throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
+        }
+
+        if (isset($analyticsData['error'])) {
+            throw new Exception("Error in fetching analytics data: " . $analyticsData['error']['message']);
+        }
+
+        return $analyticsData['rows'] ?? [];
+    } catch (\Throwable $th) {
+        return [
+            'code' => $th->getCode(),
+            'message' => $th->getMessage(),
+        ];
     }
+}
 
 
     /**

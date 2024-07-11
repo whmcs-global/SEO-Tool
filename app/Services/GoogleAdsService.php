@@ -11,11 +11,14 @@ use Google\Ads\GoogleAds\V16\Services\GenerateKeywordHistoricalMetricsRequest;
 use Google\ApiCore\ApiException;
 use App\Models\AdminSetting;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class GoogleAdsService
 {
     private $client;
     private $adminSetting;
+    private $maxRetries = 5;
+    private $retryDelay = 30;
 
     public function __construct()
     {
@@ -65,49 +68,56 @@ class GoogleAdsService
             ->build();
     }
 
-    public function getKeywordHistoricalMetrics($keywords , $location_id)
+    public function getKeywordHistoricalMetrics($keywords, $location_id)
     {
         $keywordPlanIdeaServiceClient = $this->client->getKeywordPlanIdeaServiceClient();
 
-        try {
-            $response = $keywordPlanIdeaServiceClient->generateKeywordHistoricalMetrics(
-                new GenerateKeywordHistoricalMetricsRequest([
-                    'customer_id' => config('google-ads.login_customer_id'),
-                    'keywords' => $keywords,
-                    'geo_target_constants' => [ResourceNames::forGeoTargetConstant($location_id)],
-                    'keyword_plan_network' => KeywordPlanNetwork::GOOGLE_SEARCH,
-                    'language' => ResourceNames::forLanguageConstant(1000)
-                ])
-            );
+        for ($attempt = 0; $attempt < $this->maxRetries; $attempt++) {
+            try {
+                $response = $keywordPlanIdeaServiceClient->generateKeywordHistoricalMetrics(
+                    new GenerateKeywordHistoricalMetricsRequest([
+                        'customer_id' => config('google-ads.login_customer_id'),
+                        'keywords' => $keywords,
+                        'geo_target_constants' => [ResourceNames::forGeoTargetConstant($location_id)],
+                        'keyword_plan_network' => KeywordPlanNetwork::GOOGLE_SEARCH,
+                        'language' => ResourceNames::forLanguageConstant(1000)
+                    ])
+                );
 
-            $results = $response->getResults();
-            $modifiedResults = [];
-            foreach ($results as $result) {
-                $metrics = $result->getKeywordMetrics();
-                if (!$metrics) continue;
-                $lowBidMicros = $metrics->getLowTopOfPageBidMicros() ?? 0;
-                $lowBidRupees = $lowBidMicros / 1000000;
-                $highBidMicros = $metrics->getHighTopOfPageBidMicros() ?? 0;
-                $highBidRupees = $highBidMicros / 1000000;
-                $modifiedResults[] = [
-                    'text' => $result->getText(),
-                    'keywordMetrics' => [
-                        'avgMonthlySearches' => $metrics->getAvgMonthlySearches() ?? 0,
-                        'monthlySearchVolumes' => $metrics->getMonthlySearchVolumes() ?? [],
-                        'competition' => $metrics->getCompetition() ?? null,
-                        'competitionIndex' => $metrics->getCompetitionIndex() ?? null,
-                        'lowTopOfPageBidRupees' => $lowBidRupees,
-                        'highTopOfPageBidRupees' => $highBidRupees
-                    ]
-                ];
+                $results = $response->getResults();
+                $modifiedResults = [];
+                foreach ($results as $result) {
+                    $metrics = $result->getKeywordMetrics();
+                    if (!$metrics) continue;
+                    $lowBidMicros = $metrics->getLowTopOfPageBidMicros() ?? 0;
+                    $lowBidRupees = $lowBidMicros / 1000000;
+                    $highBidMicros = $metrics->getHighTopOfPageBidMicros() ?? 0;
+                    $highBidRupees = $highBidMicros / 1000000;
+                    $modifiedResults[] = [
+                        'text' => $result->getText(),
+                        'keywordMetrics' => [
+                            'avgMonthlySearches' => $metrics->getAvgMonthlySearches() ?? 0,
+                            'monthlySearchVolumes' => $metrics->getMonthlySearchVolumes() ?? [],
+                            'competition' => $metrics->getCompetition() ?? null,
+                            'competitionIndex' => $metrics->getCompetitionIndex() ?? null,
+                            'lowTopOfPageBidRupees' => $lowBidRupees,
+                            'highTopOfPageBidRupees' => $highBidRupees
+                        ]
+                    ];
+                }
+                return $modifiedResults;
+            } catch (ApiException $apiException) {
+                if ($apiException->getStatus() === 'RESOURCE_EXHAUSTED') {
+                    Log::warning("API quota exhausted. Retrying in {$this->retryDelay} seconds...");
+                    sleep($this->retryDelay);
+                } elseif ($apiException->getStatus() === 'UNAUTHENTICATED') {
+                    $this->refreshAccessToken();
+                } else {
+                    throw new \Exception("ApiException was thrown with message: " . $apiException->getMessage());
+                }
             }
-            return $modifiedResults;
-        } catch (ApiException $apiException) {
-            if ($apiException->getStatus() === 'UNAUTHENTICATED') {
-                $this->refreshAccessToken();
-                return $this->getKeywordHistoricalMetrics($keywords);
-            }
-            throw new \Exception("ApiException was thrown with message: " . $apiException->getMessage());
         }
+
+        throw new \Exception("Failed to retrieve keyword historical metrics after {$this->maxRetries} attempts.");
     }
 }
