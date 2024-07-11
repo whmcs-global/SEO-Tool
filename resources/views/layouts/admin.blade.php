@@ -101,7 +101,7 @@
             </div>
             <!-- Main Content -->
             <div class="main-content">
-                @if(!auth()->user()->projectconfig_status() && Route::currentRouteName() != 'admin.settings' && (auth()->user()->role == 'Admin' || auth()->user()->role == 'Super Admin'))
+                @if(!auth()->user()->projectconfig_status() && Route::currentRouteName() != 'admin.settings' && (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')))
                     <div class="alert alert-danger" role="alert">
                         <span class="font-weight-bold"></span>Please configure Google Search Console settings and Google Ads to get the data. <a href="{{ route('admin.settings')}}" style="color: black"> click here</a>
                     </div>

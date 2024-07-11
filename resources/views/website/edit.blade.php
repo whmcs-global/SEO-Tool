@@ -20,7 +20,8 @@
                         @method('PUT')
 
                         <x-form-field label="Name" name="name" value="{{ $website->name }}" required="true" />
-                        <x-form-field label="URL" name="url" type="text" value="{{ $website->url }}" required="true" />
+                        <x-form-field label="Select property type" name="property_type" :options="['domain' => 'Domain', 'url_prefix' => 'URL prefix']" value="{{ $website->property_type }}" required="true" />
+                        <x-form-field label="Domain/URL" name="url" type="text" value="{{ $website->url }}" required="true" />
                         <x-form-field label="Google Analytics Client ID" name="GOOGLE_ANALYTICS_CLIENT_ID" value="{{ $website->GOOGLE_ANALYTICS_CLIENT_ID }}" />
                         <x-form-field label="Google Analytics Client Secret" name="GOOGLE_ANALYTICS_CLIENT_SECRET" value="{{ $website->GOOGLE_ANALYTICS_CLIENT_SECRET }}" />
                         <x-form-field label="Google Analytics Redirect URI" name="GOOGLE_ANALYTICS_REDIRECT_URI" type="text" value="{{ $website->GOOGLE_ANALYTICS_REDIRECT_URI }}" />

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->enum('property_type', ['domain', 'url_prefix'])->default('domain');
             $table->string('url');
             $table->string('GOOGLE_ANALYTICS_CLIENT_ID');
             $table->string('GOOGLE_ANALYTICS_CLIENT_SECRET');

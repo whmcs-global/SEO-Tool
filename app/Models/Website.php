@@ -12,6 +12,7 @@ class Website extends Model
     protected $fillable = [
         'name',
         'user_id',
+        'property_type',
         'url',
         'GOOGLE_ANALYTICS_CLIENT_ID',
         'GOOGLE_ANALYTICS_CLIENT_SECRET',

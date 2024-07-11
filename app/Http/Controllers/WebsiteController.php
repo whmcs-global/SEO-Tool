@@ -21,6 +21,7 @@ class WebsiteController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+            'property_type'=> 'required|in:domain,url_prefix',
             'url' => 'required|max:255',
             'GOOGLE_ANALYTICS_CLIENT_ID' => 'required|string|max:255',
             'GOOGLE_ANALYTICS_CLIENT_SECRET' => 'required|string|max:255',
@@ -37,6 +38,7 @@ class WebsiteController extends Controller
         $website = Website::create([
             'name' => $validatedData['name'],
             'user_id' => auth()->user()->id,
+            'property_type' => $validatedData['property_type'],
             'url' => $validatedData['url'],
             'GOOGLE_ANALYTICS_CLIENT_ID' => $validatedData['GOOGLE_ANALYTICS_CLIENT_ID'],
             'GOOGLE_ANALYTICS_CLIENT_SECRET' => $validatedData['GOOGLE_ANALYTICS_CLIENT_SECRET'],
@@ -99,6 +101,7 @@ class WebsiteController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+            'property_type'=> 'required|in:domain,url_prefix',
             'url' => 'required|max:255',
             'GOOGLE_ANALYTICS_CLIENT_ID' => 'required|string|max:255',
             'GOOGLE_ANALYTICS_CLIENT_SECRET' => 'required|string|max:255',

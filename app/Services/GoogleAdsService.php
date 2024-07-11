@@ -37,7 +37,7 @@ class GoogleAdsService
         $this->client = (new GoogleAdsClientBuilder())
             ->withDeveloperToken(config('google-ads.developer_token'))
             ->withOAuth2Credential($oAuth2Credential)
-            ->withLoginCustomerId('5256032344')
+            ->withLoginCustomerId('5470750790')
             ->build();
     }
 
@@ -48,7 +48,7 @@ class GoogleAdsService
             ->withClientSecret(config('google-ads.client_secret'))
             ->withRefreshToken($this->adminSetting->refresh_token)
             ->build();
-            
+
         try {
             $oAuth2Credential->fetchAuthToken();
             $this->adminSetting->refresh_token = $oAuth2Credential->getRefreshToken();
@@ -61,12 +61,12 @@ class GoogleAdsService
         $this->client = (new GoogleAdsClientBuilder())
             ->withDeveloperToken(config('google-ads.developer_token'))
             ->withOAuth2Credential($oAuth2Credential)
-            ->withLoginCustomerId('5256032344')
+            ->withLoginCustomerId('5470750790')
             ->build();
     }
 
     public function getKeywordHistoricalMetrics($keywords , $location_id)
-    {   
+    {
         $keywordPlanIdeaServiceClient = $this->client->getKeywordPlanIdeaServiceClient();
 
         try {
