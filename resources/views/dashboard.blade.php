@@ -85,6 +85,9 @@
                             <thead class="thead-dark">
                                 <tr>
                                     <th>Keyword</th>
+                                    @role('Admin|Super Admin')
+                                    <th>Created By</th>
+                                    @endrole
                                     <th>Position</th>
                                     <th>S. Volume</th>
                                     <th>Click</th>
@@ -114,6 +117,9 @@
                                                         </div>
                                                     </div>
                                                 </td>
+                                                @role('Admin|Super Admin')
+                                                <td>{{ $keyword->user->name }}</td>
+                                                @endrole
                                                 <td>{{ $data->position }}</td>
                                                 <td>{{ $data->search_volume }}</td>
                                                 <td>{{ $data->clicks }}</td>

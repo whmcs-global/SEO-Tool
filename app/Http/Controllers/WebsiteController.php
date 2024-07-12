@@ -74,8 +74,12 @@ class WebsiteController extends Controller
 
     public function projects(Request $request)
     {
-        $websites = Website::all();
-        // dd('working on it');
+        $user = auth()->user();
+        if ($user->role === 'Super Admin') {
+            $websites = Website::all();
+        } else {
+            $websites = Website::where('user_id', $user->id)->get();
+        }
         return view('website.projects', compact('websites'));
     }
 
