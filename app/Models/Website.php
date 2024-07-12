@@ -30,4 +30,9 @@ class Website extends Model
     {
         return $this->hasMany(Backlink::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

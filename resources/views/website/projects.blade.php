@@ -25,7 +25,9 @@
                         <tr>
                             <th scope="col">Name</th>
                             <th scope="col">Url</th>
-                            
+                            @role('Super Admin')
+                            <th scope="col">Added by</th>
+                            @endrole
                             <th scope="col" class="text-right">Actions</th>
                         </tr>
                     </thead>
@@ -36,6 +38,9 @@
                                 <td>
                                     <a href="{{ $website->url }}" target="_blank">{{ substr($website->url,0,50) }}</a>
                                 </td>
+                                @role('Super Admin')
+                                <td>{{ $website->user->name }}</td>
+                                @endrole
                                 </td>
                                 <td class="text-right">
                                     <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
