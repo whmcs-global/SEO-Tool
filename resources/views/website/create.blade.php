@@ -20,9 +20,14 @@
                             padding: 10px;
                             border-radius: 5px;
                             margin-bottom: 15px;
+                            position: relative;
                         }
                         .fieldset-gray legend {
                             font-weight: bold;
+                        }
+                        .help-dropdown {
+                            position: relative;
+                            margin-left: 85%;
                         }
                     </style>
 
@@ -41,31 +46,35 @@
                                             <strong>{{ $message }}</strong>
                                         </span>
                                     @enderror
-                                    
                                 </div>
                             </div>
-                            <div class="dropdown d-inline mb-2">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" id="helpDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Help
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="helpDropdown">
-                                    <a class="dropdown-item" href="https://support.google.com/webmasters/answer/34592?hl=en">Property type</a>
+                            <div class="help-dropdown">
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="helpDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Help
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="helpDropdown">
+                                        <a class="dropdown-item" target="blank" href="https://support.google.com/webmasters/answer/34592?hl=en">What is Property type ?</a>
+                                    </div>
                                 </div>
                             </div>
                         </fieldset>
+
                         <fieldset class="fieldset-gray">
                             <legend>Google Analytics Settings</legend>
                             <x-form-field label="Google Client ID" name="GOOGLE_ANALYTICS_CLIENT_ID" value="{{ old('GOOGLE_ANALYTICS_CLIENT_ID') }}" />
                             <x-form-field label="Google Client Secret" name="GOOGLE_ANALYTICS_CLIENT_SECRET" value="{{ old('GOOGLE_ANALYTICS_CLIENT_SECRET') }}" />
                             <x-form-field label="Google Redirect URI" name="GOOGLE_ANALYTICS_REDIRECT_URI" type="text" value="{{ old('GOOGLE_ANALYTICS_REDIRECT_URI') }}" />
                             <x-form-field label="API Key" name="API_KEY" value="{{ old('API_KEY') }}" />
-                            <div class="dropdown d-inline mb-2">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" id="helpDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Help
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="helpDropdown">
-                                    <a class="dropdown-item" href="https://developers.google.com/workspace/marketplace/configure-oauth-consent-screen" target="_blank">Configure OAuth Consent</a>
-                                    <a class="dropdown-item" href="https://support.google.com/googleapi/answer/6158862?hl=en">Get API keys</a>
+                            <div class="help-dropdown">
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="helpDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Help
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="helpDropdown">
+                                        <a class="dropdown-item" target="blank" href="https://developers.google.com/workspace/marketplace/configure-oauth-consent-screen" target="_blank">Configure OAuth Consent</a>
+                                        <a class="dropdown-item" target="blank" href="https://support.google.com/googleapi/answer/6158862?hl=en">Get API keys</a>
+                                    </div>
                                 </div>
                             </div>
                         </fieldset>
@@ -78,16 +87,16 @@
                             <x-form-field label="Google Redirect URI" name="GOOGLE_ADS_REDIRECT_URI" type="text" value="{{ old('GOOGLE_ADS_REDIRECT_URI') }}" />
                             <x-form-field label="Google Key" name="GOOGLE_ADS_KEY" value="{{ old('GOOGLE_ADS_KEY') }}" />
                             <x-form-field label="Google Login Customer ID" name="GOOGLE_ADS_LOGIN_CUSTOMER_ID" value="{{ old('GOOGLE_ADS_LOGIN_CUSTOMER_ID') }}" />
-
-                            <!-- Help dropdown link -->
-                            <div class="dropdown d-inline mb-2">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" id="helpDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Help
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="helpDropdown">
-                                    <a class="dropdown-item" href="https://developers.google.com/workspace/marketplace/configure-oauth-consent-screen" target="_blank">Configure OAuth Consent</a>
-                                    <a class="dropdown-item" href="https://developers.google.com/google-ads/api/docs/first-call/dev-token" target="_blank">Google Ads Developer Token</a>
-                                    <a class="dropdown-item" href="https://support.google.com/google-ads/answer/1704344?hl=en">Get Customer ID</a>
+                            <div class="help-dropdown">
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="helpDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Help
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="helpDropdown">
+                                        <a class="dropdown-item" target="blank" href="https://developers.google.com/workspace/marketplace/configure-oauth-consent-screen" target="_blank">Configure OAuth Consent</a>
+                                        <a class="dropdown-item" target="blank" href="https://developers.google.com/google-ads/api/docs/first-call/dev-token" target="_blank">Google Ads Developer Token</a>
+                                        <a class="dropdown-item" target="blank" href="https://support.google.com/google-ads/answer/1704344?hl=en">Get Customer ID</a>
+                                    </div>
                                 </div>
                             </div>
                         </fieldset>
