@@ -5,24 +5,24 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\{Backlinks,Website, User, Keyword};
 class BacklinkController extends Controller
-{   
+{
     public function index(Request $request)
     {
-        $query = Backlinks::query()->with('user');
-    
-        if (!auth()->user()->hasRole(['Admin', 'Super Admin'])) {
-            $query->where('user_id', auth()->user()->id)
-                  ->where('website_id', auth()->user()->website_id);
-        }
-    
+        $query = Backlinks::query()->with('user')->where('website_id', auth()->user()->website_id);;
+
+        // if (!auth()->user()->hasRole(['Admin', 'Super Admin'])) {
+        //     $query->where('user_id', auth()->user()->id)
+        //           ->where('website_id', auth()->user()->website_id);
+        // }
+
         if ($request->filled('link_type')) {
             $query->where('link_type', $request->input('link_type'));
         }
-    
+
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
         }
-    
+
         if ($request->filled('daterange')) {
             $dates = explode(' - ', $request->input('daterange'));
             if (count($dates) == 2) {
@@ -30,12 +30,12 @@ class BacklinkController extends Controller
                 $endDate = date('Y-m-d 23:59:59', strtotime($dates[1]));
                 $query->whereBetween('created_at', [$startDate, $endDate]);
             }
-        }        
-    
+        }
+
         if ($request->filled('user')) {
             $query->where('user_id', $request->input('user'));
         }
-    
+
         $backlinks = $query->get();
         $totallinks = $backlinks->count();
         $activelinks = $backlinks->where("status", "Active")->count();
@@ -50,7 +50,7 @@ class BacklinkController extends Controller
             ["name" => "Pending", "value" => $pendinglinks],
             ["name" => "Declined", "value" => $declinedlinks],
         ];
-    
+
         $values = [];
         foreach ($backlinks as $data) {
             $values[] = [
@@ -62,7 +62,7 @@ class BacklinkController extends Controller
                 ]
             ];
         }
-    
+
         $domain_authority = $backlinks->sum("domain_authority");
         $page_authority = $backlinks->sum("page_authority");
         $users = User::whereIn('id', $backlinks->pluck('user_id')->unique())->get();
@@ -101,7 +101,7 @@ class BacklinkController extends Controller
                 'status' => 'required|string',
             ];
             $validatedData = $request->validate($rules);
-    
+
             try {
                 if ($id) {
                     $backlink = Backlinks::findOrFail($id);
@@ -113,7 +113,7 @@ class BacklinkController extends Controller
                     $backlink = Backlinks::create($validatedData);
                     $message = 'Backlink created successfully!';
                 }
-    
+
                 return redirect()->route('backlinks.index')->with([
                     'status' => 'success',
                     'message' => $message
@@ -126,8 +126,8 @@ class BacklinkController extends Controller
             }
         }
     }
-    
-    
+
+
 
     public function destroy(Request $request,  $id = null)
     {
@@ -138,7 +138,7 @@ class BacklinkController extends Controller
                 return redirect()->route('backlinks.index')->with(['status' => 'success', 'message'=> 'Backlink has been deleted!']);
             }else{
                 return redirect()->route('backlinks.index')->with(['status' => 'danger', 'message'=> 'Backlink not found!']);
-            }   
+            }
         }
     }
 

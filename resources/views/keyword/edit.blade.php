@@ -23,7 +23,7 @@
                             <label for="labels" class="form-label">Labels:</label>
                             <select id="field2" name="labels[]" class="form-control" multiple>
                                 @foreach($labels as $label)
-                                    <option value="{{ $label->id }}" 
+                                    <option value="{{ $label->id }}"
                                         @if(isset($keyword) && $keyword->labels->contains($label->id)) selected @endif>
                                         {{ $label->name }}
                                     </option>
@@ -33,6 +33,18 @@
                             <div class="text-danger">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="mb-3">
+                            <label for="users" class="form-label">Assign to Users:</label>
+                            <select id="users" name="users[]" class="form-control" multiple>
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}"
+                                        @if($keyword->assignedUsers->contains($user->id)) selected @endif>
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Save</button>
                         <a href="{{ url()->previous() }}" class="btn btn-secondary" >
                                         {{ __('Back') }}

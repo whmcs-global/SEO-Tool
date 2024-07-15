@@ -83,7 +83,7 @@
 
   /* Modal styles */
   .modal {
-    display: none; 
+    display: none;
     position: fixed;
     z-index: 1;
     padding-top: 100px;
@@ -159,6 +159,16 @@
                 </div>
                 <button type="button" id="create-label-btn" class="btn btn-secondary">Create Label</button>
             </div>
+            @role('Admin|Super Admin')
+            <div class="form-group">
+                <label for="user-select" class="font-weight-bold">Assign to Users</label>
+                <select name="users[]" id="user-select" multiple>
+                    @foreach($users as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @endrole
             <div class="form-group">
                 <button type="submit" class="btn btn-primary">Save Keywords</button>
                 <a href="{{ url()->previous() }}" class="btn btn-black">Back</a>

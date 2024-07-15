@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Keyword, AdminSetting, Label, keyword_label, Website_last_updated, Country};
+use App\Models\{Keyword, AdminSetting, Label, keyword_label, Website_last_updated, Country, User, AssignKeyword, KeywordData};
 use Illuminate\Support\Facades\Validator;
 use GuzzleHttp\Psr7\Request as GzRequest;
 use App\Services\GoogleAnalyticsService;
@@ -17,6 +17,115 @@ class KeywordController extends Controller
 {
     use KeywordDaterange;
 
+
+    // public function keywords_detail(Request $request)
+    // {
+    //     $labelIds = $request->input('labels', []);
+    //     $labels = Label::all();
+    //     $countries = Country::all();
+    //     $user = auth()->user();
+    //     $isAdmin = $user->hasRole('Admin');
+    //     $isSuperAdmin = $user->hasRole('Super Admin');
+    //     $selectedCountry = $request->get('country', $user->country_id ?? 3);
+
+    //     $startDate = Carbon::yesterday()->subDays(1)->format('Y-m-d');
+    //     $endDate = Carbon::today()->subDays(1)->format('Y-m-d');
+
+    //     if ($request->has('daterange') && !empty($request->get('daterange'))) {
+    //         list($start, $end) = explode(' - ', $request->get('daterange'));
+    //         $startDate = Carbon::parse($start)->format('Y-m-d');
+    //         $endDate = Carbon::parse($end)->format('Y-m-d');
+    //     }
+
+    //     $positionFilter = $request->get('positionFilter', 'all');
+
+    //     $keywordsQuery = Keyword::with(['keywordData']);
+    //     $keywordsQuery->where('website_id', $user->website_id);
+    //     // if ($isAdmin || $isSuperAdmin) {
+    //     //     $keywordsQuery->where('website_id', $user->website_id);
+    //     // } else {
+    //     //     $keywordsQuery->forUserAndWebsite($user->id, $user->website_id);
+    //     // }
+
+    //     if (!empty($labelIds)) {
+    //         $keywordsQuery->filterByLabels($labelIds);
+    //     }
+
+    //     $keywords = $keywordsQuery->get();
+    //     $totalKeywords = $keywords->count();
+
+    //     $countryRanges = [];
+    //     foreach ($countries as $country) {
+    //         $countryRanges[$country->id] = [
+    //             'top_1' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+    //             'top_3' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+    //             'top_5' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+    //             'top_10' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+    //             'top_30' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+    //             'top_100' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+    //         ];
+    //     }
+
+    //     $allDates = [];
+    //     $keywordData = [];
+
+    //     foreach ($keywords as $keyword) {
+    //         if (!$keyword->keywordData) {
+    //             continue;
+    //         }
+    //         foreach ($keyword->keywordData as $data) {
+    //             $response = json_decode($data->response, true);
+    //             if (!is_array($response)) {
+    //                 continue;
+    //             }
+    //             $positionDates = [];
+
+    //             foreach ($response as $entry) {
+    //                 if (isset($entry['keys'][1], $entry['position'])) {
+    //                     $date = $entry['keys'][1];
+    //                     if (($startDate && $date < $startDate) || ($endDate && $date > $endDate)) {
+    //                         continue;
+    //                     }
+    //                     $positionDates[$date] = $entry['position'];
+    //                     $allDates[] = $date;
+    //                 }
+    //             }
+    //             if ($data->country_id == $selectedCountry) {
+    //                 if (($positionFilter == 'all' || $this->isPositionInFilter($positionDates, $positionFilter))) {
+    //                 if (!empty($positionDates) || $positionFilter == 'all') {
+    //                     $keywordData[] = [
+    //                         'keyword' => $keyword->keyword,
+    //                         'keyword_label' => $keyword->labels->pluck('name')->toArray(),
+    //                         'country' => $data->country->name ?? 'Unknown',
+    //                         'country_id' => $data->country_id,
+    //                         'search_volume' => $data->search_volume,
+    //                         'impression' => $data->impression,
+    //                         'competition' => $data->competition,
+    //                         'positions' => $positionDates,
+    //                     ];
+    //                 }
+    //             }}
+
+    //             if (isset($countryRanges[$data->country_id])) {
+    //                 $this->updateCountryRanges($countryRanges, $data->country_id, $positionDates, $startDate, $endDate);
+    //             }
+    //         }
+    //     }
+
+    //     foreach ($countryRanges as &$ranges) {
+    //         $countryTotal = $totalKeywords;
+    //         foreach ($ranges as &$range) {
+    //             if ($countryTotal > 0) {
+    //                 $range['start_percentage'] = ($range['start_count'] / $countryTotal) * 100;
+    //                 $range['end_percentage'] = ($range['end_count'] / $countryTotal) * 100;
+    //             }
+    //         }
+    //     }
+
+    //     $allDates = array_unique($allDates);
+    //     sort($allDates);
+    //     return view('keyword.details', compact('keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter', 'labels', 'labelIds'));
+    // }
 
     public function keywords_detail(Request $request)
     {
@@ -39,13 +148,9 @@ class KeywordController extends Controller
 
         $positionFilter = $request->get('positionFilter', 'all');
 
+        // Fetch keywords
         $keywordsQuery = Keyword::with(['keywordData']);
-
-        if ($isAdmin || $isSuperAdmin) {
-            $keywordsQuery->where('website_id', $user->website_id);
-        } else {
-            $keywordsQuery->forUserAndWebsite($user->id, $user->website_id);
-        }
+        $keywordsQuery->where('website_id', $user->website_id);
 
         if (!empty($labelIds)) {
             $keywordsQuery->filterByLabels($labelIds);
@@ -53,6 +158,12 @@ class KeywordController extends Controller
 
         $keywords = $keywordsQuery->get();
         $totalKeywords = $keywords->count();
+
+        // Fetch assigned keywords using AssignKeyword
+        $assignedKeywords = AssignKeyword::where('user_id', $user->id)->with('keyword')->get();
+
+        // Merge keywords and assigned keywords
+        $allKeywords = $keywords->merge($assignedKeywords->pluck('keyword'));
 
         $countryRanges = [];
         foreach ($countries as $country) {
@@ -69,7 +180,7 @@ class KeywordController extends Controller
         $allDates = [];
         $keywordData = [];
 
-        foreach ($keywords as $keyword) {
+        foreach ($allKeywords as $keyword) { // Iterate over merged keywords
             if (!$keyword->keywordData) {
                 continue;
             }
@@ -92,19 +203,20 @@ class KeywordController extends Controller
                 }
                 if ($data->country_id == $selectedCountry) {
                     if (($positionFilter == 'all' || $this->isPositionInFilter($positionDates, $positionFilter))) {
-                    if (!empty($positionDates) || $positionFilter == 'all') {
-                        $keywordData[] = [
-                            'keyword' => $keyword->keyword,
-                            'keyword_label' => $keyword->labels->pluck('name')->toArray(),
-                            'country' => $data->country->name ?? 'Unknown',
-                            'country_id' => $data->country_id,
-                            'search_volume' => $data->search_volume,
-                            'impression' => $data->impression,
-                            'competition' => $data->competition,
-                            'positions' => $positionDates,
-                        ];
+                        if (!empty($positionDates) || $positionFilter == 'all') {
+                            $keywordData[] = [
+                                'keyword' => $keyword->keyword,
+                                'keyword_label' => $keyword->labels->pluck('name')->toArray(),
+                                'country' => $data->country->name ?? 'Unknown',
+                                'country_id' => $data->country_id,
+                                'search_volume' => $data->search_volume,
+                                'impression' => $data->impression,
+                                'competition' => $data->competition,
+                                'positions' => $positionDates,
+                            ];
+                        }
                     }
-                }}
+                }
 
                 if (isset($countryRanges[$data->country_id])) {
                     $this->updateCountryRanges($countryRanges, $data->country_id, $positionDates, $startDate, $endDate);
@@ -124,8 +236,10 @@ class KeywordController extends Controller
 
         $allDates = array_unique($allDates);
         sort($allDates);
+
         return view('keyword.details', compact('keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter', 'labels', 'labelIds'));
     }
+
 
     private function updateCountryRanges(&$countryRanges, $countryId, $positionDates, $startDate, $endDate)
     {
@@ -185,6 +299,8 @@ class KeywordController extends Controller
 
     public function dashboard(Request $request)
     {
+        $userId = auth()->id();
+
         $labelIds = $request->input('labels', []);
         $countries = Country::all();
         $selectedCountry = auth()->user()->country_id ?? 3;
@@ -202,15 +318,19 @@ class KeywordController extends Controller
         $isAdmin = $user->hasRole('Admin');
         $isSuperAdmin = $user->hasRole('Super Admin');
 
-        $keywordsQuery = Keyword::with(['keywordData' => function($query) use ($selectedCountry) {
+        // Fetch keywords
+        $keywordsQuery = Keyword::where('user_id')->with(['keywordData' => function($query) use ($selectedCountry) {
             $query->where('country_id', $selectedCountry);
         }]);
 
-        if ($isAdmin || $isSuperAdmin) {
-            $keywordsQuery->where('website_id', $user->website_id);
-        } else {
-            $keywordsQuery->forUserAndWebsite($user->id, $user->website_id);
+        $keywordsQuery->where('website_id', $user->website_id);
+        // Check for the keyword type filter
+        $keywordType = $request->input('keyword-type', 'all');
+        // dd($keywordType);
+        if ($keywordType == 'only-me') {
+            $keywordsQuery->where('user_id', $user->id);
         }
+        // dd($keywordsQuery->get());
 
         if (!empty($labelIds)) {
             $keywordsQuery->filterByLabels($labelIds);
@@ -218,9 +338,22 @@ class KeywordController extends Controller
 
         $keywords = $keywordsQuery->get();
 
-        foreach ($keywords as $keyword) {
+        // Fetch assigned keywords using AssignKeyword
+        $assignedKeywords = AssignKeyword::where('user_id', $userId)->with(['keyword'=>function($query){
+            $query->with(['keywordData' => function($query) {
+                $query->where('country_id', auth()->user()->country_id);
+            }])->where('website_id', auth()->user()->website_id);
+        }])->get();
+        $assignedKeywordPluck = $assignedKeywords->pluck('keyword');
+        if (null === $assignedKeywordPluck) {
+            $allKeywords = $keywords;
+        } else {
+            $allKeywords = $keywords->merge($assignedKeywordPluck);
+        }
+        // Process keyword data
+        foreach ($allKeywords as $keyword) {
             if ($keyword->keywordData->isEmpty()) {
-                $keyword->keywordData = collect([ (object)[
+                $keyword->keywordData = collect([(object)[
                     'position' => 0,
                     'search_volume' => 0,
                     'clicks' => 0,
@@ -246,20 +379,28 @@ class KeywordController extends Controller
             }
         }
 
-        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
+        return view('dashboard', compact('allKeywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
     }
 
 
     public function create()
     {
+        $users = [];
+        if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')){
+            $users = User::all();
+        }
         $labels = Label::all();
-        return view('keyword.create', compact('labels'));
+        return view('keyword.create', compact('labels', 'users'));
     }
 
     public function edit(Keyword $keyword)
     {
+        $users = [];
+        if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')){
+            $users = User::all();
+        }
         $labels = Label::all();
-        return view('keyword.edit', compact('keyword', 'labels'));
+        return view('keyword.edit', compact('keyword', 'labels', 'users'));
     }
 
     public function update(Request $request, Keyword $keyword)
@@ -267,16 +408,20 @@ class KeywordController extends Controller
         $request->validate([
             'keyword' => 'required|string',
             'labels' => 'array',
-            'labels.*' => 'exists:labels,id'
+            'labels.*' => 'exists:labels,id',
+            'users' => 'required|array',
+            'users.*' => 'exists:users,id',
         ]);
+
         $keyword->keyword = $request->keyword;
         $keyword->save();
 
         $keyword->labels()->sync($request->labels);
-        session()->flash('message', 'Keywords updated successfully');
+        $keyword->assignedUsers()->sync($request->users);
+
+        session()->flash('message', 'Keyword updated successfully');
         return redirect()->route('dashboard');
     }
-
 
 
     public function store(Request $request)
@@ -299,21 +444,23 @@ class KeywordController extends Controller
         $labels = $request->label;
         $userId = auth()->id();
         $websiteId = auth()->user()->website_id;
+        $userIds = $request->users; // Array of user IDs selected for assignment
 
         foreach ($keywordsArray as $keywordValue) {
             $keywordValue = trim($keywordValue);
+
+            // Check if the keyword already exists for the user and website
             $existingKeyword = Keyword::where('user_id', $userId)
                                       ->where('website_id', $websiteId)
                                       ->where('keyword', $keywordValue)
                                       ->first();
+
             if ($existingKeyword) {
                 session()->flash('message', 'The keyword "' . $keywordValue . '" has already been added.');
                 return redirect()->back();
             }
-        }
 
-        foreach ($keywordsArray as $keywordValue) {
-            $keywordValue = trim($keywordValue);
+            // Create a new keyword
             $keyword = new Keyword();
             $keyword->user_id = $userId;
             $keyword->website_id = $websiteId;
@@ -321,20 +468,18 @@ class KeywordController extends Controller
             $keyword->ip_address = $ipaddress;
             $keyword->save();
 
+            // Attach labels to the keyword if provided
             if ($labels) {
-                foreach ($labels as $label) {
-                    $keywordLabel = new keyword_label();
-                    $keywordLabel->keyword_id = $keyword->id;
-                    $keywordLabel->label_id = $label;
-                    $keywordLabel->save();
-                }
+                $keyword->labels()->sync($labels);
             }
+
+            // Assign the keyword to selected users
+            $keyword->assignedUsers()->sync($userIds);
         }
 
         session()->flash('message', 'Keywords saved successfully');
         return redirect()->route('keywords.details');
     }
-
 
 
     public function destroy(Keyword $keyword)

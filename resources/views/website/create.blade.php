@@ -1,7 +1,6 @@
 @extends('layouts.admin')
 
 @section('title', 'Add New Project')
-
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
@@ -13,24 +12,6 @@
                             {{ session('success') }}
                         </div>
                     @endif
-
-                    <style>
-                        .fieldset-gray {
-                            background-color: #f7f7f7;
-                            padding: 10px;
-                            border-radius: 5px;
-                            margin-bottom: 15px;
-                            position: relative;
-                        }
-                        .fieldset-gray legend {
-                            font-weight: bold;
-                        }
-                        .help-dropdown {
-                            position: relative;
-                            margin-left: 85%;
-                        }
-                    </style>
-
                     <form method="POST" action="{{ route('admin.websites.store') }}">
                         @csrf
                         <fieldset class="fieldset-gray">
@@ -117,19 +98,38 @@
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const propertyType = document.getElementById('property_type');
-    const urlLabel = document.getElementById('url_label');
-
-    propertyType.addEventListener('change', function () {
-        if (this.value === 'domain') {
-            urlLabel.textContent = 'Domain';
-        } else if (this.value === 'url_prefix') {
-            urlLabel.textContent = 'URL';
-        }
-    });
-});
-</script>
 @endsection
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const propertyType = document.getElementById('property_type');
+        const urlLabel = document.getElementById('url_label');
+
+        propertyType.addEventListener('change', function () {
+            if (this.value === 'domain') {
+                urlLabel.textContent = 'Domain';
+            } else if (this.value === 'url_prefix') {
+                urlLabel.textContent = 'URL';
+            }
+        });
+    });
+</script>
+@endpush
+@push('styles')
+<style>
+    .fieldset-gray {
+        background-color: #f7f7f7;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        position: relative;
+    }
+    .fieldset-gray legend {
+        font-weight: bold;
+    }
+    .help-dropdown {
+        position: relative;
+        margin-left: 85%;
+    }
+</style>
+@endpush

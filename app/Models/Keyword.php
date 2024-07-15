@@ -44,4 +44,24 @@ class Keyword extends Model
     {
         return $this->hasMany(KeywordData::class);
     }
+
+    public function assignedUsers()
+    {
+        return $this->belongsToMany(User::class, 'assign_keywords', 'keyword_id', 'user_id');
+    }
+
+    public function scopeCreatedByUserOrAssignedByAdmin(Builder $query, $userId)
+    {
+        return $query->where(function ($query) use ($userId) {
+            $query->where('user_id', $userId)
+                ->orWhereNull('user_id');
+        })->with('assignedUsers');
+    }
+
+    public function assignedByUser($userId)
+    {
+        return $this->belongsToMany(User::class, 'assign_keywords', 'keyword_id', 'user_id')
+                    ->wherePivot('user_id', $userId);
+    }
+
 }

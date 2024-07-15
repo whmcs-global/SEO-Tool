@@ -71,16 +71,33 @@
             </div>
 
             <div class="card">
-                @can('Add keyword')
-                    <div class="mb-3 row justify-content-end">
-                        <div class="col-auto">
-                            <a href="{{ route('keywords.create') }}" class="btn btn-primary rounded-pill">Add Keyword</a>
-                        </div>
+                <form method="GET" class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <label for="keyword-type" class="form-label">Keyword Type</label>
+                        <select name="keyword-type" class="form-control" id="keyword-type">
+                            <option value="all" {{ request()->input('keyword-type') == 'all' ? 'selected' : '' }}>All</option>
+                            <option value="only-me" {{ request()->input('keyword-type') == 'only-me' ? 'selected' : '' }}>Only Me</option>
+                        </select>
                     </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('dashboard') }}" class="btn btn-secondary">Clear</a>
+                    </div>
+                </form>
+
+                @can('Add keyword')
+                <div class="mb-3 row justify-content-end">
+                    <div class="col-auto">
+                        <a href="{{ route('keywords.create') }}" class="btn btn-primary rounded-pill">Add Keyword</a>
+                    </div>
+                </div>
                 @endcan
+
                 <div class="card-body">
                     @can('Keyword list')
-                        <div class="table-responsive">
+                    <div class="table-responsive">
                         <table id="keywordsTable" class="table table-hover">
                             <thead class="thead-dark">
                                 <tr>
@@ -89,72 +106,75 @@
                                     <th>Created By</th>
                                     @endrole
                                     <th>Position</th>
-                                    <th>S. Volume</th>
-                                    <th>Click</th>
+                                    <th>Search Volume</th>
+                                    <th>Clicks</th>
                                     <th>Impressions</th>
                                     <th>Competition</th>
                                     <th>Bid rate (Low Range)</th>
                                     <th>Bid rate (High Range)</th>
+                                    @canany(['Edit keyword', 'Delete keyword'])
                                     <th>Actions</th>
+                                    @endcanany
                                 </tr>
                             </thead>
                             <tbody>
-                                @if ($keywords->isEmpty())
-                                    <tr>
-                                        <td colspan="9" class="text-center">No keywords</td>
-                                    </tr>
-                                @else
-                                    @foreach ($keywords as $keyword)
-                                        @foreach ($keyword->keywordData as $data)
-                                            <tr>
-                                                <td>
-                                                    <div>
-                                                        <span>{{ $keyword->keyword }}</span>
-                                                        <div>
-                                                            @foreach ($keyword->labels as $label)
-                                                                <span class="badge badge-info">{{ $label->name }}</span>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                @role('Admin|Super Admin')
-                                                <td>{{ $keyword->user->name }}</td>
-                                                @endrole
-                                                <td>{{ $data->position }}</td>
-                                                <td>{{ $data->search_volume }}</td>
-                                                <td>{{ $data->clicks }}</td>
-                                                <td>{{ $data->impression }}</td>
-                                                <td>{{ $data->competition }}</td>
-                                                <td>{{ round($data->bid_rate_low, 2) }}</td>
-                                                <td>{{ round($data->bid_rate_high, 2) }}</td>
-                                                <td class="text-right">
-                                                    <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
-                                                        @can('Edit keyword')
-                                                            <a href="{{ route('keywords.edit', $keyword) }}" class="btn btn-secondary rounded-pill mr-2">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                        @endcan
-                                                        @can('Delete keyword')
-                                                            <form method="POST" action="{{ route('keywords.destroy', $keyword) }}" class="d-inline mr-2" id="delete-form-{{ $keyword->id }}">
-                                                                @csrf
-                                                                @method('delete')
-                                                                <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $keyword->id }})">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </button>
-                                                            </form>
-                                                        @endcan
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @endforeach
-                                @endif
+                                @forelse ($allKeywords as $keyword)
+                                @foreach ($keyword->keywordData as $data)
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <span>{{ $keyword->keyword }}</span>
+                                            <div>
+                                                @foreach ($keyword->labels as $label)
+                                                <span class="badge badge-info">{{ $label->name }}</span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </td>
+                                    @role('Admin|Super Admin')
+                                    <td>{{ $keyword->user->name }}</td>
+                                    @endrole
+                                    <td>{{ $data->position }}</td>
+                                    <td>{{ $data->search_volume }}</td>
+                                    <td>{{ $data->clicks }}</td>
+                                    <td>{{ $data->impression }}</td>
+                                    <td>{{ $data->competition }}</td>
+                                    <td>{{ round($data->bid_rate_low, 2) }}</td>
+                                    <td>{{ round($data->bid_rate_high, 2) }}</td>
+                                    <td class="text-right">
+                                        <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
+                                            @can('Edit keyword')
+                                            <a href="{{ route('keywords.edit', $keyword) }}" class="btn btn-secondary rounded-pill mr-2">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            @endcan
+                                            @can('Delete keyword')
+                                            <form method="POST" action="{{ route('keywords.destroy', $keyword) }}" class="d-inline mr-2" id="delete-form-{{ $keyword->id }}">
+                                                @csrf
+                                                @method('delete')
+                                                <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $keyword->id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                            @endcan
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="9" class="text-center">No keywords found</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
-                        </div>
+                    </div>
+                    @else
+                    <p class="text-center">You do not have permission to view keywords.</p>
                     @endcan
                 </div>
             </div>
+
     </section>
 @endsection
 
