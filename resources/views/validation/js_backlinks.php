@@ -17,6 +17,9 @@ $(document).ready(function () {
         link_type: {
             required: true
         },
+        spam_score: {
+            required: true
+        },
         anchor_text: {
             required: true
         },
@@ -50,6 +53,9 @@ $(document).ready(function () {
         },
         link_type: {
             required: "Please select a link type"
+        },
+        spam_score: {
+            required: "Please enter a spam score"
         },
         anchor_text: {
             required: "Please enter an anchor text"

@@ -297,10 +297,94 @@ class KeywordController extends Controller
         return view('keyword.list', compact('keywords'));
     }
 
+    // public function dashboard(Request $request)
+    // {
+    //     $userId = auth()->id();
+
+    //     $labelIds = $request->input('labels', []);
+    //     $countries = Country::all();
+    //     $selectedCountry = auth()->user()->country_id ?? 3;
+    //     $labels = Label::all();
+
+    //     $ranges = [
+    //         '1-10' => 0,
+    //         '11-20' => 0,
+    //         '21-30' => 0,
+    //         '31-40' => 0,
+    //         '41-50' => 0
+    //     ];
+
+    //     $user = auth()->user();
+    //     $isAdmin = $user->hasRole('Admin');
+    //     $isSuperAdmin = $user->hasRole('Super Admin');
+
+    //     // Fetch keywords
+    //     $keywordsQuery = Keyword::where('user_id')->with(['keywordData' => function($query) use ($selectedCountry) {
+    //         $query->where('country_id', $selectedCountry);
+    //     }]);
+
+    //     $keywordsQuery->where('website_id', $user->website_id);
+    //     // Check for the keyword type filter
+    //     $keywordType = $request->input('keyword-type', 'all');
+    //     // dd($keywordType);
+    //     if ($keywordType == 'only-me') {
+    //         $keywordsQuery->where('user_id', $user->id);
+    //     }
+    //     // dd($keywordsQuery->get());
+
+    //     if (!empty($labelIds)) {
+    //         $keywordsQuery->filterByLabels($labelIds);
+    //     }
+
+    //     $keywords = $keywordsQuery->get();
+
+    //     // Fetch assigned keywords using AssignKeyword
+    //     $assignedKeywords = AssignKeyword::where('user_id', $userId)->with(['keyword'=>function($query){
+    //         $query->with(['keywordData' => function($query) {
+    //             $query->where('country_id', auth()->user()->country_id);
+    //         }])->where('website_id', auth()->user()->website_id);
+    //     }])->get();
+    //     $assignedKeywordPluck = $assignedKeywords->pluck('keyword');
+    //     if (null === $assignedKeywordPluck) {
+    //         $allKeywords = $keywords;
+    //     } else {
+    //         $allKeywords = $keywords->merge($assignedKeywordPluck);
+    //     }
+    //     // Process keyword data
+    //     foreach ($allKeywords as $keyword) {
+    //         if ($keyword->keywordData->isEmpty()) {
+    //             $keyword->keywordData = collect([(object)[
+    //                 'position' => 0,
+    //                 'search_volume' => 0,
+    //                 'clicks' => 0,
+    //                 'impression' => 0,
+    //                 'competition' => 0,
+    //                 'bid_rate_low' => 0,
+    //                 'bid_rate_high' => 0
+    //             ]]);
+    //         } else {
+    //             foreach ($keyword->keywordData as $data) {
+    //                 if ($data->position >= 1 && $data->position <= 10) {
+    //                     $ranges['1-10']++;
+    //                 } elseif ($data->position >= 11 && $data->position <= 20) {
+    //                     $ranges['11-20']++;
+    //                 } elseif ($data->position >= 21 && $data->position <= 30) {
+    //                     $ranges['21-30']++;
+    //                 } elseif ($data->position >= 31 && $data->position <= 40) {
+    //                     $ranges['31-40']++;
+    //                 } elseif ($data->position >= 41 && $data->position <= 50) {
+    //                     $ranges['41-50']++;
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     return view('dashboard', compact('allKeywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
+    // }
+
     public function dashboard(Request $request)
     {
         $userId = auth()->id();
-
         $labelIds = $request->input('labels', []);
         $countries = Country::all();
         $selectedCountry = auth()->user()->country_id ?? 3;
@@ -318,42 +402,37 @@ class KeywordController extends Controller
         $isAdmin = $user->hasRole('Admin');
         $isSuperAdmin = $user->hasRole('Super Admin');
 
-        // Fetch keywords
-        $keywordsQuery = Keyword::where('user_id')->with(['keywordData' => function($query) use ($selectedCountry) {
+        $keywordsQuery = Keyword::with(['keywordData' => function($query) use ($selectedCountry) {
             $query->where('country_id', $selectedCountry);
         }]);
 
-        $keywordsQuery->where('website_id', $user->website_id);
-        // Check for the keyword type filter
-        $keywordType = $request->input('keyword-type', 'all');
-        // dd($keywordType);
-        if ($keywordType == 'only-me') {
-            $keywordsQuery->where('user_id', $user->id);
+        if ($isAdmin || $isSuperAdmin) {
+            $keywordsQuery->where('website_id', $user->website_id);
+        } else {
+            $keywordsQuery->forUserAndWebsite($user->website_id);
         }
-        // dd($keywordsQuery->get());
 
         if (!empty($labelIds)) {
             $keywordsQuery->filterByLabels($labelIds);
         }
 
         $keywords = $keywordsQuery->get();
-
         // Fetch assigned keywords using AssignKeyword
         $assignedKeywords = AssignKeyword::where('user_id', $userId)->with(['keyword'=>function($query){
             $query->with(['keywordData' => function($query) {
-                $query->where('country_id', auth()->user()->country_id);
+                $query->where('country_id', auth()->user()->country_id ?? 3);
             }])->where('website_id', auth()->user()->website_id);
         }])->get();
+
         $assignedKeywordPluck = $assignedKeywords->pluck('keyword');
         if (null === $assignedKeywordPluck) {
             $allKeywords = $keywords;
         } else {
             $allKeywords = $keywords->merge($assignedKeywordPluck);
         }
-        // Process keyword data
-        foreach ($allKeywords as $keyword) {
+        foreach ($keywords as $keyword) {
             if ($keyword->keywordData->isEmpty()) {
-                $keyword->keywordData = collect([(object)[
+                $keyword->keywordData = collect([ (object)[
                     'position' => 0,
                     'search_volume' => 0,
                     'clicks' => 0,
@@ -379,8 +458,9 @@ class KeywordController extends Controller
             }
         }
 
-        return view('dashboard', compact('allKeywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
+        return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
     }
+
 
 
     public function create()

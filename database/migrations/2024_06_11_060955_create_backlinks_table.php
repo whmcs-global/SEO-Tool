@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('url');
             $table->string('backlink_source');
             $table->string('link_type');
+            $table->intiger('spam_score')->default(0);
             $table->string('anchor_text');
             $table->integer('domain_authority')->default(0);
             $table->integer('page_authority')->default(0);

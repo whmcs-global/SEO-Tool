@@ -18,6 +18,7 @@ class Backlinks extends Model
         'url',
         'backlink_source',
         'link_type',
+        'spam_score',
         'anchor_text',
         'domain_authority',
         'page_authority',
@@ -37,12 +38,12 @@ class Backlinks extends Model
     {
         return $this->user ? $this->user->email : null;
     }
-    
+
     public function getCreatedByAttribute()
     {
         return $this->user ? $this->user->name : null;
     }
-    
+
     public function website()
     {
         return $this->belongsTo(Website::class);

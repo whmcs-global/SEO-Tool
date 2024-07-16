@@ -118,7 +118,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($allKeywords as $keyword)
+                                @forelse ($keywords as $keyword)
                                 @foreach ($keyword->keywordData as $data)
                                 <tr>
                                     <td>

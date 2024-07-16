@@ -8,12 +8,12 @@ class BacklinkController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Backlinks::query()->with('user')->where('website_id', auth()->user()->website_id);;
+        $query = Backlinks::query()->with('user')->where('website_id', auth()->user()->website_id);
 
-        // if (!auth()->user()->hasRole(['Admin', 'Super Admin'])) {
-        //     $query->where('user_id', auth()->user()->id)
-        //           ->where('website_id', auth()->user()->website_id);
-        // }
+        if (!auth()->user()->hasRole(['Admin', 'Super Admin'])) {
+            $query->where('user_id', auth()->user()->id)
+                ->where('website_id', auth()->user()->website_id);
+        }
 
         if ($request->filled('link_type')) {
             $query->where('link_type', $request->input('link_type'));
@@ -52,6 +52,7 @@ class BacklinkController extends Controller
         ];
 
         $values = [];
+        $uniqueDomains = [];
         foreach ($backlinks as $data) {
             $values[] = [
                 "name" => $data->website,
@@ -61,17 +62,28 @@ class BacklinkController extends Controller
                     "pa" => $data->page_authority
                 ]
             ];
+
+            // Extract domain from URL
+            $domain = parse_url($data->url, PHP_URL_HOST);
+            if ($domain) {
+                // Remove 'www.' if present
+                $domain = preg_replace('/^www\./', '', $domain);
+                $uniqueDomains[$domain] = true;
+            }
         }
+
+        $uniqueDomainCount = count($uniqueDomains);
 
         $domain_authority = $backlinks->sum("domain_authority");
         $page_authority = $backlinks->sum("page_authority");
         $users = User::whereIn('id', $backlinks->pluck('user_id')->unique())->get();
+
         return view('backlinks.list', compact([
             'backlinks', 'pie_data', 'data_name', 'values', 'domain_authority', 'page_authority', 'users',
-            'request', 'activelinks', 'inactivelinks', 'pendinglinks', 'declinedlinks', 'totallinks'
+            'request', 'activelinks', 'inactivelinks', 'pendinglinks', 'declinedlinks', 'totallinks',
+            'uniqueDomainCount'
         ]));
     }
-
 
     public function storeOrUpdate(Request $request, $id = null)
     {
@@ -94,6 +106,7 @@ class BacklinkController extends Controller
                 'url' => 'required|string',
                 'backlink_source' => 'required|string',
                 'link_type' => 'required|string',
+                'spam_score' => 'required|integer',
                 'anchor_text' => 'required|string',
                 'domain_authority' => 'required|integer',
                 'page_authority' => 'required|integer',

@@ -34,10 +34,9 @@ class Keyword extends Model
         });
     }
 
-    public function scopeForUserAndWebsite(Builder $query, $userId, $websiteId)
+    public function scopeForUserAndWebsite(Builder $query, $websiteId)
     {
-        return $query->where('user_id', $userId)
-                     ->where('website_id', $websiteId);
+        return $query->where('website_id', $websiteId);
     }
 
     public function keywordData()

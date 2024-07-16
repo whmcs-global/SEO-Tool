@@ -24,11 +24,11 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-center align-items-center">
-                                <h4>Total Declined Links</h4>
+                                <h4>Total Domains</h4>
                             </div>
                             <div class="card-body">
                                 <div class="text-center">
-                                    <label><b><h1>{{ $declinedlinks }}</h1></b></label>
+                                    <label><b><h1>{{ $uniqueDomainCount }}</h1></b></label>
                                 </div>
                             </div>
                         </div>
@@ -147,6 +147,9 @@
                                 <option value="Broken Link Building" {{ $request->input('link_type') == 'Broken Link Building' ? 'selected' : '' }}>
                                     Broken Link Building
                                 </option>
+                                <option value="Profile Creation" {{ $request->input('link_type') == 'Profile Creation' ? 'selected' : '' }}>
+                                    Profile Creation
+                                </option>
                     </select>
                 </div>
                 <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
@@ -195,6 +198,7 @@
                                 <th>Target Keyword</th>
                                 <th>Backlink Source</th>
                                 <th>Link Type</th>
+                                <th>Spam Score (SS)</th>
                                 <th>Status</th>
                                 <th>Anchor Text</th>
                                 <th>Domain Authority</th>
@@ -224,6 +228,7 @@
                                     <td>{{ $backlink->keyword_value }}</td>
                                     <td>{{ $backlink->backlink_source }}</td>
                                     <td>{{ $backlink->link_type }}</td>
+                                    <td>{{ $backlink->spam_score }}</td>
                                     <td>{{ $backlink->status }}</td>
                                     <td>{{ $backlink->anchor_text }}</td>
                                     <td>{{ $backlink->domain_authority }}</td>

@@ -14,7 +14,7 @@
                         <form method="POST" id="backlinkForm" action="{{ route('backlinks.create', $backlink) }}">
                             @csrf
                             @if($backlink) @method('PUT') @endif
-                            
+
                             <div class="mb-3 row">
                                 <label for="website" class="col-md-4 col-form-label text-md-end">{{ __('Website') }}</label>
                                 <div class="col-md-6">
@@ -26,7 +26,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3 row">
                                 <label for="url" class="col-md-4 col-form-label text-md-end">{{ __('URL') }}</label>
                                 <div class="col-md-6">
@@ -38,7 +38,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            
+
                             <!-- <div class="mb-3 row">
                                 <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
                                 <div class="col-md-6">
@@ -56,7 +56,7 @@
                                     <select name="keyword_id" class="form-control">
                                     <option value="">Select Keyword</option>
                                         @foreach ($keywords as $keyword)
-                                            <option value="{{ $keyword->id }}" 
+                                            <option value="{{ $keyword->id }}"
                                                 {{ $backlink && $backlink->keyword_id == $keyword->id ? 'selected' : '' }}>
                                                 {{ $keyword->keyword }}
                                             </option>
@@ -70,7 +70,7 @@
                                 </div>
                             </div>
 
-                            
+
                             <div class="mb-3 row">
                                 <label for="backlink_source" class="col-md-4 col-form-label text-md-end">{{ __('Backlink Source') }}</label>
                                 <div class="col-md-6">
@@ -81,7 +81,7 @@
                                         </span>
                                     @enderror
                                 </div>
-                            </div>                   
+                            </div>
                             <div class="mb-3 row">
                                 <label for="link_type" class="col-md-4 col-form-label text-md-end">{{ __('Link Type') }}</label>
                                 <div class="col-md-6">
@@ -104,6 +104,7 @@
                                         <option value="Brand Mentions" {{ $backlink && $backlink->link_type == 'Brand Mentions' ? 'selected' : '' }}>Brand Mentions</option>
                                         <option value="Guest Post Submission" {{ $backlink && $backlink->link_type == 'Guest Post Submission' ? 'selected' : '' }}>Guest Post Submission</option>
                                         <option value="Broken Link Building" {{ $backlink && $backlink->link_type == 'Broken Link Building' ? 'selected' : '' }}>Broken Link Building</option>
+                                        <option value="Profile Creation" {{ $backlink && $backlink->link_type == 'Profile Creation' ? 'selected' : '' }}>Profile Creation</option>
                                     </select>
                                     @error('link_type')
                                         <span class="invalid-feedback" role="alert">
@@ -111,7 +112,18 @@
                                         </span>
                                     @enderror
                                 </div>
-                            </div>                            
+                            </div>
+                            <div class="mb-3 row">
+                                <label for="domain_authority" class="col-md-4 col-form-label text-md-end">{{ __('Spam Score (SS)') }}</label>
+                                <div class="col-md-6">
+                                    <input id="spam_score" placeholder="e.g., 50" type="text" class="form-control @error('spam_score') is-invalid @enderror" name="spam_score" value="{{ $backlink ? $backlink->spam_score : old('spam_score') }}" >
+                                    @error('spam_score')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+                            </div>
                             <div class="mb-3 row">
                                 <label for="anchor_text" class="col-md-4 col-form-label text-md-end">{{ __('Anchor Text') }}</label>
                                 <div class="col-md-6">
@@ -123,7 +135,6 @@
                                     @enderror
                                 </div>
                             </div>
-                            
                             <div class="mb-3 row">
                                 <label for="domain_authority" class="col-md-4 col-form-label text-md-end">{{ __('Domain Authority') }}</label>
                                 <div class="col-md-6">
@@ -135,7 +146,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3 row">
                                 <label for="page_authority" class="col-md-4 col-form-label text-md-end">{{ __('Page Authority') }}</label>
                                 <div class="col-md-6">
@@ -147,7 +158,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3 row">
                                 <label for="contact_person" class="col-md-4 col-form-label text-md-end">{{ __('Contact Person') }}</label>
                                 <div class="col-md-6">
@@ -159,7 +170,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3 row">
                                 <label for="notes_comments" class="col-md-4 col-form-label text-md-end">{{ __('Notes/Comments') }}</label>
                                 <div class="col-md-6">
@@ -171,7 +182,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3 row">
                                 <label for="status" class="col-md-4 col-form-label text-md-end">{{ __('Status') }}</label>
                                 <div class="col-md-6">
@@ -188,7 +199,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            
+
                             <div class="mb-0 row">
                                 <div class="col-md-6 offset-md-4">
                                     <button type="submit" class="btn btn-primary">
