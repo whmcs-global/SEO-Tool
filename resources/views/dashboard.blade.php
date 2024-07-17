@@ -7,7 +7,6 @@
 @push('styles')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <style>
-        /* Multiselect Dropdown Styles */
         .multiselect-dropdown {
             width: 100%;
             min-height: 46px;
@@ -18,6 +17,32 @@
             border-radius: 6px;
             background-color: white !important;
             max-width: 120px;
+        }
+
+        #keywordsTable th,
+        #keywordsTable td {
+            min-width: 100px;
+        }
+
+        #keywordsTable th:first-child,
+        #keywordsTable td:first-child {
+            min-width: 200px;
+            max-width: 250px;
+            width: 20%;
+            white-space: normal;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        #keywordsTable td:first-child > div {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #keywordsTable td:first-child .badge {
+            display: inline-block;
+            margin: 2px;
         }
     </style>
 @endpush
