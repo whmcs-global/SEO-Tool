@@ -6,11 +6,11 @@
 <div class="card">
     <div class="filter-country-main">
         <div class="mb-4 d-flex justify-content-end align-items-center">
-            <div class="me-2 mb-2 mb-md-0 position-relative" style="width:100%">
+            <div class="mb-2 me-2 mb-md-0 position-relative" style="width:100%">
                 <form action="{{ route('keywords.details') }}" method="GET" id="filterForm">
                      <div class="filter-country-inner">
                         <h5>Position Filters for All Countries:</h5>
-                        <div class=" mb-3 mb-md-0" style="display:flex; align-items:center; gap:10px;">
+                        <div class="mb-3 mb-md-0" style="display:flex; align-items:center; gap:10px;">
                             <label for="dateRangeInput" class="form-label">Select Date Range</label>
                             <div >
                                 <div class="input-group">
@@ -56,14 +56,14 @@
             $ranges = ['all', 'top_1', 'top_3', 'top_5', 'top_10', 'top_30', 'top_100'];
         @endphp
         @foreach ($countries as $country)
-            <div class="position-filters mb-4">
+            <div class="mb-4 position-filters">
                 <h6>
                     <img src="https://flagcdn.com/32x24/{{ strtolower($country->code) }}.png"
                         alt="{{ $country->name }} flag"
                         class="me-1">
                     {{ $country->name }}
                 </h6>
-                <div class="d-flex gap-2 mb-3 filter-countries-row">
+                <div class="gap-2 mb-3 d-flex filter-countries-row">
                     @foreach ($ranges as $range)
                         @php
                             if ($range === 'all') {
@@ -108,7 +108,7 @@
              class="me-1">
         Keyword Data for {{ $countries->firstWhere('id', $selectedCountry)->name }}:
     </h5>
-    <div class="table-responsive mt-4">
+    <div class="mt-4 table-responsive">
         <table class="table table-striped table-bordered keyword-data-countries">
             <thead>
                 <tr>
@@ -174,122 +174,141 @@
         margin-bottom: 20px;
     }
 
-.filter-country-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+    .keyword-data-countries .sticky-col {
+        min-width: 200px;
+        max-width: 250px;
+        width: 25%;
+        white-space: normal;
+        word-wrap: break-word;
+        word-break: break-word;
+    }
 
-.filter-country-inner h5 {
-    margin-bottom: 0;
-}
+    .keyword-data-countries .sticky-col > div {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-.sticky-col {
-    position: sticky;
-    left: 0;
-    background-color: #fff !important;
-    z-index: 1;
-}
+    .keyword-data-countries th,
+    .keyword-data-countries td {
+        min-width: 100px;
+    }
+    .filter-country-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-.table-responsive {
-    overflow-x: auto;
-    max-width: 100%;
-}
+    .filter-country-inner h5 {
+        margin-bottom: 0;
+    }
 
-#country {
-    padding-left: 30px;
-    background-repeat: no-repeat;
-    background-position: 5px center;
-    background-size: 20px;
-}
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        background-color: #fff !important;
+        z-index: 1;
+    }
 
-/* Button Styles */
-.position-filter-btn.active, .country_filter .active {
-    background-color: #6778f0 !important;
-    color: white !important;
-}
+    .table-responsive {
+        overflow-x: auto;
+        max-width: 100%;
+    }
 
-.position-filter-btn.active {
-    background-color: #007bff;
-}
+    #country {
+        padding-left: 30px;
+        background-repeat: no-repeat;
+        background-position: 5px center;
+        background-size: 20px;
+    }
 
-/* Country Filter Styles */
-.country_filter {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+    /* Button Styles */
+    .position-filter-btn.active, .country_filter .active {
+        background-color: #6778f0 !important;
+        color: white !important;
+    }
 
-.filter-countries-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
+    .position-filter-btn.active {
+        background-color: #007bff;
+    }
 
-/* Table Styles */
-.keyword-data-countries td, .keyword-data-countries th {
-    border-color: #cccccc !important;
-}
+    /* Country Filter Styles */
+    .country_filter {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
 
-.table.keyword-data-countries:not(.table-sm) thead th {
-    border: 1px solid #cccccc;
-}
+    .filter-countries-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
 
-.text-muted.text-hidden {
-    visibility: hidden;
-}
+    /* Table Styles */
+    .keyword-data-countries td, .keyword-data-countries th {
+        border-color: #cccccc !important;
+    }
 
-/* Filter Country Main Styles */
-.filter-country-main {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
+    .table.keyword-data-countries:not(.table-sm) thead th {
+        border: 1px solid #cccccc;
+    }
 
-/* Multiselect Dropdown Styles */
-.multiselect-dropdown {
-    width: 100%;
-    min-height: 46px;
-    font-size: 13px;
-    color: #323232;
-    letter-spacing: 0.2px;
-    border: 1px solid #9F9FA0;
-    border-radius: 6px;
-    padding: 9px 20px;
-    background-color: whitesmoke !important;
-    max-width: 120px;
-}
+    .text-muted.text-hidden {
+        visibility: hidden;
+    }
 
-/* Position Filters Styles */
-.position-filters {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
-}
+    /* Filter Country Main Styles */
+    .filter-country-main {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
 
-.position-filters.mb-4 {
-    justify-content: space-between;
-    /* flex-wrap: wrap; */
-}
+    /* Multiselect Dropdown Styles */
+    .multiselect-dropdown {
+        width: 100%;
+        min-height: 46px;
+        font-size: 13px;
+        color: #323232;
+        letter-spacing: 0.2px;
+        border: 1px solid #9F9FA0;
+        border-radius: 6px;
+        padding: 9px 20px;
+        background-color: whitesmoke !important;
+        max-width: 120px;
+    }
 
-.position-filters h6 {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
-    margin: 0;
-    min-width: 150px;
-}
+    /* Position Filters Styles */
+    .position-filters {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+    }
 
-.position-filters > div {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    width: 100%;
-    flex-wrap: wrap;
-}
+    .position-filters.mb-4 {
+        justify-content: space-between;
+        /* flex-wrap: wrap; */
+    }
+
+    .position-filters h6 {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+        margin: 0;
+        min-width: 150px;
+    }
+
+    .position-filters > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        flex-wrap: wrap;
+    }
 
 </style>
 @endpush
