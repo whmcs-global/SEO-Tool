@@ -371,7 +371,7 @@ $(document).ready(function() {
     $('#country').css('background-image', 'url(' + flagUrl + ')');
 
     $('#keywordTable').DataTable({
-        "pageLength": 25,
+        "pageLength": 10,
         "lengthMenu": [[10, 25, 50], [10, 25, 50]],
         "order": [],
         "columnDefs": [
