@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Tracker')
+@section('title', 'Keyword Tracker')
 
 @section('content')
 <div class="card">
@@ -12,7 +12,7 @@
                         <h5>Position Filters for All Countries:</h5>
                         <div class="mb-3 mb-md-0" style="display:flex; align-items:center; gap:10px;">
                             <label for="dateRangeInput" class="form-label">Select Date Range</label>
-                            <div >
+                            <div>
                                 <div class="input-group">
                                     <input type="text"
                                         readonly
@@ -22,32 +22,30 @@
                                         placeholder="Select Date Range"
                                         value="{{ $startDate && $endDate ?  $startDate. ' - ' .$endDate  : '' }}">
                                 </div>
-
                             </div>
                             <div class="form-row align-items-center">
-                                    <div class="col-auto">
-                                        <label for="labels" class="font-weight-bold">Filter by Labels:</label>
-                                    </div>
-                                    <div class="col">
-                                        <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true"
-                                            multiselect-max-items="3">
-                                            @foreach ($labels as $label)
-                                                <option value="{{ $label->id }}"
-                                                    {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
-                                                    {{ $label->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-auto">
-                                        <button type="submit" class="btn btn-primary">Filter</button>
-                                    </div>
+                                <div class="col-auto">
+                                    <label for="labels" class="font-weight-bold">Filter by Labels:</label>
                                 </div>
-                                <input type="hidden" name="positionFilter" id="positionFilter" value="{{ $positionFilter ?? '' }}">
-                                <input type="hidden" name="country" value="{{ $selectedCountry }}">
+                                <div class="col">
+                                    <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true"
+                                        multiselect-max-items="3">
+                                        @foreach ($labels as $label)
+                                            <option value="{{ $label->id }}"
+                                                {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
+                                                {{ $label->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                </div>
+                            </div>
+                            <input type="hidden" name="positionFilter" id="positionFilter" value="{{ $positionFilter ?? '' }}">
+                            <input type="hidden" name="country" value="{{ $selectedCountry }}">
                         </div>
                      </div>
-
                 </form>
             </div>
         </div>
@@ -109,7 +107,7 @@
         Keyword Data for {{ $countries->firstWhere('id', $selectedCountry)->name }}:
     </h5>
     <div class="mt-4 table-responsive">
-        <table class="table table-striped table-bordered keyword-data-countries">
+        <table id="keywordTable" class="table table-striped table-bordered keyword-data-countries">
             <thead>
                 <tr>
                     <th class="sticky-col">KEYWORDS</th>
@@ -159,163 +157,187 @@
             </tbody>
         </table>
     </div>
-        </div>
+    </div>
 </div>
 @endsection
 
 @push('styles')
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.min.css">
 <style>
 /* General Styles */
-    .position-filters {
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        margin-bottom: 20px;
-    }
+.position-filters {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    margin-bottom: 20px;
+}
 
-    .keyword-data-countries .sticky-col {
-        min-width: 200px;
-        max-width: 250px;
-        width: 25%;
-        white-space: normal;
-        word-wrap: break-word;
-        word-break: break-word;
-    }
+.keyword-data-countries .sticky-col {
+    min-width: 200px;
+    max-width: 250px;
+    width: 25%;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
+}
 
-    .keyword-data-countries .sticky-col > div {
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+.keyword-data-countries .sticky-col > div {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-    .keyword-data-countries th,
-    .keyword-data-countries td {
-        min-width: 100px;
-    }
-    .filter-country-inner {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+.keyword-data-countries th,
+.keyword-data-countries td {
+    min-width: 100px;
+}
+.filter-country-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-    .filter-country-inner h5 {
-        margin-bottom: 0;
-    }
+.filter-country-inner h5 {
+    margin-bottom: 0;
+}
 
-    .sticky-col {
-        position: sticky;
-        left: 0;
-        background-color: #fff !important;
-        z-index: 1;
-    }
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background-color: #fff !important;
+    z-index: 1;
+}
 
-    .table-responsive {
-        overflow-x: auto;
-        max-width: 100%;
-    }
+.table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+}
 
-    #country {
-        padding-left: 30px;
-        background-repeat: no-repeat;
-        background-position: 5px center;
-        background-size: 20px;
-    }
+#country {
+    padding-left: 30px;
+    background-repeat: no-repeat;
+    background-position: 5px center;
+    background-size: 20px;
+}
 
-    /* Button Styles */
-    .position-filter-btn.active, .country_filter .active {
-        background-color: #6778f0 !important;
-        color: white !important;
-    }
+/* Button Styles */
+.position-filter-btn.active, .country_filter .active {
+    background-color: #6778f0 !important;
+    color: white !important;
+}
 
-    .position-filter-btn.active {
-        background-color: #007bff;
-    }
+.position-filter-btn.active {
+    background-color: #007bff;
+}
 
-    /* Country Filter Styles */
-    .country_filter {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
+/* Country Filter Styles */
+.country_filter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    .filter-countries-row {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
+.filter-countries-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
 
-    /* Table Styles */
-    .keyword-data-countries td, .keyword-data-countries th {
-        border-color: #cccccc !important;
-    }
+/* Table Styles */
+.keyword-data-countries td, .keyword-data-countries th {
+    border-color: #cccccc !important;
+}
 
-    .table.keyword-data-countries:not(.table-sm) thead th {
-        border: 1px solid #cccccc;
-    }
+.table.keyword-data-countries:not(.table-sm) thead th {
+    border: 1px solid #cccccc;
+}
 
-    .text-muted.text-hidden {
-        visibility: hidden;
-    }
+.text-muted.text-hidden {
+    visibility: hidden;
+}
 
-    /* Filter Country Main Styles */
-    .filter-country-main {
-        background: #fff;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
+/* Filter Country Main Styles */
+.filter-country-main {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
 
-    /* Multiselect Dropdown Styles */
-    .multiselect-dropdown {
-        width: 100%;
-        min-height: 46px;
-        font-size: 13px;
-        color: #323232;
-        letter-spacing: 0.2px;
-        border: 1px solid #9F9FA0;
-        border-radius: 6px;
-        padding: 9px 20px;
-        background-color: whitesmoke !important;
-        max-width: 120px;
-    }
+/* Multiselect Dropdown Styles */
+.multiselect-dropdown {
+    width: 100%;
+    min-height: 46px;
+    font-size: 13px;
+    color: #323232;
+    letter-spacing: 0.2px;
+    border: 1px solid #9F9FA0;
+    border-radius: 6px;
+    padding: 9px 20px;
+    background-color: whitesmoke !important;
+    max-width: 120px;
+}
 
-    /* Position Filters Styles */
-    .position-filters {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 10px;
-    }
+/* Position Filters Styles */
+.position-filters {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+}
 
-    .position-filters.mb-4 {
-        justify-content: space-between;
-        /* flex-wrap: wrap; */
-    }
+.position-filters.mb-4 {
+    justify-content: space-between;
+    /* flex-wrap: wrap; */
+}
 
-    .position-filters h6 {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        white-space: nowrap;
-        margin: 0;
-        min-width: 150px;
-    }
+.position-filters h6 {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    margin: 0;
+    min-width: 150px;
+}
 
-    .position-filters > div {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        width: 100%;
-        flex-wrap: wrap;
-    }
+.position-filters > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    flex-wrap: wrap;
+}
 
+/* Additional styles for DataTables */
+.dataTables_wrapper .dataTables_filter {
+    float: right;
+    margin-bottom: 10px;
+}
+
+.dataTables_wrapper .dataTables_length {
+    float: left;
+    margin-bottom: 10px;
+}
+
+.dataTables_wrapper .dataTables_info {
+    clear: both;
+    float: left;
+    padding-top: 0.755em;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    float: right;
+    padding-top: 0.25em;
+}
 </style>
 @endpush
 
 @push('scripts')
 <script src="{{ asset('assets/js/custom/multiselect-dropdown.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.min.js"></script>
 <script>
 $(document).ready(function() {
     $('input[name="daterange"]').daterangepicker({
@@ -347,13 +369,21 @@ $(document).ready(function() {
     var selectedOption = $('#country').find('option:selected');
     var flagUrl = selectedOption.data('flag');
     $('#country').css('background-image', 'url(' + flagUrl + ')');
+
+    $('#keywordTable').DataTable({
+        "pageLength": 25,
+        "lengthMenu": [[10, 25, 50], [10, 25, 50]],
+        "order": [],
+        "columnDefs": [
+            { "orderable": false, "targets": 0 }
+        ]
+    });
 });
 
-function applyFilter(countryId, filter) {
+function applyFilter(countryId, positionFilter) {
+    $('#positionFilter').val(positionFilter);
     $('input[name="country"]').val(countryId);
-    $('input[name="positionFilter"]').val(filter);
     $('#filterForm').submit();
 }
-
 </script>
 @endpush

@@ -96,9 +96,10 @@
             </div>
 
             <div class="card">
+                {{-- @role('User') --}}
+            <div style="padding: 10px;">
                 <form method="GET" class="row g-3 align-items-center">
                     <div class="col-md-4">
-                        <label for="keyword-type" class="form-label">Keyword Type</label>
                         <select name="keyword-type" class="form-control" id="keyword-type">
                             <option value="all" {{ request()->input('keyword-type') == 'all' ? 'selected' : '' }}>All</option>
                             <option value="only-me" {{ request()->input('keyword-type') == 'only-me' ? 'selected' : '' }}>Only Me</option>
@@ -111,7 +112,8 @@
                         <a href="{{ route('dashboard') }}" class="btn btn-secondary">Clear</a>
                     </div>
                 </form>
-
+            </div>
+                {{-- @endrole --}}
                 @can('Add keyword')
                 <div class="mb-3 row justify-content-end">
                     <div class="col-auto">
@@ -143,7 +145,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($keywords as $keyword)
+                                @forelse ($allKeywords as $keyword)
                                 @foreach ($keyword->keywordData as $data)
                                 <tr>
                                     <td>
@@ -169,12 +171,12 @@
                                     <td class="text-right">
                                         <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
                                             @can('Edit keyword')
-                                            <a href="{{ route('keywords.edit', $keyword) }}" class="btn btn-secondary rounded-pill mr-2">
+                                            <a href="{{ route('keywords.edit', $keyword) }}" class="mr-2 btn btn-secondary rounded-pill">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             @endcan
                                             @can('Delete keyword')
-                                            <form method="POST" action="{{ route('keywords.destroy', $keyword) }}" class="d-inline mr-2" id="delete-form-{{ $keyword->id }}">
+                                            <form method="POST" action="{{ route('keywords.destroy', $keyword) }}" class="mr-2 d-inline" id="delete-form-{{ $keyword->id }}">
                                                 @csrf
                                                 @method('delete')
                                                 <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $keyword->id }})">
