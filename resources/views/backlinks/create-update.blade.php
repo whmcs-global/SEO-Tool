@@ -3,7 +3,19 @@
 @section('title')
 {{  $backlink ? __('Update Backlink') :  __('Create Backlink') }}
 @endsection
-
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+    <style>
+        .dropdown-toggle.btn-light.bs-placeholder,
+        .btn.dropdown-toggle.btn-light {
+            width: 322px !important;
+            background: unset !important;
+        }
+        .dropdown-menu.show {
+            width: 322px !important;
+        }
+    </style>
+@endpush
 @section('content')
     <div class="container">
         <div class="row justify-content-center">
@@ -50,11 +62,29 @@
                                     @enderror
                                 </div>
                             </div> -->
-                            <div class="mb-3 row">
+                            {{-- <div class="mb-3 row">
                                 <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
                                 <div class="col-md-6">
                                     <select name="keyword_id" class="form-control">
                                     <option value="">Select Keyword</option>
+                                        @foreach ($keywords as $keyword)
+                                            <option value="{{ $keyword->id }}"
+                                                {{ $backlink && $backlink->keyword_id == $keyword->id ? 'selected' : '' }}>
+                                                {{ $keyword->keyword }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('target_keyword')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+                            </div> --}}
+                            <div class="mb-3 row">
+                                <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
+                                <div class="col-md-6">
+                                    <select name="keyword_id" id="keywordSelect" class="selectpicker" data-live-search="true" title="Select Keyword">
                                         @foreach ($keywords as $keyword)
                                             <option value="{{ $keyword->id }}"
                                                 {{ $backlink && $backlink->keyword_id == $keyword->id ? 'selected' : '' }}>
@@ -220,4 +250,20 @@
 
 @push('scripts')
     @includeFirst(['validation.js_backlinks'])
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#keywordSelect').selectpicker({
+                liveSearch: true,
+                liveSearchPlaceholder: 'Search for a keyword...',
+                size: 10
+            });
+
+            // var button = document.querySelector('button[data-id="keywordSelect"]');
+            // if (button) {
+            //     button.style.width = '320px';
+            //     button.style.background = 'unset';
+            // }
+        });
+    </script>
 @endpush
