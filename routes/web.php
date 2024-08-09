@@ -78,7 +78,7 @@ Route::middleware(['auth', 'project_status'])->group(function () {
     Route::post('/keywords/{keyword}', [KeywordController::class, 'update'])->name('keywords.update');
     Route::get('/keywords/create', [KeywordController::class, 'create'])->name('keywords.create');
     Route::post('/keywords', [KeywordController::class, 'store'])->name('keywords.store');
-    Route::get('/keywords}', [KeywordController::class, 'show'])->name('keywords.show');
+    Route::get('/keywords', [KeywordController::class, 'show'])->name('keywords.show');
     Route::get('/refresh_keyword_data', [WebsiteController::class, 'refresh_data'])->name('keywords.refresh');
     Route::get('/keyword_data', [KeywordController::class, 'keyword_data'])->name('keywords.data');
 
@@ -89,12 +89,11 @@ Route::middleware(['auth', 'project_status'])->group(function () {
 
     // Backlinks
     // Route::get('backlinks/index', [BacklinkController::class, 'index'])->name('backlinks.index');
-    Route::prefix('backlinks')->name('backlinks.')->controller(BacklinkController::class)->group(function(){
+    Route::prefix('backlinks')->name('backlinks.')->controller(BacklinkController::class)->group(function () {
         Route::get('/index', 'index')->name('index');
         Route::any('create/{id?}', 'storeOrUpdate')->name('create');
         Route::delete('delete/{id}', 'destroy')->name('delete');
     });
-
 });
 
 Route::get('/error', function () {
