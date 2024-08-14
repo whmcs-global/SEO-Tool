@@ -42,10 +42,11 @@ class KeywordController extends Controller
         // Fetch keywords
         $keywordsQuery = Keyword::with(['keywordData']);
         $keywordsQuery->where('website_id', $user->website_id);
-        if($isAdmin || $isSuperAdmin || !empty($userIds)){
-            $keywordsQuery->where('user_id', $userIds);
-        }else{
-            $keywordsQuery->where('user_id', $user->id);
+        // dd($userIds);
+        if($isAdmin || $isSuperAdmin && !empty($userIds)){
+            if (is_array($userIds) && !empty($userIds)) {
+                $keywordsQuery->whereIn('user_id', $userIds);
+            }
         }
         if (!empty($labelIds)) {
             $keywordsQuery->filterByLabels($labelIds);
