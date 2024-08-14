@@ -17,126 +17,17 @@ class KeywordController extends Controller
 {
     use KeywordDaterange;
 
-
-    // public function keywords_detail(Request $request)
-    // {
-    //     $labelIds = $request->input('labels', []);
-    //     $labels = Label::all();
-    //     $countries = Country::all();
-    //     $user = auth()->user();
-    //     $isAdmin = $user->hasRole('Admin');
-    //     $isSuperAdmin = $user->hasRole('Super Admin');
-    //     $selectedCountry = $request->get('country', $user->country_id ?? 3);
-
-    //     $startDate = Carbon::yesterday()->subDays(1)->format('Y-m-d');
-    //     $endDate = Carbon::today()->subDays(1)->format('Y-m-d');
-
-    //     if ($request->has('daterange') && !empty($request->get('daterange'))) {
-    //         list($start, $end) = explode(' - ', $request->get('daterange'));
-    //         $startDate = Carbon::parse($start)->format('Y-m-d');
-    //         $endDate = Carbon::parse($end)->format('Y-m-d');
-    //     }
-
-    //     $positionFilter = $request->get('positionFilter', 'all');
-
-    //     $keywordsQuery = Keyword::with(['keywordData']);
-    //     $keywordsQuery->where('website_id', $user->website_id);
-    //     // if ($isAdmin || $isSuperAdmin) {
-    //     //     $keywordsQuery->where('website_id', $user->website_id);
-    //     // } else {
-    //     //     $keywordsQuery->forUserAndWebsite($user->id, $user->website_id);
-    //     // }
-
-    //     if (!empty($labelIds)) {
-    //         $keywordsQuery->filterByLabels($labelIds);
-    //     }
-
-    //     $keywords = $keywordsQuery->get();
-    //     $totalKeywords = $keywords->count();
-
-    //     $countryRanges = [];
-    //     foreach ($countries as $country) {
-    //         $countryRanges[$country->id] = [
-    //             'top_1' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-    //             'top_3' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-    //             'top_5' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-    //             'top_10' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-    //             'top_30' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-    //             'top_100' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-    //         ];
-    //     }
-
-    //     $allDates = [];
-    //     $keywordData = [];
-
-    //     foreach ($keywords as $keyword) {
-    //         if (!$keyword->keywordData) {
-    //             continue;
-    //         }
-    //         foreach ($keyword->keywordData as $data) {
-    //             $response = json_decode($data->response, true);
-    //             if (!is_array($response)) {
-    //                 continue;
-    //             }
-    //             $positionDates = [];
-
-    //             foreach ($response as $entry) {
-    //                 if (isset($entry['keys'][1], $entry['position'])) {
-    //                     $date = $entry['keys'][1];
-    //                     if (($startDate && $date < $startDate) || ($endDate && $date > $endDate)) {
-    //                         continue;
-    //                     }
-    //                     $positionDates[$date] = $entry['position'];
-    //                     $allDates[] = $date;
-    //                 }
-    //             }
-    //             if ($data->country_id == $selectedCountry) {
-    //                 if (($positionFilter == 'all' || $this->isPositionInFilter($positionDates, $positionFilter))) {
-    //                 if (!empty($positionDates) || $positionFilter == 'all') {
-    //                     $keywordData[] = [
-    //                         'keyword' => $keyword->keyword,
-    //                         'keyword_label' => $keyword->labels->pluck('name')->toArray(),
-    //                         'country' => $data->country->name ?? 'Unknown',
-    //                         'country_id' => $data->country_id,
-    //                         'search_volume' => $data->search_volume,
-    //                         'impression' => $data->impression,
-    //                         'competition' => $data->competition,
-    //                         'positions' => $positionDates,
-    //                     ];
-    //                 }
-    //             }}
-
-    //             if (isset($countryRanges[$data->country_id])) {
-    //                 $this->updateCountryRanges($countryRanges, $data->country_id, $positionDates, $startDate, $endDate);
-    //             }
-    //         }
-    //     }
-
-    //     foreach ($countryRanges as &$ranges) {
-    //         $countryTotal = $totalKeywords;
-    //         foreach ($ranges as &$range) {
-    //             if ($countryTotal > 0) {
-    //                 $range['start_percentage'] = ($range['start_count'] / $countryTotal) * 100;
-    //                 $range['end_percentage'] = ($range['end_count'] / $countryTotal) * 100;
-    //             }
-    //         }
-    //     }
-
-    //     $allDates = array_unique($allDates);
-    //     sort($allDates);
-    //     return view('keyword.details', compact('keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter', 'labels', 'labelIds'));
-    // }
-
     public function keywords_detail(Request $request)
     {
         $labelIds = $request->input('labels', []);
+        $userIds = $request->input('users', []);
         $labels = Label::all();
         $countries = Country::all();
         $user = auth()->user();
         $isAdmin = $user->hasRole('Admin');
         $isSuperAdmin = $user->hasRole('Super Admin');
         $selectedCountry = $request->get('country', $user->country_id ?? 3);
-
+        $users = User::all();
         $startDate = Carbon::yesterday()->subDays(1)->format('Y-m-d');
         $endDate = Carbon::today()->subDays(1)->format('Y-m-d');
 
@@ -151,7 +42,11 @@ class KeywordController extends Controller
         // Fetch keywords
         $keywordsQuery = Keyword::with(['keywordData']);
         $keywordsQuery->where('website_id', $user->website_id);
-
+        if($isAdmin || $isSuperAdmin){
+            $keywordsQuery->where('user_id', $userIds);
+        }else{
+            $keywordsQuery->where('user_id', $user->id);
+        }
         if (!empty($labelIds)) {
             $keywordsQuery->filterByLabels($labelIds);
         }
@@ -180,7 +75,7 @@ class KeywordController extends Controller
         $allDates = [];
         $keywordData = [];
 
-        foreach ($allKeywords as $keyword) { // Iterate over merged keywords
+        foreach ($allKeywords as $keyword) {
             if (!$keyword->keywordData) {
                 continue;
             }
@@ -191,16 +86,20 @@ class KeywordController extends Controller
                 }
                 $positionDates = [];
 
-                foreach ($response as $entry) {
-                    if (isset($entry['keys'][1], $entry['position'])) {
-                        $date = $entry['keys'][1];
-                        if (($startDate && $date < $startDate) || ($endDate && $date > $endDate)) {
-                            continue;
-                        }
-                        $positionDates[$date] = $entry['position'];
-                        $allDates[] = $date;
+            foreach ($response as $entry) {
+                if (isset($entry['keys'][1], $entry['position'])) {
+                    $date = $entry['keys'][1];
+                    if (($startDate && $date < $startDate) || ($endDate && $date > $endDate)) {
+                        continue;
                     }
+                    $positionDates[$date] = [
+                        'position' => $entry['position'],
+                        'clicks' => $entry['clicks'],
+                        'impressions' => $entry['impressions']
+                    ];
+                    $allDates[] = $date;
                 }
+            }
                 if ($data->country_id == $selectedCountry) {
                     if (($positionFilter == 'all' || $this->isPositionInFilter($positionDates, $positionFilter))) {
                         if (!empty($positionDates) || $positionFilter == 'all') {
@@ -237,9 +136,8 @@ class KeywordController extends Controller
         $allDates = array_unique($allDates);
         sort($allDates);
 
-        return view('keyword.details', compact('keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter', 'labels', 'labelIds'));
+        return view('keyword.details', compact('users','userIds','keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter', 'labels', 'labelIds'));
     }
-
 
     private function updateCountryRanges(&$countryRanges, $countryId, $positionDates, $startDate, $endDate)
     {
@@ -263,6 +161,7 @@ class KeywordController extends Controller
         }
         return false;
     }
+
     private function updateRangeCount(&$ranges, $position, $countType)
     {
         if ($position === null) return;
@@ -383,87 +282,6 @@ class KeywordController extends Controller
         return view('dashboard', compact('allKeywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
     }
 
-    // public function dashboard(Request $request)
-    // {
-    //     $userId = auth()->id();
-    //     $labelIds = $request->input('labels', []);
-    //     $countries = Country::all();
-    //     $selectedCountry = auth()->user()->country_id ?? 3;
-    //     $labels = Label::all();
-
-    //     $ranges = [
-    //         '1-10' => 0,
-    //         '11-20' => 0,
-    //         '21-30' => 0,
-    //         '31-40' => 0,
-    //         '41-50' => 0
-    //     ];
-
-    //     $user = auth()->user();
-    //     $isAdmin = $user->hasRole('Admin');
-    //     $isSuperAdmin = $user->hasRole('Super Admin');
-
-    //     $keywordsQuery = Keyword::with(['keywordData' => function($query) use ($selectedCountry) {
-    //         $query->where('country_id', $selectedCountry);
-    //     }]);
-
-    //     if ($isAdmin || $isSuperAdmin) {
-    //         $keywordsQuery->where('website_id', $user->website_id);
-    //     } else {
-    //         $keywordsQuery->forUserAndWebsite($user->website_id);
-    //     }
-
-    //     if (!empty($labelIds)) {
-    //         $keywordsQuery->filterByLabels($labelIds);
-    //     }
-
-    //     $keywords = $keywordsQuery->get();
-    //     // Fetch assigned keywords using AssignKeyword
-    //     $assignedKeywords = AssignKeyword::where('user_id', $userId)->with(['keyword'=>function($query){
-    //         $query->with(['keywordData' => function($query) {
-    //             $query->where('country_id', auth()->user()->country_id ?? 3);
-    //         }])->where('website_id', auth()->user()->website_id);
-    //     }])->get();
-
-    //     $assignedKeywordPluck = $assignedKeywords->pluck('keyword');
-    //     if (null === $assignedKeywordPluck) {
-    //         $allKeywords = $keywords;
-    //     } else {
-    //         $allKeywords = $keywords->merge($assignedKeywordPluck);
-    //     }
-    //     foreach ($keywords as $keyword) {
-    //         if ($keyword->keywordData->isEmpty()) {
-    //             $keyword->keywordData = collect([ (object)[
-    //                 'position' => 0,
-    //                 'search_volume' => 0,
-    //                 'clicks' => 0,
-    //                 'impression' => 0,
-    //                 'competition' => 0,
-    //                 'bid_rate_low' => 0,
-    //                 'bid_rate_high' => 0
-    //             ]]);
-    //         } else {
-    //             foreach ($keyword->keywordData as $data) {
-    //                 if ($data->position >= 1 && $data->position <= 10) {
-    //                     $ranges['1-10']++;
-    //                 } elseif ($data->position >= 11 && $data->position <= 20) {
-    //                     $ranges['11-20']++;
-    //                 } elseif ($data->position >= 21 && $data->position <= 30) {
-    //                     $ranges['21-30']++;
-    //                 } elseif ($data->position >= 31 && $data->position <= 40) {
-    //                     $ranges['31-40']++;
-    //                 } elseif ($data->position >= 41 && $data->position <= 50) {
-    //                     $ranges['41-50']++;
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     return view('dashboard', compact('keywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
-    // }
-
-
-
     public function create()
     {
         $users = [];
@@ -503,7 +321,6 @@ class KeywordController extends Controller
         session()->flash('message', 'Keyword updated successfully');
         return redirect()->route('dashboard');
     }
-
 
     public function store(Request $request)
     {
@@ -561,7 +378,6 @@ class KeywordController extends Controller
         session()->flash('message', 'Keywords saved successfully');
         return redirect()->route('keywords.details');
     }
-
 
     public function destroy(Keyword $keyword)
     {

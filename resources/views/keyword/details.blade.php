@@ -24,6 +24,22 @@
                                 </div>
                             </div>
                             <div class="form-row align-items-center">
+                                @role('Admin|Super Admin')
+                                <div class="col-auto">
+                                    <label for="users" class="font-weight-bold">Filter by Users:</label>
+                                </div>
+                                <div class="col">
+                                    <select name="users[]" id="field1" class="form-control" multiple multiselect-search="true"
+                                        multiselect-max-items="3">
+                                        @foreach ($users as $user)
+                                            <option value="{{ $user->id }}"
+                                                {{ in_array($user->id, $userIds) ? 'selected' : '' }}>
+                                                {{ $user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @endrole
                                 <div class="col-auto">
                                     <label for="labels" class="font-weight-bold">Filter by Labels:</label>
                                 </div>
@@ -115,45 +131,58 @@
                     <th>IMPRESSION</th>
                     <th>COMPETITION</th>
                     @foreach ($allDates as $date)
-                        <th>{{ $date }}</th>
+                        <th colspan="3" class="text-center">{{ $date }}</th>
+                    @endforeach
+                </tr>
+                <tr>
+                    <th class="sticky-col"></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    @foreach ($allDates as $date)
+                        <th>Position</th>
+                        <th>Clicks</th>
+                        <th>Impressions</th>
                     @endforeach
                 </tr>
             </thead>
             <tbody>
-            @foreach($keywordData as $data)
-                <tr>
-                    <td class="sticky-col">
-                        <div>
-                            <span>{{ $data['keyword'] }}</span>
+                @foreach($keywordData as $data)
+                    <tr>
+                        <td class="sticky-col">
                             <div>
-                                @foreach ($data['keyword_label'] as $label)
-                                    <span class="badge badge-info">{{ $label }}</span>
-                                @endforeach
+                                <span>{{ $data['keyword'] }}</span>
+                                <div>
+                                    @foreach ($data['keyword_label'] as $label)
+                                        <span class="badge badge-info">{{ $label }}</span>
+                                    @endforeach
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td>{{ $data['search_volume'] }}</td>
-                    <td>{{ $data['impression'] }}</td>
-                    <td>{{ $data['competition'] }}</td>
-                    @foreach ($allDates as $index => $date)
-                    <td>
-                        @php
-                            $currentPosition = $data['positions'][$date] ?? '-';
-                            $previousPosition = $index > 0 ? $data['positions'][$allDates[$index - 1]] ?? '-' : '-';
-                            $positionChange = is_numeric($currentPosition) && is_numeric($previousPosition)
+                        </td>
+                        <td>{{ $data['search_volume'] }}</td>
+                        <td>{{ $data['impression'] }}</td>
+                        <td>{{ $data['competition'] }}</td>
+                        @foreach ($allDates as $index => $date)
+                            @php
+                                $positionData = $data['positions'][$date] ?? ['position' => '-', 'clicks' => '-', 'impressions' => '-'];
+                                $currentPosition = is_numeric($positionData['position']) ? (int)$positionData['position'] : $positionData['position'];                        $previousPosition = $index > 0 ? $data['positions'][$allDates[$index - 1]]['position'] ?? '-' : '-';
+                                $positionChange = is_numeric($currentPosition) && is_numeric($previousPosition)
                                                 ? (int)($currentPosition - $previousPosition)
                                                 : null;
-                        @endphp
-                        {{ is_numeric($currentPosition) ? (int)$currentPosition : $currentPosition }}
-                        @if (is_numeric($positionChange) && $positionChange != 0)
-                            <small class="{{ $positionChange < 0 ? 'text-success' : 'text-danger' }}">
-                                {{ $positionChange < 0 ? '▲' : '▼' }} {{ abs($positionChange) }}
-                            </small>
-                        @endif
-                    </td>
-                    @endforeach
-                </tr>
-            @endforeach
+                            @endphp
+                            <td>
+                                {{ $currentPosition }}
+                                @if (is_numeric($positionChange) && $positionChange != 0)
+                                    <small class="{{ $positionChange < 0 ? 'text-success' : 'text-danger' }}">
+                                        {{ $positionChange < 0 ? '▲' : '▼' }} {{ abs($positionChange) }}
+                                    </small>
+                                @endif
+                            </td>
+                            <td>{{ $positionData['clicks'] }}</td>
+                            <td>{{ $positionData['impressions'] }}</td>
+                        @endforeach
+                    </tr>
+                @endforeach
             </tbody>
         </table>
     </div>
