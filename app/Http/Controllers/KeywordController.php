@@ -85,36 +85,35 @@ class KeywordController extends Controller
                 if (!is_array($response)) {
                     continue;
                 }
-                $positionDates = [];
 
-            foreach ($response as $entry) {
-                if (isset($entry['keys'][1], $entry['position'])) {
-                    $date = $entry['keys'][1];
-                    if (($startDate && $date < $startDate) || ($endDate && $date > $endDate)) {
-                        continue;
-                    }
-                    $positionDates[$date] = [
-                        'position' => $entry['position'],
-                        'clicks' => $entry['clicks'],
-                        'impressions' => $entry['impressions']
-                    ];
-                    $allDates[] = $date;
-                }
-            }
-                if ($data->country_id == $selectedCountry) {
-                    if (($positionFilter == 'all' || $this->isPositionInFilter($positionDates, $positionFilter))) {
-                        if (!empty($positionDates) || $positionFilter == 'all') {
-                            $keywordData[] = [
-                                'keyword' => $keyword->keyword,
-                                'keyword_label' => $keyword->labels->pluck('name')->toArray(),
-                                'country' => $data->country->name ?? 'Unknown',
-                                'country_id' => $data->country_id,
-                                'search_volume' => $data->search_volume,
-                                'impression' => $data->impression,
-                                'competition' => $data->competition,
-                                'positions' => $positionDates,
-                            ];
+                $positionDates = [];
+                foreach ($response as $entry) {
+                    if (isset($entry['keys'][1], $entry['position'])) {
+                        $date = $entry['keys'][1];
+                        if (($startDate && $date < $startDate) || ($endDate && $date > $endDate)) {
+                            continue;
                         }
+                        $positionDates[$date] = [
+                            'position' => $entry['position'],
+                            'clicks' => $entry['clicks'],
+                            'impressions' => $entry['impressions']
+                        ];
+                        $allDates[] = $date;
+                    }
+                }
+
+                if ($data->country_id == $selectedCountry) {
+                    if ($positionFilter == 'all' || $this->isPositionInFilter($positionDates, $positionFilter)) {
+                        $keywordData[] = [
+                            'keyword' => $keyword->keyword,
+                            'keyword_label' => $keyword->labels->pluck('name')->toArray(),
+                            'country' => $data->country->name ?? 'Unknown',
+                            'country_id' => $data->country_id,
+                            'search_volume' => $data->search_volume,
+                            'impression' => $data->impression,
+                            'competition' => $data->competition,
+                            'positions' => $positionDates,
+                        ];
                     }
                 }
 
@@ -125,8 +124,8 @@ class KeywordController extends Controller
         }
 
         foreach ($countryRanges as &$ranges) {
-            $countryTotal = $totalKeywords;
             foreach ($ranges as &$range) {
+                $countryTotal = $range['start_count'] + $range['end_count'];
                 if ($countryTotal > 0) {
                     $range['start_percentage'] = ($range['start_count'] / $countryTotal) * 100;
                     $range['end_percentage'] = ($range['end_count'] / $countryTotal) * 100;
@@ -142,15 +141,22 @@ class KeywordController extends Controller
 
     private function updateCountryRanges(&$countryRanges, $countryId, $positionDates, $startDate, $endDate)
     {
-        $startPosition = $positionDates[$startDate] ?? null;
-        $endPosition = $positionDates[$endDate] ?? null;
+        $startPosition = $positionDates[$startDate]['position'] ?? null;
+        $endPosition = $positionDates[$endDate]['position'] ?? null;
 
-        $this->updateRangeCount($countryRanges[$countryId], $startPosition, 'start_count');
-        $this->updateRangeCount($countryRanges[$countryId], $endPosition, 'end_count');
+        if ($startPosition !== null) {
+            $this->updateRangeCount($countryRanges[$countryId], $startPosition, 'start_count');
+        }
+
+        if ($endPosition !== null) {
+            $this->updateRangeCount($countryRanges[$countryId], $endPosition, 'end_count');
+        }
     }
 
+
     private function isPositionInFilter($positionDates, $positionFilter) {
-        foreach ($positionDates as $date => $position) {
+        foreach ($positionDates as $date => $data) {
+            $position = $data['position'] ?? null;
             if (($positionFilter == 'top_1' && $position == 1) ||
                 ($positionFilter == 'top_3' && $position <= 3) ||
                 ($positionFilter == 'top_5' && $position <= 5) ||
@@ -162,6 +168,7 @@ class KeywordController extends Controller
         }
         return false;
     }
+
 
     private function updateRangeCount(&$ranges, $position, $countType)
     {

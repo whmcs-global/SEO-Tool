@@ -85,8 +85,8 @@
                                 $percentage = 100;
                                 $difference = 0;
                             } else {
-                                $count = $countryRanges[$country->id][$range]['end_count'];
-                                $startCount = $countryRanges[$country->id][$range]['start_count'];
+                                $count = $countryRanges[$country->id][$range]['end_count'] ?? 0;
+                                $startCount = $countryRanges[$country->id][$range]['start_count'] ?? 0;
                                 $difference = $count - $startCount;
                                 $percentage = $totalKeywords > 0 ? ($count / $totalKeywords * 100) : 0;
                             }
@@ -111,6 +111,7 @@
                 </div>
             </div>
         @endforeach
+
         </div>
     </div>
 
