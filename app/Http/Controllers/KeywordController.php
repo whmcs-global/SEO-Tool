@@ -64,11 +64,9 @@ class KeywordController extends Controller
         $countryRanges = [];
         foreach ($countries as $country) {
             $countryRanges[$country->id] = [
-                'top_1' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-                'top_3' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
                 'top_5' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
                 'top_10' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-                'top_30' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+                'top_50' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
                 'top_100' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
             ];
         }
@@ -153,15 +151,12 @@ class KeywordController extends Controller
         }
     }
 
-
     private function isPositionInFilter($positionDates, $positionFilter) {
         foreach ($positionDates as $date => $data) {
             $position = $data['position'] ?? null;
-            if (($positionFilter == 'top_1' && $position == 1) ||
-                ($positionFilter == 'top_3' && $position <= 3) ||
-                ($positionFilter == 'top_5' && $position <= 5) ||
+            if (($positionFilter == 'top_5' && $position <= 5) ||
                 ($positionFilter == 'top_10' && $position <= 10) ||
-                ($positionFilter == 'top_30' && $position <= 30) ||
+                ($positionFilter == 'top_50' && $position <= 50) ||
                 ($positionFilter == 'top_100' && $position <= 100)) {
                 return true;
             }
@@ -174,20 +169,14 @@ class KeywordController extends Controller
     {
         if ($position === null) return;
 
-        if ($position <= 1) {
-            $ranges['top_1'][$countType]++;
-        }
-        if ($position <= 3) {
-            $ranges['top_3'][$countType]++;
-        }
         if ($position <= 5) {
             $ranges['top_5'][$countType]++;
         }
         if ($position <= 10) {
             $ranges['top_10'][$countType]++;
         }
-        if ($position <= 30) {
-            $ranges['top_30'][$countType]++;
+        if ($position <= 50) {
+            $ranges['top_50'][$countType]++;
         }
         if ($position <= 100) {
             $ranges['top_100'][$countType]++;

@@ -67,7 +67,7 @@
         </div>
         <div class="overflow-auto">
         @php
-            $ranges = ['all', 'top_1', 'top_3', 'top_5', 'top_10', 'top_30', 'top_100'];
+            $ranges = ['all', 'top_5', 'top_10', 'top_50', 'top_100'];
         @endphp
         @foreach ($countries as $country)
             <div class="mb-4 position-filters">
