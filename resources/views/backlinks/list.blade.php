@@ -150,6 +150,10 @@
                                 <option value="Profile Creation" {{ $request->input('link_type') == 'Profile Creation' ? 'selected' : '' }}>
                                     Profile Creation
                                 </option>
+                                <option value="Coupon Submission" {{ $request->input('link_type') == 'Coupon Submission' ? 'selected' : '' }}>
+                                    Coupon Submission
+                                </option>
+
                     </select>
                 </div>
                 <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
