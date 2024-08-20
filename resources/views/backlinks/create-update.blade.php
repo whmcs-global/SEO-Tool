@@ -135,6 +135,8 @@
                                         <option value="Guest Post Submission" {{ $backlink && $backlink->link_type == 'Guest Post Submission' ? 'selected' : '' }}>Guest Post Submission</option>
                                         <option value="Broken Link Building" {{ $backlink && $backlink->link_type == 'Broken Link Building' ? 'selected' : '' }}>Broken Link Building</option>
                                         <option value="Profile Creation" {{ $backlink && $backlink->link_type == 'Profile Creation' ? 'selected' : '' }}>Profile Creation</option>
+                                        {{-- Coupon Sub added by purva kakade/ 20/aug/2024 --}}
+                                        <option value="Coupon Submission" {{ $backlink && $backlink->link_type == 'Coupon Submission' ? 'selected' : '' }}>Coupon Submission</option>
                                     </select>
                                     @error('link_type')
                                         <span class="invalid-feedback" role="alert">
