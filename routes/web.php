@@ -93,6 +93,8 @@ Route::middleware(['auth', 'project_status'])->group(function () {
         Route::get('/index', 'index')->name('index');
         Route::any('create/{id?}', 'storeOrUpdate')->name('create');
         Route::delete('delete/{id}', 'destroy')->name('delete');
+        Route::get('list/{approve_status}', 'statusList')->name('status.list');
+        Route::match(['get', 'post'], 'approve/{id?}', 'approve')->name('approve');
     });
 });
 

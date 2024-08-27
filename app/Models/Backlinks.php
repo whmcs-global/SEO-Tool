@@ -24,6 +24,12 @@ class Backlinks extends Model
         'page_authority',
         'contact_person',
         'notes_comments',
+        'aproval_status',
+        'approved_by',
+        'reason',
+        'email',
+        'password',
+        'login_url',
         'status',
     ];
 

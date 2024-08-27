@@ -17,10 +17,21 @@
                 <li @if (in_array(Route::current()->getName(), ['keywords.create'])) class="active" @endif><a href="{{ route('keywords.create') }}">Add Keyword</a></li>
             </ul>
         </li>
-        <li class="dropdown {{ Route::is('backlinks.*') ? 'active' : '' }}">
+        {{-- <li class="dropdown {{ Route::is('backlinks.*') ? 'active' : '' }}">
             <a href="{{ route('backlinks.index') }}" class="nav-link">
                 <i class="fa-solid fa-link"></i><span>Backlinks</span>
             </a>
+        </li> --}}
+        <li class="dropdown @if (in_array(Request::route()->getName(), ['backlinks.index','backlinks.status.list'])) active @endif">
+            <a href="#" class="menu-toggle nav-link has-dropdown">
+                <i class="fa-brands fa-searchengin"></i><span>Backlinks</span>
+            </a>
+            <ul class="dropdown-menu">
+                <li @if (in_array(Request::route()->getName(), ['backlinks.index'])) class="active" @endif><a href="{{ route('backlinks.index') }}">Active Backlinks</a></li>
+                @role('Admin|Super Admin')
+                <li @if (in_array(Request::route()->getName(), ['backlinks.status.list'])) class="active" @endif><a href="{{ route('backlinks.status.list', ['approve_status' => 'pending']) }}">Pending Backlinks Approvals</a></li>
+                @endrole
+            </ul>
         </li>
     </ul>
 

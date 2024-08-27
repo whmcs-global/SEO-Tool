@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Backlinks,Website, User, Keyword};
+use App\Models\{Backlinks, Website, User, Keyword};
+
 class BacklinkController extends Controller
 {
     public function index(Request $request)
     {
         $query = Backlinks::query()->with('user')->where('website_id', auth()->user()->website_id);
-
+        if (auth()->user()->hasRole(['Admin', 'Super Admin'])) {
+            $query->where('aproval_status', 'Approved');
+        }
         if (!auth()->user()->hasRole(['Admin', 'Super Admin'])) {
             $query->where('user_id', auth()->user()->id)
                 ->where('website_id', auth()->user()->website_id);
@@ -79,8 +82,19 @@ class BacklinkController extends Controller
         $users = User::whereIn('id', $backlinks->pluck('user_id')->unique())->get();
 
         return view('backlinks.list', compact([
-            'backlinks', 'pie_data', 'data_name', 'values', 'domain_authority', 'page_authority', 'users',
-            'request', 'activelinks', 'inactivelinks', 'pendinglinks', 'declinedlinks', 'totallinks',
+            'backlinks',
+            'pie_data',
+            'data_name',
+            'values',
+            'domain_authority',
+            'page_authority',
+            'users',
+            'request',
+            'activelinks',
+            'inactivelinks',
+            'pendinglinks',
+            'declinedlinks',
+            'totallinks',
             'uniqueDomainCount'
         ]));
     }
@@ -112,12 +126,18 @@ class BacklinkController extends Controller
                 'page_authority' => 'required|integer',
                 'contact_person' => 'required|string',
                 'status' => 'required|string',
+                'notes_comments' => 'required|string',
+                'email' => 'required|string',
+                'password' => 'required|string',
+                'login_url' => 'required|string',
+                'company_name' => 'required|string',
             ];
             $validatedData = $request->validate($rules);
 
             try {
                 if ($id) {
                     $backlink = Backlinks::findOrFail($id);
+                    $backlink->aproval_status = 'Pending';
                     $backlink->update($validatedData);
                     $message = 'Backlink updated successfully!';
                 } else {
@@ -140,19 +160,51 @@ class BacklinkController extends Controller
         }
     }
 
-
-
     public function destroy(Request $request,  $id = null)
     {
-        if($id) {
+        if ($id) {
             $backlink = Backlinks::find($id);
-            if($backlink){
+            if ($backlink) {
                 $backlink->delete();
-                return redirect()->route('backlinks.index')->with(['status' => 'success', 'message'=> 'Backlink has been deleted!']);
-            }else{
-                return redirect()->route('backlinks.index')->with(['status' => 'danger', 'message'=> 'Backlink not found!']);
+                return redirect()->route('backlinks.index')->with(['status' => 'success', 'message' => 'Backlink has been deleted!']);
+            } else {
+                return redirect()->route('backlinks.index')->with(['status' => 'danger', 'message' => 'Backlink not found!']);
             }
         }
     }
 
+    public function statusList($approve_status)
+    {
+        $approvalStatus = $approve_status ?? 'Pending';
+        $backlinks = Backlinks::query()->with('user')->where('website_id', auth()->user()->website_id)->where('aproval_status', $approvalStatus)->get();
+
+        return view('backlinks.status-view', compact('backlinks', 'approvalStatus'));
+    }
+
+    public function approve(Request $request, $id = null)
+    {
+        if ($id == null) {
+            return response()->json(['status' => 'not found', 'message' => 'Backlink not found!']);
+        }
+
+        $backlink = Backlinks::find($id);
+        if (!$backlink) {
+            return response()->json(['status' => 'danger', 'message' => 'Backlink not found!']);
+        }
+
+        if ($request->isMethod('get')) {
+            return response()->json(['status' => 'success', 'backlink' => $backlink]);
+        }
+
+        if ($request->isMethod('post')) {
+            $backlink->aproval_status = $request->input('status');
+            $backlink->reason = $request->input('reason') ?? null;
+            $backlink->approved_by = auth()->user()->id;
+            $backlink->update();
+
+            return response()->json(['status' => 'success', 'message' => 'Backlink status updated!']);
+        }
+
+        return response()->json(['status' => 'error', 'message' => 'Invalid request method!']);
+    }
 }
