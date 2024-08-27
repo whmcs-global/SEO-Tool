@@ -38,22 +38,13 @@
 @section('content')
     <div class="container">
         <div class="row justify-content-center">
-            @if ($backlink->aproval_status == 'rejected')
-                @if ($backlink->reason != null || $backlink->reason != '')
-                    <div class="col-md-8">
-                        <h4>Reason for Rejection</h4>
-                        <div class="alert alert-danger" role="alert">
-                            {{ $backlink->reason }}
-                        </div>
+            @if ($backlink && $backlink->aproval_status == 'rejected')
+                <div class="col-md-8">
+                    <h4>Reason for Rejection</h4>
+                    <div class="alert alert-danger" role="alert">
+                        {{ $backlink->reason ?? 'No reason provided' }}
                     </div>
-                @else
-                    <div class="col-md-8">
-                        <h4>Reason for Rejection</h4>
-                        <div class="alert alert-danger" role="alert">
-                            No reason provided
-                        </div>
-                    </div>
-                @endif
+                </div>
             @endif
             <div class="col-md-8">
                 <div class="card">
@@ -97,16 +88,16 @@
                             </div>
 
                             <!-- <div class="mb-3 row">
-                                        <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
-                                        <div class="col-md-6">
-                                            <input id="target_keyword" placeholder="e.g., best SEO practices" type="text" class="form-control @error('target_keyword') is-invalid @enderror" name="target_keyword" value="{{ $backlink ? $backlink->target_keyword : old('target_keyword') }}" >
-                                            @error('target_keyword')
+                                            <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
+                                            <div class="col-md-6">
+                                                <input id="target_keyword" placeholder="e.g., best SEO practices" type="text" class="form-control @error('target_keyword') is-invalid @enderror" name="target_keyword" value="{{ $backlink ? $backlink->target_keyword : old('target_keyword') }}" >
+                                                @error('target_keyword')
         <span class="invalid-feedback" role="alert">
-                                                            <strong>{{ $message }}</strong>
-                                                        </span>
+                                                                    <strong>{{ $message }}</strong>
+                                                                </span>
     @enderror
-                                        </div>
-                                    </div> -->
+                                            </div>
+                                        </div> -->
                             {{-- <div class="mb-3 row">
                                 <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
                                 <div class="col-md-6">
