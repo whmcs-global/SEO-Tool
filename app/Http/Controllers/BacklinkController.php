@@ -187,6 +187,8 @@ class BacklinkController extends Controller
                 $query->where('parent_id', $user_id);
             });
         } elseif (auth()->user()->hasRole('Super Admin')) {
+        }else {
+            $backlinks->where('user_id', $user_id);
         }
 
         $backlinks = $backlinks->get();
