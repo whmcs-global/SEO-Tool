@@ -176,14 +176,20 @@ class BacklinkController extends Controller
     {
         $approvalStatus = $approve_status ?? 'Pending';
         $user_id = auth()->user()->id;
+
         $backlinks = Backlinks::query()
             ->with('user')
             ->where('website_id', auth()->user()->website_id)
-            ->where('aproval_status', $approvalStatus)
-            ->whereHas('user', function ($query) {
-                $query->where('parent_id', auth()->user()->id);
-            })
-            ->get();
+            ->where('aproval_status', $approvalStatus);
+
+        if (auth()->user()->hasRole('Admin')) {
+            $backlinks->whereHas('user', function ($query) use ($user_id) {
+                $query->where('parent_id', $user_id);
+            });
+        } elseif (auth()->user()->hasRole('Super Admin')) {
+        }
+
+        $backlinks = $backlinks->get();
 
         return view('backlinks.status-view', compact('backlinks', 'approvalStatus'));
     }
