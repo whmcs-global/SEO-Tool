@@ -25,6 +25,7 @@
                                     <th>Contact Person</th>
                                     <th>Notes Comments</th>
                                     <th>Created At</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -37,6 +38,11 @@
                                         <td>{{ $backlink->contact_person }}</td>
                                         <td>{{ $backlink->notes_comments }}</td>
                                         <td>{{ $backlink->created_at->format('d-m-Y') }}</td>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm view-backlink" data-id="{{ $backlink->id }}">
+                                                View
+                                            </button>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -142,101 +148,101 @@
 @endpush
 
 @push('scripts')
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        let backlinkId;
+        const $backlinkModal = $('#backlinkModal');
+        const $backlinkModalBody = $('#backlinkModal .modal-body');
 
-    <script>
-        $(document).ready(function() {
-            let backlinkId;
-            const $backlinkModal = $('#backlinkModal');
-            const $backlinkModalBody = $('#backlinkModal .modal-body');
+        // Initialize DataTable
+        const backlinksTable = $('#backlinksTable').DataTable({
+            responsive: true,
+            columnDefs: [{
+                targets: -1,
+                orderable: false
+            }]
+        });
 
-            // Initialize DataTable
-            const backlinksTable = $('#backlinksTable').DataTable({
-                responsive: true,
-                columnDefs: [{
-                    targets: -1,
-                    orderable: false
-                }]
+        // Function to fetch and display backlink details
+        function fetchBacklinkDetails(id) {
+            $.ajax({
+                url: `/backlinks/approve/${id}`,
+                method: 'GET',
+                success: function(data) {
+                    const backlink = data.backlink;
+                    const createdAt = new Date(backlink.created_at).toLocaleDateString();
+
+                    $backlinkModalBody.html(`
+                        <p><strong>URL:</strong> ${backlink.url}</p>
+                        <p><strong>Target Keyword:</strong> ${backlink.keyword_value}</p>
+                        <p><strong>Source:</strong> ${backlink.backlink_source}</p>
+                        <p><strong>Link Type:</strong> ${backlink.link_type}</p>
+                        <p><strong>Spam Score:</strong> ${backlink.spam_score}</p>
+                        <p><strong>Status:</strong> ${backlink.status}</p>
+                        <p><strong>Domain Authority:</strong> ${backlink.domain_authority}</p>
+                        <p><strong>Page Authority:</strong> ${backlink.page_authority}</p>
+                        <p><strong>Contact Person:</strong> ${backlink.contact_person}</p>
+                        <p><strong>Notes/Comments:</strong> ${backlink.notes_comments || 'N/A'}</p>
+                        <p><strong>Created At:</strong> ${createdAt}</p>
+                    `);
+                    $backlinkModal.css('display', 'flex');
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                    alert('Failed to fetch backlink details. Please try again.');
+                }
             });
+        }
 
-            // Function to fetch and display backlink details
-            function fetchBacklinkDetails(id) {
-                $.ajax({
-                    url: `/backlinks/approve/${id}`,
-                    method: 'GET',
-                    success: function(data) {
-                        const backlink = data.backlink;
-                        const createdAt = new Date(backlink.created_at).toLocaleDateString();
+        // Function to update backlink status
+        function updateBacklinkStatus(id, status) {
+            const reason = $('#approval-reason').val();
 
-                        $backlinkModalBody.html(`
-                    <p><strong>URL:</strong> ${backlink.url}</p>
-                    <p><strong>Target Keyword:</strong> ${backlink.keyword_value}</p>
-                    <p><strong>Source:</strong> ${backlink.backlink_source}</p>
-                    <p><strong>Link Type:</strong> ${backlink.link_type}</p>
-                    <p><strong>Spam Score:</strong> ${backlink.spam_score}</p>
-                    <p><strong>Status:</strong> ${backlink.status}</p>
-                    <p><strong>Domain Authority:</strong> ${backlink.domain_authority}</p>
-                    <p><strong>Page Authority:</strong> ${backlink.page_authority}</p>
-                    <p><strong>Contact Person:</strong> ${backlink.contact_person}</p>
-                    <p><strong>Notes/Comments:</strong> ${backlink.notes_comments || 'N/A'}</p>
-                    <p><strong>Created At:</strong> ${createdAt}</p>
-                `);
-                        $backlinkModal.css('display', 'flex');
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error:', status, error);
-                        alert('Failed to fetch backlink details. Please try again.');
-                    }
-                });
-            }
-
-            // Function to update backlink status
-            function updateBacklinkStatus(id, status) {
-                const reason = $('#approval-reason').val();
-
-                $.ajax({
-                    url: `/backlinks/approve/${id}`,
-                    method: 'POST',
-                    data: {
-                        status: status,
-                        reason: reason,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(data) {
-                        $backlinkModal.hide();
-                        location.reload();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error:', status, error);
-                        alert('Failed to update backlink status. Please try again.');
-                        $backlinkModal.hide();
-                    }
-                });
-            }
-
-            // Event Listeners
-            $('#backlinksTable tbody').on('click', 'tr', function() {
-                backlinkId = $(this).data('id');
-                fetchBacklinkDetails(backlinkId);
-            });
-
-            $('#approve-backlink').on('click', function() {
-                updateBacklinkStatus(backlinkId, 'approved');
-            });
-
-            $('#reject-backlink').on('click', function() {
-                updateBacklinkStatus(backlinkId, 'rejected');
-            });
-
-            $('#closeModal, #closeModalFooter').on('click', function() {
-                $backlinkModal.hide();
-            });
-
-            $(window).on('click', function(event) {
-                if ($(event.target).is($backlinkModal)) {
+            $.ajax({
+                url: `/backlinks/approve/${id}`,
+                method: 'POST',
+                data: {
+                    status: status,
+                    reason: reason,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(data) {
+                    $backlinkModal.hide();
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                    alert('Failed to update backlink status. Please try again.');
                     $backlinkModal.hide();
                 }
             });
+        }
+
+        // Event Listeners
+        $('#backlinksTable').on('click', '.view-backlink', function(e) {
+            e.preventDefault();
+            backlinkId = $(this).data('id');
+            fetchBacklinkDetails(backlinkId);
         });
-    </script>
+
+        $('#approve-backlink').on('click', function() {
+            updateBacklinkStatus(backlinkId, 'approved');
+        });
+
+        $('#reject-backlink').on('click', function() {
+            updateBacklinkStatus(backlinkId, 'rejected');
+        });
+
+        $('#closeModal, #closeModalFooter').on('click', function() {
+            $backlinkModal.hide();
+        });
+
+        $(window).on('click', function(event) {
+            if ($(event.target).is($backlinkModal)) {
+                $backlinkModal.hide();
+            }
+        });
+    });
+</script>
 @endpush
