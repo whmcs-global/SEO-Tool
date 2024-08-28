@@ -68,9 +68,9 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    </div>
                 </div>
             </div>
+        </div>
         </div>
 
     </section>
@@ -85,47 +85,56 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
             display: none;
             align-items: center;
             justify-content: center;
         }
+
         .modal-dialog {
             background-color: white;
             border-radius: 5px;
             max-width: 500px;
             width: 100%;
         }
+
         .modal-content {
             border: none;
         }
+
         .modal-header {
             background-color: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
             padding: 15px;
         }
+
         .modal-body {
             padding: 20px;
         }
+
         .modal-footer {
             border-top: 1px solid #dee2e6;
             padding: 15px;
             display: flex;
             justify-content: flex-end;
         }
+
         .modal-footer .btn {
             margin-left: 10px;
         }
+
         #approval-reason {
             width: 100%;
             margin-bottom: 15px;
         }
+
         .close {
             background: none;
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
         }
+
         #backlinksTable tbody tr {
             cursor: pointer;
         }
@@ -133,13 +142,16 @@
 @endpush
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            var backlinkId;
-            $('#backlinksTable').DataTable({
+            let backlinkId;
+            const $backlinkModal = $('#backlinkModal');
+            const $backlinkModalBody = $('#backlinkModal .modal-body');
+
+            // Initialize DataTable
+            const backlinksTable = $('#backlinksTable').DataTable({
                 responsive: true,
                 columnDefs: [{
                     targets: -1,
@@ -147,39 +159,43 @@
                 }]
             });
 
-            $('#backlinksTable tbody').on('click', 'tr', function() {
-                backlinkId = $(this).data('id');
-
+            // Function to fetch and display backlink details
+            function fetchBacklinkDetails(id) {
                 $.ajax({
-                    url: '/backlinks/approve/' + backlinkId,
+                    url: `/backlinks/approve/${id}`,
                     method: 'GET',
                     success: function(data) {
-                        $('#backlinkModal .modal-body').html(`
-                            <p><strong>URL:</strong> ${data.backlink.url}</p>
-                            <p><strong>Target Keyword:</strong> ${data.backlink.keyword_value}</p>
-                            <p><strong>Source:</strong> ${data.backlink.backlink_source}</p>
-                            <p><strong>Link Type:</strong> ${data.backlink.link_type}</p>
-                            <p><strong>Spam Score:</strong> ${data.backlink.spam_score}</p>
-                            <p><strong>Status:</strong> ${data.backlink.status}</p>
-                            <p><strong>Domain Authority:</strong> ${data.backlink.domain_authority}</p>
-                            <p><strong>Page Authority:</strong> ${data.backlink.page_authority}</p>
-                            <p><strong>Contact Person:</strong> ${data.backlink.contact_person}</p>
-                            <p><strong>Notes/Comments:</strong> ${data.backlink.notes_comments || 'N/A'}</p>
-                            <p><strong>Created At:</strong> ${new Date(data.backlink.created_at).toLocaleDateString()}</p>
-                        `);
-                        $('#backlinkModal').css('display', 'flex');
+                        const backlink = data.backlink;
+                        const createdAt = new Date(backlink.created_at).toLocaleDateString();
+
+                        $backlinkModalBody.html(`
+                    <p><strong>URL:</strong> ${backlink.url}</p>
+                    <p><strong>Target Keyword:</strong> ${backlink.keyword_value}</p>
+                    <p><strong>Source:</strong> ${backlink.backlink_source}</p>
+                    <p><strong>Link Type:</strong> ${backlink.link_type}</p>
+                    <p><strong>Spam Score:</strong> ${backlink.spam_score}</p>
+                    <p><strong>Status:</strong> ${backlink.status}</p>
+                    <p><strong>Domain Authority:</strong> ${backlink.domain_authority}</p>
+                    <p><strong>Page Authority:</strong> ${backlink.page_authority}</p>
+                    <p><strong>Contact Person:</strong> ${backlink.contact_person}</p>
+                    <p><strong>Notes/Comments:</strong> ${backlink.notes_comments || 'N/A'}</p>
+                    <p><strong>Created At:</strong> ${createdAt}</p>
+                `);
+                        $backlinkModal.css('display', 'flex');
                     },
                     error: function(xhr, status, error) {
                         console.error('AJAX Error:', status, error);
+                        alert('Failed to fetch backlink details. Please try again.');
                     }
                 });
-            });
+            }
 
-            function updateBacklinkStatus(backlinkId, status) {
-                var reason = $('#approval-reason').val();
+            // Function to update backlink status
+            function updateBacklinkStatus(id, status) {
+                const reason = $('#approval-reason').val();
 
                 $.ajax({
-                    url: '/backlinks/approve/' + backlinkId,
+                    url: `/backlinks/approve/${id}`,
                     method: 'POST',
                     data: {
                         status: status,
@@ -187,15 +203,22 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(data) {
-                        $('#backlinkModal').hide();
+                        $backlinkModal.hide();
                         location.reload();
                     },
                     error: function(xhr, status, error) {
                         console.error('AJAX Error:', status, error);
-                        $('#backlinkModal').hide();
+                        alert('Failed to update backlink status. Please try again.');
+                        $backlinkModal.hide();
                     }
                 });
             }
+
+            // Event Listeners
+            $('#backlinksTable tbody').on('click', 'tr', function() {
+                backlinkId = $(this).data('id');
+                fetchBacklinkDetails(backlinkId);
+            });
 
             $('#approve-backlink').on('click', function() {
                 updateBacklinkStatus(backlinkId, 'approved');
@@ -205,15 +228,13 @@
                 updateBacklinkStatus(backlinkId, 'rejected');
             });
 
-            // Close modal
             $('#closeModal, #closeModalFooter').on('click', function() {
-                $('#backlinkModal').hide();
+                $backlinkModal.hide();
             });
 
-            // Close modal if clicked outside
             $(window).on('click', function(event) {
-                if ($(event.target).is('#backlinkModal')) {
-                    $('#backlinkModal').hide();
+                if ($(event.target).is($backlinkModal)) {
+                    $backlinkModal.hide();
                 }
             });
         });

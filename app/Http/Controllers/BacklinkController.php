@@ -126,11 +126,10 @@ class BacklinkController extends Controller
                 'page_authority' => 'required|integer',
                 'contact_person' => 'required|string',
                 'status' => 'required|string',
-                'notes_comments' => 'required|string',
-                'email' => 'required|string',
-                'password' => 'required|string',
-                'login_url' => 'required|string',
-                'company_name' => 'required|string',
+                // 'email' => 'required|string',
+                // 'password' => 'required|string',
+                // 'login_url' => 'required|string',
+                // 'company_name' => 'required|string',
             ];
             $validatedData = $request->validate($rules);
 
@@ -176,7 +175,15 @@ class BacklinkController extends Controller
     public function statusList($approve_status)
     {
         $approvalStatus = $approve_status ?? 'Pending';
-        $backlinks = Backlinks::query()->with('user')->where('website_id', auth()->user()->website_id)->where('aproval_status', $approvalStatus)->get();
+        $user_id = auth()->user()->id;
+        $backlinks = Backlinks::query()
+            ->with('user')
+            ->where('website_id', auth()->user()->website_id)
+            ->where('aproval_status', $approvalStatus)
+            ->whereHas('user', function ($query) {
+                $query->where('parent_id', auth()->user()->id);
+            })
+            ->get();
 
         return view('backlinks.status-view', compact('backlinks', 'approvalStatus'));
     }

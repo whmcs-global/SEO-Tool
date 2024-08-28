@@ -39,11 +39,9 @@ class KeywordController extends Controller
 
         $positionFilter = $request->get('positionFilter', 'all');
 
-        // Fetch keywords
         $keywordsQuery = Keyword::with(['keywordData']);
         $keywordsQuery->where('website_id', $user->website_id);
-        // dd($userIds);
-        if($isAdmin || $isSuperAdmin && !empty($userIds)){
+        if ($isAdmin || $isSuperAdmin && !empty($userIds)) {
             if (is_array($userIds) && !empty($userIds)) {
                 $keywordsQuery->whereIn('user_id', $userIds);
             }
@@ -55,19 +53,45 @@ class KeywordController extends Controller
         $keywords = $keywordsQuery->get();
         $totalKeywords = $keywords->count();
 
-        // Fetch assigned keywords using AssignKeyword
         $assignedKeywords = AssignKeyword::where('user_id', $user->id)->with('keyword')->get();
 
-        // Merge keywords and assigned keywords
         $allKeywords = $keywords->merge($assignedKeywords->pluck('keyword'));
 
         $countryRanges = [];
         foreach ($countries as $country) {
             $countryRanges[$country->id] = [
-                'top_5' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-                'top_10' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-                'top_50' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
-                'top_100' => ['start_count' => 0, 'end_count' => 0, 'start_percentage' => 0, 'end_percentage' => 0],
+                'top_5' => [
+                    'keyword_count' => 0,
+                    'percentage' => 0,
+                    'keywords_position_increase_count' => 0,
+                    'keywords_position_decrease_count' => 0,
+                    'start_count' => 0,
+                    'end_count' => 0
+                ],
+                'top_10' => [
+                    'keyword_count' => 0,
+                    'percentage' => 0,
+                    'keywords_position_increase_count' => 0,
+                    'keywords_position_decrease_count' => 0,
+                    'start_count' => 0,
+                    'end_count' => 0
+                ],
+                'top_50' => [
+                    'keyword_count' => 0,
+                    'percentage' => 0,
+                    'keywords_position_increase_count' => 0,
+                    'keywords_position_decrease_count' => 0,
+                    'start_count' => 0,
+                    'end_count' => 0
+                ],
+                'top_100' => [
+                    'keyword_count' => 0,
+                    'percentage' => 0,
+                    'keywords_position_increase_count' => 0,
+                    'keywords_position_decrease_count' => 0,
+                    'start_count' => 0,
+                    'end_count' => 0
+                ],
             ];
         }
 
@@ -78,6 +102,7 @@ class KeywordController extends Controller
             if (!$keyword->keywordData) {
                 continue;
             }
+
             foreach ($keyword->keywordData as $data) {
                 $response = json_decode($data->response, true);
                 if (!is_array($response)) {
@@ -99,6 +124,34 @@ class KeywordController extends Controller
                         $allDates[] = $date;
                     }
                 }
+                // Calculate keyword movements and count them in each range
+
+                $startPosition = isset($positionDates[$startDate]['position']) ? (int)$positionDates[$startDate]['position'] : null;
+                $endPosition = isset($positionDates[$endDate]['position']) ? (int)$positionDates[$endDate]['position'] : null;
+
+                foreach (['top_5' => 5, 'top_10' => 10, 'top_50' => 50, 'top_100' => 100] as $range => $limit) {
+                    if ($startPosition !== null && $startPosition <= $limit) {
+                        $countryRanges[$data->country_id][$range]['start_count']++;
+                        // if ($range === 'top_5' && $data->country_id == 1) {
+                        //     Log::info("Keyword ID {$data->keyword_id} is in top_5 for country 1 with start position $startPosition");
+                        // }
+                    }
+
+                    if ($endPosition !== null && $endPosition <= $limit) {
+                        $countryRanges[$data->country_id][$range]['end_count']++;
+                        // if ($range === 'top_5' && $data->country_id == 1) {
+                        //     Log::info("Keyword ID {$data->keyword_id} is in top_5 for country 1 with end position $endPosition");
+                        // }
+
+                        if ($startPosition !== null && $endPosition !== null) {
+                            if ($startPosition > $endPosition) {
+                                $countryRanges[$data->country_id][$range]['keywords_position_increase_count']++;
+                            } elseif ($startPosition < $endPosition) {
+                                $countryRanges[$data->country_id][$range]['keywords_position_decrease_count']++;
+                            }
+                        }
+                    }
+                }
 
                 if ($data->country_id == $selectedCountry) {
                     if ($positionFilter == 'all' || $this->isPositionInFilter($positionDates, $positionFilter)) {
@@ -114,74 +167,44 @@ class KeywordController extends Controller
                         ];
                     }
                 }
-
-                if (isset($countryRanges[$data->country_id])) {
-                    $this->updateCountryRanges($countryRanges, $data->country_id, $positionDates, $startDate, $endDate);
-                }
             }
         }
-
-        foreach ($countryRanges as &$ranges) {
-            foreach ($ranges as &$range) {
-                $countryTotal = $range['start_count'] + $range['end_count'];
-                if ($countryTotal > 0) {
-                    $range['start_percentage'] = ($range['start_count'] / $countryTotal) * 100;
-                    $range['end_percentage'] = ($range['end_count'] / $countryTotal) * 100;
+        if ($positionFilter != 'all') {
+            $filteredKeywordData = [];
+            foreach ($keywordData as $data) {
+                if (isset($data['positions'][$endDate])) {
+                    $position = (int) $data['positions'][$endDate]['position'];
+                    if (($positionFilter == 'top_5' && $position <= 5) ||
+                        ($positionFilter == 'top_10' && $position <= 10) ||
+                        ($positionFilter == 'top_50' && $position <= 50) ||
+                        ($positionFilter == 'top_100' && $position <= 100)
+                    ) {
+                        $filteredKeywordData[] = $data;
+                    }
                 }
             }
+            $keywordData = $filteredKeywordData;
         }
-
         $allDates = array_unique($allDates);
         sort($allDates);
-
-        return view('keyword.details', compact('users','userIds','keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter', 'labels', 'labelIds'));
+        return view('keyword.details', compact('users', 'userIds', 'keywordData', 'countryRanges', 'countries', 'totalKeywords', 'startDate', 'endDate', 'allDates', 'selectedCountry', 'positionFilter', 'labels', 'labelIds'));
     }
 
-    private function updateCountryRanges(&$countryRanges, $countryId, $positionDates, $startDate, $endDate)
+    private function isPositionInFilter($positionDates, $positionFilter)
     {
-        $startPosition = $positionDates[$startDate]['position'] ?? null;
-        $endPosition = $positionDates[$endDate]['position'] ?? null;
-
-        if ($startPosition !== null) {
-            $this->updateRangeCount($countryRanges[$countryId], $startPosition, 'start_count');
-        }
-
-        if ($endPosition !== null) {
-            $this->updateRangeCount($countryRanges[$countryId], $endPosition, 'end_count');
-        }
-    }
-
-    private function isPositionInFilter($positionDates, $positionFilter) {
         foreach ($positionDates as $date => $data) {
-            $position = $data['position'] ?? null;
+            $position = (int)$data['position'] ?? null;
             if (($positionFilter == 'top_5' && $position <= 5) ||
                 ($positionFilter == 'top_10' && $position <= 10) ||
                 ($positionFilter == 'top_50' && $position <= 50) ||
-                ($positionFilter == 'top_100' && $position <= 100)) {
+                ($positionFilter == 'top_100' && $position <= 100)
+            ) {
                 return true;
             }
         }
         return false;
     }
 
-
-    private function updateRangeCount(&$ranges, $position, $countType)
-    {
-        if ($position === null) return;
-
-        if ($position <= 5) {
-            $ranges['top_5'][$countType]++;
-        }
-        if ($position <= 10) {
-            $ranges['top_10'][$countType]++;
-        }
-        if ($position <= 50) {
-            $ranges['top_50'][$countType]++;
-        }
-        if ($position <= 100) {
-            $ranges['top_100'][$countType]++;
-        }
-    }
 
     public function show()
     {
@@ -215,7 +238,7 @@ class KeywordController extends Controller
         $isSuperAdmin = $user->hasRole('Super Admin');
 
         // Fetch keywords
-        $keywordsQuery = Keyword::with(['keywordData' => function($query) use ($selectedCountry) {
+        $keywordsQuery = Keyword::with(['keywordData' => function ($query) use ($selectedCountry) {
             $query->where('country_id', $selectedCountry);
         }]);
 
@@ -236,8 +259,8 @@ class KeywordController extends Controller
         $keywords = $keywordsQuery->get();
 
         // Fetch assigned keywords using AssignKeyword
-        $assignedKeywords = AssignKeyword::where('user_id', $userId)->with(['keyword'=>function($query){
-            $query->with(['keywordData' => function($query) {
+        $assignedKeywords = AssignKeyword::where('user_id', $userId)->with(['keyword' => function ($query) {
+            $query->with(['keywordData' => function ($query) {
                 $query->where('country_id', auth()->user()->country_id);
             }])->where('website_id', auth()->user()->website_id);
         }])->get();
@@ -282,7 +305,7 @@ class KeywordController extends Controller
     public function create()
     {
         $users = [];
-        if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')){
+        if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
             $users = User::all();
         }
         $labels = Label::all();
@@ -292,7 +315,7 @@ class KeywordController extends Controller
     public function edit(Keyword $keyword)
     {
         $users = [];
-        if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')){
+        if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
             $users = User::all();
         }
         $labels = Label::all();
@@ -346,9 +369,9 @@ class KeywordController extends Controller
 
             // Check if the keyword already exists for the user and website
             $existingKeyword = Keyword::where('user_id', $userId)
-                                      ->where('website_id', $websiteId)
-                                      ->where('keyword', $keywordValue)
-                                      ->first();
+                ->where('website_id', $websiteId)
+                ->where('keyword', $keywordValue)
+                ->first();
 
             if ($existingKeyword) {
                 session()->flash('message', 'The keyword "' . $keywordValue . '" has already been added.');
@@ -386,20 +409,18 @@ class KeywordController extends Controller
     function getUserIP()
     {
         if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
-                $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-                $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+            $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+            $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
         }
         $client  = @$_SERVER['HTTP_CLIENT_IP'];
         $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
         $remote  = $_SERVER['REMOTE_ADDR'];
 
-        if(filter_var($client, FILTER_VALIDATE_IP)){
+        if (filter_var($client, FILTER_VALIDATE_IP)) {
             $ip = $client;
-        }
-        elseif(filter_var($forward, FILTER_VALIDATE_IP)){
+        } elseif (filter_var($forward, FILTER_VALIDATE_IP)) {
             $ip = $forward;
-        }
-        else{
+        } else {
             $ip = $remote;
         }
         return $ip;
@@ -426,12 +447,12 @@ class KeywordController extends Controller
 
     public function keyword_data()
     {
-        $keywords = Keyword::with(['keywordData' => function($query) {
+        $keywords = Keyword::with(['keywordData' => function ($query) {
             $query->with('country');
         }])->get();
 
-        foreach($keywords as $keyword){
-            foreach($keyword->keywordData as $data){
+        foreach ($keywords as $keyword) {
+            foreach ($keyword->keywordData as $data) {
                 $response = $this->keywordbydate($keyword, $data->country->ISO_CODE);
                 $data['response'] = $response;
                 $data->save();
