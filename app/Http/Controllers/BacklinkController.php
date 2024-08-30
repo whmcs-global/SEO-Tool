@@ -146,7 +146,9 @@ class BacklinkController extends Controller
                 'login_url' => '',
                 'company_name' => '',
             ];
+
             $validatedData = $request->validate($rules);
+            // dd($validatedData);
             try {
                 if ($id) {
                     $backlink = Backlinks::findOrFail($id);

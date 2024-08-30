@@ -31,6 +31,7 @@ class Backlinks extends Model
         'password',
         'login_url',
         'status',
+        'company_name',
     ];
 
     public function getWebsiteAttribute($value)
@@ -40,7 +41,7 @@ class Backlinks extends Model
 
     protected $appends = ['created_by','email', 'keyword_value'];
 
-    public function getEmailAttribute()
+    public function getUserEmailAttribute()
     {
         return $this->user ? $this->user->email : null;
     }
