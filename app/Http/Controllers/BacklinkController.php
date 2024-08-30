@@ -145,8 +145,8 @@ class BacklinkController extends Controller
                 'password' => '',
                 'login_url' => '',
                 'company_name' => '',
+                'notes_comments' => '',
             ];
-
             $validatedData = $request->validate($rules);
             // dd($validatedData);
             try {

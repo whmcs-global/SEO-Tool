@@ -36,13 +36,14 @@
     </style>
 @endpush
 @section('content')
+{{-- @dd($backlink) --}}
     <div class="container">
         <div class="row justify-content-center">
-            @if ($backlink && $backlink->aproval_status == 'rejected')
+            @if ($backlink && $backlink->status == 'Declined')
                 <div class="col-md-8">
                     <h4>Reason for Rejection</h4>
                     <div class="alert alert-danger" role="alert">
-                        {{ $backlink->reason ?? 'No reason provided' }}
+                        {{ $backlink->notes_comments ?? 'No reason provided' }}
                     </div>
                 </div>
             @endif
