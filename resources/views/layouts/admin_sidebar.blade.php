@@ -7,7 +7,8 @@
     </div>
 
     <ul class="sidebar-menu">
-        <li class="dropdown {{ in_array(Request::route()->getName(), ['dashboard', 'keywords.create', 'keywords.details']) ? 'active' : '' }}">
+        <li
+            class="dropdown {{ in_array(Request::route()->getName(), ['dashboard', 'keywords.create', 'keywords.details']) ? 'active' : '' }}">
             <a href="#" class="menu-toggle nav-link has-dropdown">
                 <i class="fa-brands fa-searchengin"></i><span>Keyword</span>
             </a>
@@ -23,9 +24,15 @@
                 </li>
             </ul>
         </li>
+        <li class="dropdown {{ Route::is('backlinks.*') ? 'active' : '' }} ">
+            <a href="{{ route('backlinks.index') }}" class="nav-link">
+                <i class="fa-solid fa-link"></i><span>Backlinks</span>
+            </a>
+        </li>
     </ul>
 
-    <ul class="sidebar-menu">
+
+    {{-- <ul class="sidebar-menu">
         <li class="dropdown {{ in_array(Request::route()->getName(), ['backlinks.index', 'backlinks.status.list']) ? 'active' : '' }}">
             <a href="#" class="menu-toggle nav-link has-dropdown">
                 <i class="fa-solid fa-link"></i><span>Backlinks</span>
@@ -41,7 +48,7 @@
                 @endrole
             </ul>
         </li>
-    </ul>
+    </ul> --}}
 
     @can('User list')
         <ul class="sidebar-menu">
@@ -65,7 +72,8 @@
 
     @canany(['Google API', 'Project list'])
         <ul class="sidebar-menu">
-            <li class="dropdown {{ in_array(Request::route()->getName(), ['admin.settings', 'admin.projects']) ? 'active' : '' }}">
+            <li
+                class="dropdown {{ in_array(Request::route()->getName(), ['admin.settings', 'admin.projects']) ? 'active' : '' }}">
                 <a href="#" class="menu-toggle nav-link has-dropdown">
                     <i class="fa-solid fa-gear"></i><span>Settings</span>
                 </a>

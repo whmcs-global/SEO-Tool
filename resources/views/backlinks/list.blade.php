@@ -38,17 +38,17 @@
                         </div>
                     </div>
                     <!-- <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header d-flex justify-content-center align-items-center">
-                                        <h4>Total Inactive Links</h4>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="text-center">
-                                            <label><b><h1>{{ $inactivelinks }}</h1></b></label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
+                                            <div class="card">
+                                                <div class="card-header d-flex justify-content-center align-items-center">
+                                                    <h4>Total Inactive Links</h4>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="text-center">
+                                                        <label><b><h1>{{ $inactivelinks }}</h1></b></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> -->
                 </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
@@ -186,14 +186,25 @@
                                 <option value="">Select Status</option>
                                 <option value="Active" {{ $request->input('status') == 'Active' ? 'selected' : '' }}>Active
                                 </option>
-                                <option value="Inactive" {{ $request->input('status') == 'Inactive' ? 'selected' : '' }}>
-                                    Inactive</option>
+                                {{-- <option value="Inactive" {{ $request->input('status') == 'Inactive' ? 'selected' : '' }}>
+                                    Inactive</option> --}}
                                 <option value="Pending" {{ $request->input('status') == 'Pending' ? 'selected' : '' }}>Pending
                                 </option>
                                 <option value="Declined" {{ $request->input('status') == 'Declined' ? 'selected' : '' }}>
-                                    Declined</option>
+                                    Rejected</option>
                             </select>
                         </div>
+                        {{-- <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
+                            <select name="status" class="form-control" id="statusSelect">
+                                <option value="">Status</option>
+                                <option value="Approved" {{ $request->input('status') == 'Active' ? 'selected' : '' }}>Approved
+                                </option>
+                                <option value="Pending" {{ $request->input('status') == 'Pending' ? 'selected' : '' }}>Pending
+                                </option>
+                                <option value="Rejected" {{ $request->input('status') == 'Declined' ? 'selected' : '' }}>
+                                    Rejected</option>
+                            </select>
+                        </div> --}}
                         <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
                             <input type="text" name="daterange" class="form-control" id="dateRangeInput"
                                 placeholder="Select Date Range" value="{{ $request->input('daterange') }}" />
@@ -206,10 +217,10 @@
                 </div>
                 <div class="row mb-3 justify-content-between align-items-center" style="padding: 0px 10px;">
                     <!-- <div class="col-auto">
-                                    <button id="filterButton" class="btn btn-secondary">
-                                        <i class="fas fa-filter"></i> Filters
-                                    </button>
-                                </div> -->
+                                                            <button id="filterButton" class="btn btn-secondary">
+                                                                <i class="fas fa-filter"></i> Filters
+                                                            </button>
+                                                        </div> -->
                     <div class="col-auto">
                         <a href="{{ route('backlinks.create') }}" class="btn btn-primary rounded-pill">
                             Add Backlink
@@ -234,19 +245,17 @@
                                     <th>Link Type</th>
                                     {{-- <th>Spam Score (SS)</th> --}}
                                     <th>SS</th>
-                                    @role('Admin|Super Admin')
+                                    {{-- @role('Admin|Super Admin')
                                         <th>Status</th>
-                                    @endrole
-                                    @role('User')
-                                        <th>Approval Status</th>
-                                    @endrole
+                                    @endrole --}}
+                                    <th>Status</th>
                                     {{-- <th>Anchor Text</th> --}}
                                     <th>DA</th>
                                     {{-- <th>Domain Authority</th> --}}
                                     <th>PA</th>
                                     {{-- <th>Page Authority</th> --}}
                                     <th>Contact Person</th>
-                                    <th>Notes Comments</th>
+                                    {{-- <th>Notes Comments</th> --}}
                                     <th>Created At</th>
                                     <th>Actions</th>
                                 </tr>
@@ -271,17 +280,27 @@
                                         <td>{{ $backlink->backlink_source }}</td>
                                         <td>{{ $backlink->link_type }}</td>
                                         <td>{{ $backlink->spam_score }}</td>
-                                        @role('Admin|Super Admin')
+                                        {{-- @role('Admin|Super Admin')
                                             <td>{{ $backlink->status }}</td>
-                                        @endrole
-                                        @role('User')
-                                            <td>{{ ucfirst($backlink->aproval_status) }}</td>
-                                        @endrole
+                                        @endrole --}}
+                                        <td>
+                                            @if ($backlink->status == 'Active')
+                                                <span class="badge bg-success">{{ ucfirst($backlink->status) }}</span>
+                                            {{-- @elseif ($backlink->status == 'Inactive')
+                                                <span class="badge bg-secondary">{{ ucfirst($backlink->status) }}</span> --}}
+                                            @elseif ($backlink->status == 'Pending')
+                                                <span class="badge bg-warning">{{ ucfirst($backlink->status) }}</span>
+                                            @elseif ($backlink->status == 'Declined')
+                                                <span class="badge bg-danger">Rejected</span>
+                                            @else
+                                                <span class="badge bg-info">{{ ucfirst($backlink->status) }}</span>
+                                            @endif
+                                        </td>
                                         {{-- <td>{{ $backlink->anchor_text }}</td> --}}
                                         <td>{{ $backlink->domain_authority }}</td>
                                         <td>{{ $backlink->page_authority }}</td>
                                         <td>{{ $backlink->contact_person }}</td>
-                                        <td>{{ $backlink->notes_comments }}</td>
+                                        {{-- <td>{{ $backlink->notes_comments }}</td> --}}
                                         <td>{{ $backlink->created_at->format('d-m-Y') }}</td>
                                         <td class="text-right">
                                             <div class="btn-group btn-group-sm" role="group" aria-label="Actions">

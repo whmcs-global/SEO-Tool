@@ -10,9 +10,9 @@ class BacklinkController extends Controller
     public function index(Request $request)
     {
         $query = Backlinks::query()->with('user')->where('website_id', auth()->user()->website_id);
-        if (auth()->user()->hasRole(['Admin', 'Super Admin'])) {
-            $query->where('aproval_status', 'Approved');
-        }
+        // if (auth()->user()->hasRole(['Admin', 'Super Admin'])) {
+        //     $query->where('aproval_status', 'Approved');
+        // }
         if (!auth()->user()->hasRole(['Admin', 'Super Admin'])) {
             $query->where('user_id', auth()->user()->id)
                 ->where('website_id', auth()->user()->website_id);
@@ -22,10 +22,25 @@ class BacklinkController extends Controller
             $query->where('link_type', $request->input('link_type'));
         }
 
-        if ($request->filled('status')) {
+        if ($request->filled('status') && in_array($request->input('status'), ['Active', 'Declined'])) {
             $query->where('status', $request->input('status'));
         }
-
+        if ($request->filled('status') && $request->input('status') == 'Pending' && auth()->user()->hasRole('Admin')) {
+            $query->where('status', 'Pending');
+            $query->whereHas('user', function ($query) {
+                $query->where('parent_id', auth()->user()->id);
+            });
+        }
+        if ($request->filled('status') && $request->input('status') == 'Pending' && auth()->user()->hasRole('User')) {
+            $query->where('status', 'Pending')->where('user_id', auth()->user()->id);
+        }
+        if ($request->filled('status') && $request->input('status') == 'Pending' && auth()->user()->hasRole('Super Admin')) {
+            $query->where('status', 'Pending');
+        }
+        // if request has no status or null get only approved backlinks
+        if (!$request->filled('status') && !auth()->user()->hasRole(['Admin', 'Super Admin'])) {
+            $query->where('status', 'Active');
+        }
         if ($request->filled('daterange')) {
             $dates = explode(' - ', $request->input('daterange'));
             if (count($dates) == 2) {
@@ -125,23 +140,22 @@ class BacklinkController extends Controller
                 'domain_authority' => 'required|integer',
                 'page_authority' => 'required|integer',
                 'contact_person' => 'required|string',
-                'status' => 'required|string',
-                // 'email' => 'required|string',
-                // 'password' => 'required|string',
-                // 'login_url' => 'required|string',
-                // 'company_name' => 'required|string',
+                'status' => '',
+                'email' => '',
+                'password' => '',
+                'login_url' => '',
+                'company_name' => '',
             ];
             $validatedData = $request->validate($rules);
-
             try {
                 if ($id) {
                     $backlink = Backlinks::findOrFail($id);
-                    $backlink->aproval_status = 'Pending';
                     $backlink->update($validatedData);
                     $message = 'Backlink updated successfully!';
                 } else {
                     $validatedData['website_id'] = auth()->user()->website_id;
                     $validatedData['user_id'] = auth()->user()->id;
+                    $validatedData['status'] = 'Pending';
                     $backlink = Backlinks::create($validatedData);
                     $message = 'Backlink created successfully!';
                 }

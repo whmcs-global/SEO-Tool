@@ -88,16 +88,16 @@
                             </div>
 
                             <!-- <div class="mb-3 row">
-                                            <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
-                                            <div class="col-md-6">
-                                                <input id="target_keyword" placeholder="e.g., best SEO practices" type="text" class="form-control @error('target_keyword') is-invalid @enderror" name="target_keyword" value="{{ $backlink ? $backlink->target_keyword : old('target_keyword') }}" >
-                                                @error('target_keyword')
+                                                        <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
+                                                        <div class="col-md-6">
+                                                            <input id="target_keyword" placeholder="e.g., best SEO practices" type="text" class="form-control @error('target_keyword') is-invalid @enderror" name="target_keyword" value="{{ $backlink ? $backlink->target_keyword : old('target_keyword') }}" >
+                                                            @error('target_keyword')
         <span class="invalid-feedback" role="alert">
-                                                                    <strong>{{ $message }}</strong>
-                                                                </span>
+                                                                                            <strong>{{ $message }}</strong>
+                                                                                        </span>
     @enderror
-                                            </div>
-                                        </div> -->
+                                                        </div>
+                                                    </div> -->
                             {{-- <div class="mb-3 row">
                                 <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
                                 <div class="col-md-6">
@@ -302,48 +302,47 @@
                                     @enderror
                                 </div>
                             </div>
-
-                            <div class="mb-3 row">
-                                <label for="notes_comments"
-                                    class="col-md-4 col-form-label text-md-end">{{ __('Notes/Comments') }}</label>
-                                <div class="col-md-6">
-                                    <textarea id="notes_comments" placeholder="Enter a Note"
-                                        class="form-control @error('notes_comments') is-invalid @enderror" name="notes_comments">{{ $backlink ? $backlink->notes_comments : old('notes_comments') }}</textarea>
-                                    @error('notes_comments')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
+                            @role('Admin|Super Admin')
+                                <div class="mb-3 row">
+                                    <label for="notes_comments"
+                                        class="col-md-4 col-form-label text-md-end">{{ __('Notes/Comments') }}</label>
+                                    <div class="col-md-6">
+                                        <textarea id="notes_comments" placeholder="Enter a Note"
+                                            class="form-control @error('notes_comments') is-invalid @enderror" name="notes_comments">{{ $backlink ? $backlink->notes_comments : old('notes_comments') }}</textarea>
+                                        @error('notes_comments')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="mb-3 row">
-                                <label for="status"
-                                    class="col-md-4 col-form-label text-md-end">{{ __('Status') }}</label>
-                                <div class="col-md-6">
-                                    <select id="status" class="form-control @error('status') is-invalid @enderror"
-                                        name="status">
-                                        <option value="Inactive"
-                                            {{ $backlink && $backlink->status == 'Inactive' ? 'selected' : '' }}>Inactive
-                                        </option>
-                                        <option value="Active"
-                                            {{ $backlink && $backlink->status == 'Active' ? 'selected' : '' }}>Active
-                                        </option>
-                                        <option value="Pending"
-                                            {{ $backlink && $backlink->status == 'Pending' ? 'selected' : '' }}>Pending
-                                        </option>
-                                        <option value="Declined"
-                                            {{ $backlink && $backlink->status == 'Declined' ? 'selected' : '' }}>Declined
-                                        </option>
-                                    </select>
-                                    @error('status')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
+                                <div class="mb-3 row">
+                                    <label for="status"
+                                        class="col-md-4 col-form-label text-md-end">{{ __('Status') }}</label>
+                                    <div class="col-md-6">
+                                        <select id="status" class="form-control @error('status') is-invalid @enderror"
+                                            name="status">
+                                            {{-- <option value="Inactive"
+                                                {{ $backlink && $backlink->status == 'Inactive' ? 'selected' : '' }}>Inactive
+                                            </option> --}}
+                                            <option value="Active"
+                                                {{ $backlink && $backlink->status == 'Active' ? 'selected' : '' }}>Active
+                                            </option>
+                                            <option value="Pending"
+                                                {{ $backlink && $backlink->status == 'Pending' ? 'selected' : '' }}>Pending
+                                            </option>
+                                            <option value="Declined"
+                                                {{ $backlink && $backlink->status == 'Declined' ? 'selected' : '' }}>Rejected
+                                            </option>
+                                        </select>
+                                        @error('status')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
                                 </div>
-                            </div>
-
+                            @endrole
                             <div class="login-details-box">
                                 <div class="login-details-title">{{ __('Login Details') }}</div>
                                 {{-- company_name filed --}}

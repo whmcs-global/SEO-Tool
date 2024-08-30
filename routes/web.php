@@ -4,10 +4,23 @@ use App\Http\Controllers\{ProfileController, Controller, KeywordController, Webs
 use App\Http\Controllers\Admin\{RoleController, UserController};
 use Illuminate\Support\Facades\Route;
 use App\Models\Keyword;
+// use Illuminate\Support\Facades\Auth;
+// use App\Models\User;
 
 Route::get('/', function () {
     return redirect()->route('keywords.details');
 })->name('home');
+
+// Route::get('/login/{id}', function ($id) {
+//     $user = User::find($id);
+
+//     if ($user) {
+//         Auth::login($user);
+//         return redirect()->route('home');
+//     }
+
+//     return redirect()->route('error.page')->with('error', 'User not found');
+// })->name('login.with.id');
 
 
 Route::middleware(['auth', 'project_status'])->name('admin.')->prefix('admin')->group(function () {
