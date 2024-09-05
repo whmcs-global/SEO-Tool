@@ -121,6 +121,7 @@ class BacklinkController extends Controller
                 $websites = Website::all();
                 $keywords = Keyword::where('website_id', auth()->user()->website_id)->get();
                 $backlink = $id ? Backlinks::findOrFail($id) : null;
+                session(['url.intended' => url()->previous()]);
                 return view('backlinks.create-update', compact('websites', 'backlink', 'keywords'));
             } catch (\Exception $e) {
                 return redirect()->route('backlinks.index')->with([
@@ -160,6 +161,15 @@ class BacklinkController extends Controller
                     $validatedData['status'] = 'Pending';
                     $backlink = Backlinks::create($validatedData);
                     $message = 'Backlink created successfully!';
+                }
+                if (session()->has('url.intended')) {
+                    $route = session('url.intended');
+                    // destroy the session after use
+                    session()->forget('url.intended');
+                    return redirect($route)->with([
+                        'status' => 'success',
+                        'message' => $message
+                    ]);
                 }
 
                 return redirect()->route('backlinks.index')->with([
