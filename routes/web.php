@@ -52,6 +52,7 @@ Route::middleware(['auth', 'project_status'])->name('admin.')->prefix('admin')->
     Route::post('/users/{user}/permissions', [UserController::class, 'givePermission'])->name('users.permissions');
     Route::delete('/users/{user}/permissions/{permission}', [UserController::class, 'revokePermission'])->name('users.permissions.revoke');
     Route::get('/settings', [\App\Http\Controllers\Admin\GoogleAnalyticsController::class, 'configGoogleAnalytics'])->middleware(['permission:Google API'])->name('settings');
+    Route::delete('users/{user}/delete-and-transfer', [\App\Http\Controllers\Admin\UserController::class, 'deleteAndTransfer'])->name('admin.users.delete-and-transfer');
 
     // projects
     Route::get('/websites/create', [WebsiteController::class, 'create'])->middleware(['permission:Add New Project'])->name('websites.create');

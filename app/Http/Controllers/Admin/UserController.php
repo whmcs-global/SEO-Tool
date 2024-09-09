@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{User, Website, User_project};
+use App\Models\{User, Website, User_project, Keyword, Backlinks};
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -15,27 +15,29 @@ class UserController extends Controller
     public function index()
     {
         $users = User::whereNotIn('id', [1])
-                     ->with(['parent', 'User_project.website'])
-                     ->get();
-        
+            ->with(['parent', 'User_project.website'])
+            ->get();
+
         return view('admin.users.index', compact('users'));
     }
-    
-    
 
-    public function create(){
+
+
+    public function create()
+    {
 
         $websites = Website::all();
         $roles = Role::whereNotIn('name', ['super admin'])->get();
-        return view('admin.users.create', compact('roles','websites'));
+        return view('admin.users.create', compact('roles', 'websites'));
     }
 
-    public function edit(User $user){
+    public function edit(User $user)
+    {
 
         $websites = Website::all();
         $selected_project = User_project::where('user_id', $user->id)->pluck('website_id')->toArray();
         $roles = Role::whereNotIn('name', ['super admin'])->get();
-        return view('admin.users.edit', compact('roles','user','websites','selected_project'));
+        return view('admin.users.edit', compact('roles', 'user', 'websites', 'selected_project'));
     }
 
     public function update(Request $request, User $user)
@@ -52,7 +54,7 @@ class UserController extends Controller
         ]);
 
         $user->syncRoles([$validated['role']]);
-    
+
         if ($request->filled('password')) {
             $validatedPassword = $request->validate([
                 'password' => 'required|string|min:8|confirmed',
@@ -63,7 +65,7 @@ class UserController extends Controller
         }
         User_project::where('user_id', $user->id)->delete();
         $projects = $request->projects;
-        if($projects){
+        if ($projects) {
             foreach ($projects as $project) {
                 $user_project = new User_project();
                 $user_project->user_id = $user->id;
@@ -124,7 +126,7 @@ class UserController extends Controller
         $role = Role::findById($request->role);
         $user->assignRole($role->name);
         $projects = $request->projects;
-        if($projects){
+        if ($projects) {
             foreach ($projects as $project) {
                 $user_project = new User_project();
                 $user_project->user_id = $user->id;
@@ -221,5 +223,34 @@ class UserController extends Controller
         $user->delete();
 
         return back()->with('message', 'User deleted.');
+    }
+
+    public function deleteAndTransfer(Request $request, User $user)
+    {
+        $request->validate([
+            'transfer_user_id' => 'required|exists:users,id',
+        ]);
+
+        if($user->id == $request->transfer_user_id) {
+            return back()->with('error', 'You can not transfer data to same user.');
+        }
+
+        $transferUser = User::findOrFail($request->transfer_user_id);
+
+        $delete_user_projects = User_project::where('user_id', $user->id)->get();
+        $transfer_user_project_ids = User_project::where('user_id', $transferUser->id)->pluck('website_id')->toArray();
+
+        $delete_user_projects->each(function ($delete_user_project) use ($transfer_user_project_ids, $transferUser) {
+            if (!in_array($delete_user_project->project_id, $transfer_user_project_ids)) {
+                $delete_user_project->update(['user_id' => $transferUser->id]);
+            }
+        });
+
+        Keyword::where('user_id', $user->id)->update(['user_id' => $transferUser->id]);
+        Backlinks::where('user_id', $user->id)->update(['user_id' => $transferUser->id]);
+
+        $user->delete();
+
+        return redirect()->route('admin.users.index')->with('message', 'User deleted and data transferred successfully.');
     }
 }

@@ -10,6 +10,11 @@
                 <strong>Success alert!</strong> {{ session('message') }}
             </div>
         @endif
+        @if(session('error'))
+            <div class="alert alert-danger">
+                <strong>Error alert!</strong> {{ session('error') }}
+            </div>
+        @endif
 
         <div class="py-12">
         <div class="mb-3 row justify-content-end">
@@ -60,17 +65,10 @@
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                                 @endcan
-                                                {{-- <a href="{{ route('admin.users.show', $user) }}" class="mr-2 btn btn-primary rounded-pill">
-                                                    <i class="fas fa-user-lock"></i> Roles & Permission
-                                                </a> --}}
                                                 @can('Delete user')
-                                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="d-inline" id="delete-form-{{ $user->id }}">
-                                                    @csrf
-                                                    @method('delete')
-                                                    <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $user->id }})">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $user->id }})">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
                                                 @endcan
                                             </div>
                                         </td>
@@ -83,23 +81,59 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteUserModalLabel">Delete User and Transfer Data</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="delete-user-form" method="POST" action="">
+                        @csrf
+                        @method('delete')
+                        <p>Select a user to transfer data to before deletion:</p>
+                        <div class="form-group">
+                            <label for="transfer_user_id">Select User</label>
+                            <select class="form-control" id="transfer_user_id" name="transfer_user_id">
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <input type="hidden" id="delete_user_id" name="delete_user_id">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="submitDelete()">Delete and Transfer</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
     <script>
         function confirmDelete(id) {
-            swal({
-                title: 'Are you sure?',
-                text: 'You won\'t be able to revert this!',
-                icon: 'warning',
-                buttons: true,
-                dangerMode: true,
-            })
-            .then((willDelete) => {
-                if (willDelete) {
-                    document.getElementById('delete-form-' + id).submit();
+            $('#delete_user_id').val(id);
+            $('#deleteUserModal').modal('show');
+            $('#transfer_user_id option').show();
+            $('#transfer_user_id option').each(function() {
+                if ($(this).val() == id) {
+                    $(this).hide();
                 }
             });
+        }
+
+        function submitDelete() {
+            var form = document.getElementById('delete-user-form');
+            form.action = '/admin/users/' + $('#delete_user_id').val() + '/delete-and-transfer';
+            form.submit();
         }
     </script>
 @endpush
