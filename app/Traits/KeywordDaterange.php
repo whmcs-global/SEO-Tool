@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Traits;
+
 use Illuminate\Http\Request;
 use App\Models\{Keyword, AdminSetting, Website};
 use Auth, DateTime;
@@ -39,8 +40,8 @@ trait KeywordDaterange
             $client = new Client();
 
             $adminSetting = AdminSetting::where('website_id', $keyword->website_id)
-                                         ->where('type', 'google')
-                                         ->first();
+                ->where('type', 'google')
+                ->first();
 
             $queryData = $dateData = [];
             if (!is_null($adminSetting)) {
@@ -179,90 +180,90 @@ trait KeywordDaterange
     // }
 
     function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
-{
-    try {
-        // Constructing the query
-        $query = [
-            "dimensions" => [
-                "QUERY",
-                "DATE"
-            ],
-            "startDate" => $startDate,
-            "endDate" => $endDate,
-            "dimensionFilterGroups" => [
-                [
-                    "filters" => [
-                        [
-                            "operator" => "EQUALS",
-                            "dimension" => "QUERY",
-                            "expression" => $company
-                        ],
-                        [
-                            "operator" => "CONTAINS",
-                            "dimension" => "COUNTRY",
-                            "expression" => $code
+    {
+        try {
+            // Constructing the query
+            $query = [
+                "dimensions" => [
+                    "QUERY",
+                    "DATE"
+                ],
+                "startDate" => $startDate,
+                "endDate" => $endDate,
+                "dimensionFilterGroups" => [
+                    [
+                        "filters" => [
+                            [
+                                "operator" => "EQUALS",
+                                "dimension" => "QUERY",
+                                "expression" => $company
+                            ],
+                            [
+                                "operator" => "CONTAINS",
+                                "dimension" => "COUNTRY",
+                                "expression" => $code
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "searchType" => $type,
-            "dataState" => "ALL"
-        ];
-        $jsonQuery = json_encode($query);
+                ],
+                "searchType" => $type,
+                "dataState" => "ALL"
+            ];
+            $jsonQuery = json_encode($query);
 
-        // Setting headers
-        $headers = [
-            'Content-Type' => 'application/json'
-        ];
+            // Setting headers
+            $headers = [
+                'Content-Type' => 'application/json'
+            ];
 
-        // Determining the URL, API key, and property type
-        if ($website_id) {
-            $website = Website::where('id', $website_id)->first();
-            $web_url = $website->url;
-            $key = $website->API_KEY;
-            $property_type = $website->property_type;
-        } else {
-            $web_url = 'www.hostingseekers.com';
-            $key = config('google.key');
-            $property_type = 'url_prefix'; // Default to 'url_prefix' if no website_id
+            // Determining the URL, API key, and property type
+            if ($website_id) {
+                $website = Website::where('id', $website_id)->first();
+                $web_url = $website->url;
+                $key = $website->API_KEY;
+                $property_type = $website->property_type;
+            } else {
+                $web_url = 'www.hostingseekers.com';
+                $key = config('google.key');
+                $property_type = 'url_prefix'; // Default to 'url_prefix' if no website_id
+            }
+
+            // Handling property type
+            if ($property_type == 'url_prefix') {
+                $encoded_url = urlencode($web_url);
+            } else if ($property_type == 'domain') {
+                $encoded_url = 'sc-domain:' . $web_url;
+            } else {
+                throw new Exception("Invalid property type: " . $property_type);
+            }
+
+            // Constructing the request URL
+            $requestUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/' . $encoded_url . '/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken;
+
+            // Constructing the request
+            $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
+
+            // Sending the request
+            $res = $client->sendAsync($request)->wait();
+            $analyticsData = json_decode($res->getBody()->getContents(), true);
+
+            // Error handling
+            if ($res->getStatusCode() != 200) {
+                throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
+            }
+
+            if (isset($analyticsData['error'])) {
+                throw new Exception("Error in fetching analytics data: " . $analyticsData['error']['message']);
+            }
+
+            return $analyticsData['rows'] ?? [];
+        } catch (\Throwable $th) {
+            return [
+                'code' => $th->getCode(),
+                'message' => $th->getMessage(),
+            ];
         }
-
-        // Handling property type
-        if ($property_type == 'url_prefix') {
-            $encoded_url = urlencode($web_url);
-        } else if ($property_type == 'domain') {
-            $encoded_url = 'sc-domain:' . $web_url;
-        } else {
-            throw new Exception("Invalid property type: " . $property_type);
-        }
-
-        // Constructing the request URL
-        $requestUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/' . $encoded_url . '/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken;
-
-        // Constructing the request
-        $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
-
-        // Sending the request
-        $res = $client->sendAsync($request)->wait();
-        $analyticsData = json_decode($res->getBody()->getContents(), true);
-
-        // Error handling
-        if ($res->getStatusCode() != 200) {
-            throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
-        }
-
-        if (isset($analyticsData['error'])) {
-            throw new Exception("Error in fetching analytics data: " . $analyticsData['error']['message']);
-        }
-
-        return $analyticsData['rows'] ?? [];
-    } catch (\Throwable $th) {
-        return [
-            'code' => $th->getCode(),
-            'message' => $th->getMessage(),
-        ];
     }
-}
 
 
     /**
@@ -276,7 +277,8 @@ trait KeywordDaterange
      * @return array|null The access token data if successful, null otherwise.
      * @throws Exception If there is an error obtaining the access token.
      */
-    public function createToken($client, $clientId, $clientSecret, $redirectUrl, $refreshToken) {
+    public function createToken($client, $clientId, $clientSecret, $redirectUrl, $refreshToken)
+    {
         try {
             $response = $client->post('https://oauth2.googleapis.com/token', [
                 'form_params' => [

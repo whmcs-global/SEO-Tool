@@ -35,7 +35,6 @@ class UpdateKeywordData extends Command
         $keywords = Keyword::with(['keywordData' => function($query) {
             $query->with('country');
         }])->get();
-
         foreach($keywords as $keyword){
             foreach($keyword->keywordData as $data){
                 $response = $this->keywordbydate($keyword, $data->country->ISO_CODE);

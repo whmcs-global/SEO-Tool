@@ -50,6 +50,7 @@ class DatabaseSeeder extends Seeder
             'Edit Project',
             'Delete Project',
             'Project list',
+            'GSC'
         ];
 
         foreach ($permissions as $permission) {
