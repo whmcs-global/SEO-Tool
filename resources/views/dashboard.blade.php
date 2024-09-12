@@ -159,7 +159,7 @@
                                         </div>
                                     </td>
                                     @role('Admin|Super Admin')
-                                    <td>{{ $keyword->user->name }}</td>
+                                    <td>{{ $keyword->user->name ?? 'N/A' }}</td>
                                     @endrole
                                     <td>{{ $data->position }}</td>
                                     <td>{{ $data->search_volume }}</td>
@@ -168,6 +168,7 @@
                                     <td>{{ $data->competition }}</td>
                                     <td>{{ round($data->bid_rate_low, 2) }}</td>
                                     <td>{{ round($data->bid_rate_high, 2) }}</td>
+                                    @canany(['Edit keyword', 'Delete keyword'])
                                     <td class="text-right">
                                         <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
                                             @can('Edit keyword')
@@ -186,6 +187,7 @@
                                             @endcan
                                         </div>
                                     </td>
+                                    @endcanany
                                 </tr>
                                 @endforeach
                                 @empty
@@ -211,14 +213,7 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
         $(document).ready(function() {
-            $('#keywordsTable').DataTable({
-                responsive: true,
-                columnDefs: [{
-                    targets: -1,
-                    orderable: false
-                }]
-            });
-
+            $('#keywordsTable').DataTable();
             $('#country').change(function() {
                 var countryId = $(this).val();
                 $.ajax({

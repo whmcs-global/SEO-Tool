@@ -298,7 +298,7 @@ class KeywordController extends Controller
                 }
             }
         }
-
+        // dd($allKeywords);
         return view('dashboard', compact('allKeywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
     }
 
