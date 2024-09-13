@@ -84,6 +84,7 @@ Route::middleware(['auth', 'project_status'])->group(function () {
     Route::get('/google_ads/callback', [\App\Http\Controllers\Admin\GoogleAdsController::class, 'callbackToGoogle'])->name('googleAdsAuthCallback');
 
     // Keywords
+    Route::get('/dashboard', [KeywordController::class, 'new_dashboard'])->name('new.dashboard');
     Route::get('/keyword_tracker', [KeywordController::class, 'dashboard'])->name('dashboard');
     Route::get('/keywords_detail', [KeywordController::class, 'keywords_detail'])->name('keywords.details');
     Route::get('/keywords/{keyword}/analytics', [\App\Http\Controllers\GoogleAnalyticController::class, 'redirectToGoogle'])->name('keywords.analytics');

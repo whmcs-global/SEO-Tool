@@ -459,4 +459,194 @@ class KeywordController extends Controller
             }
         }
     }
+
+    // public function new_dashboard(Request $request)
+    // {
+    //     $yesterday = Carbon::yesterday()->subDays(2)->format('Y-m-d');
+    //     $today = Carbon::today()->subDays(2)->format('Y-m-d');
+    //     // dd($yesterday, $today, auth()->user()->country_id);
+    //     $downKeywords = [];
+    //     $upKeywords = [];
+
+    //     $newKeywords = Keyword::select('keywords.*', 'keyword_data.*')
+    //         ->join('keyword_data', function($join) {
+    //             $join->on('keywords.id', '=', 'keyword_data.keyword_id')
+    //                  ->where('keyword_data.country_id', auth()->user()->country_id);
+    //         })
+    //         ->whereNull('keywords.user_id')
+    //         ->where('keywords.website_id', auth()->user()->website_id)
+    //         ->doesntHave('assignedUsers')
+    //         ->get();
+
+    //     $Keywords = Keyword::select('keywords.*', 'keyword_data.*')
+    //         ->join('keyword_data', function($join) {
+    //             $join->on('keywords.id', '=', 'keyword_data.keyword_id')
+    //                  ->where('keyword_data.country_id', auth()->user()->country_id);
+    //         })
+    //         ->where('keywords.website_id', auth()->user()->website_id)
+    //         ->get();
+
+    //     foreach ($Keywords as $keyword) {
+    //         $response = $keyword->response;
+    //         $response = json_decode($response, true);
+
+    //         if (is_array($response)) {
+    //             usort($response, function($a, $b) {
+    //                 return strtotime($a['keys'][1]) - strtotime($b['keys'][1]);
+    //             });
+
+    //             $previousDatePosition = null;
+    //             $currentDatePosition = null;
+
+    //             foreach ($response as $data) {
+    //                 $currentPosition = $data['position'];
+    //                 $date = $data['keys'][1];
+
+    //                 if ($date == $yesterday) {
+    //                     $previousDatePosition = $currentPosition;
+    //                 }
+
+    //                 if ($date == $today) {
+    //                     $currentDatePosition = $currentPosition;
+    //                 }
+    //             }
+
+    //             if ($previousDatePosition !== null && $currentDatePosition !== null) {
+    //                 if ($currentDatePosition > $previousDatePosition) {
+    //                     $downKeywords[] = [
+    //                         'keyword' => $keyword,
+    //                         'previous_position' => $previousDatePosition,
+    //                         'current_position' => $currentDatePosition,
+    //                     ];
+    //                 } elseif ($currentDatePosition < $previousDatePosition) {
+    //                     $upKeywords[] = [
+    //                         'keyword' => $keyword,
+    //                         'previous_position' => $previousDatePosition,
+    //                         'current_position' => $currentDatePosition,
+    //                     ];
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'yesterday'));
+    // }
+
+    public function new_dashboard(Request $request)
+    {
+        $yesterday = Carbon::yesterday()->subDays(2)->format('Y-m-d');
+        $today = Carbon::today()->subDays(2)->format('Y-m-d');
+        $downKeywords = [];
+        $upKeywords = [];
+        $sameKeywords = [];
+        $totalPreviousPositions = 0;
+        $totalCurrentPositions = 0;
+        $keywordCount = 0;
+
+
+        $newKeywords = Keyword::select('keywords.*', 'keyword_data.*')
+            ->join('keyword_data', function ($join) {
+                $join->on('keywords.id', '=', 'keyword_data.keyword_id')
+                    ->where('keyword_data.country_id', auth()->user()->country_id);
+            })
+            ->whereNull('keywords.user_id')
+            ->where('keywords.website_id', auth()->user()->website_id)
+            ->doesntHave('assignedUsers')
+            ->get();
+
+        $Keywords = Keyword::select('keywords.*', 'keyword_data.*')
+            ->join('keyword_data', function ($join) {
+                $join->on('keywords.id', '=', 'keyword_data.keyword_id')
+                    ->where('keyword_data.country_id', auth()->user()->country_id);
+            })
+            ->where('keywords.website_id', auth()->user()->website_id)
+            ->get();
+
+        $totalKeywords = count($Keywords);
+        $totalPositionChange = 0;
+        $topImproved = null;
+        $topDeclined = null;
+        foreach ($Keywords as $keyword) {
+            $response = $keyword->response;
+            $response = json_decode($response, true);
+
+            if (is_array($response)) {
+                usort($response, function ($a, $b) {
+                    return strtotime($a['keys'][1]) - strtotime($b['keys'][1]);
+                });
+
+                $previousDatePosition = null;
+                $currentDatePosition = null;
+
+                foreach ($response as $data) {
+                    $currentPosition = $data['position'];
+                    $date = $data['keys'][1];
+
+                    if ($date == $yesterday) {
+                        $previousDatePosition = $currentPosition;
+                    }
+
+                    if ($date == $today) {
+                        $currentDatePosition = $currentPosition;
+                    }
+                }
+
+                if ($previousDatePosition !== null && $currentDatePosition !== null) {
+                    $keywordCount++;
+                    $totalPreviousPositions += $previousDatePosition;
+                    $totalCurrentPositions += $currentDatePosition;
+
+                    if ($currentDatePosition > $previousDatePosition) {
+                        $downKeywords[] = [
+                            'keyword' => $keyword,
+                            'previous_position' => $previousDatePosition,
+                            'current_position' => $currentDatePosition,
+                        ];
+                    } elseif ($currentDatePosition < $previousDatePosition) {
+                        $upKeywords[] = [
+                            'keyword' => $keyword,
+                            'previous_position' => $previousDatePosition,
+                            'current_position' => $currentDatePosition,
+                        ];
+                    } else {
+                        $sameKeywords[] = [
+                            'keyword' => $keyword,
+                            'previous_position' => $previousDatePosition,
+                            'current_position' => $currentDatePosition,
+                        ];
+                    }
+
+                    if ($previousDatePosition !== null && $currentDatePosition !== null) {
+                        $positionChange = $previousDatePosition - $currentDatePosition;
+                        $totalPositionChange += $positionChange;
+
+                        if ($positionChange > 0 && (!$topImproved || $positionChange > $topImproved['change'])) {
+                            $topImproved = [
+                                'keyword' => $keyword->keyword,
+                                'change' => $positionChange
+                            ];
+                        } elseif ($positionChange < 0 && (!$topDeclined || $positionChange < $topDeclined['change'])) {
+                            $topDeclined = [
+                                'keyword' => $keyword->keyword,
+                                'change' => $positionChange
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        $keywordStats = [
+            'up' => count($upKeywords),
+            'down' => count($downKeywords),
+            'same' => count($sameKeywords),
+            'avgPreviousPosition' => $keywordCount > 0 ? round($totalPreviousPositions / $keywordCount, 2) : 0,
+            'avgCurrentPosition' => $keywordCount > 0 ? round($totalCurrentPositions / $keywordCount, 2) : 0,
+            'total' => $totalKeywords,
+            'avgPositionChange' => $totalKeywords > 0 ? round($totalPositionChange / $totalKeywords, 2) : 0,
+            'topImproved' => $topImproved,
+            'topDeclined' => $topDeclined
+        ];
+
+        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'yesterday', 'keywordStats'));
+    }
 }
