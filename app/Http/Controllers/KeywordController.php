@@ -533,15 +533,14 @@ class KeywordController extends Controller
 
     public function new_dashboard(Request $request)
     {
-        $yesterday = Carbon::yesterday()->subDays(2)->format('Y-m-d');
-        $today = Carbon::today()->subDays(2)->format('Y-m-d');
+        $yesterday = Carbon::yesterday()->subDays(1)->format('Y-m-d');
+        $today = Carbon::today()->subDays(1)->format('Y-m-d');
         $downKeywords = [];
         $upKeywords = [];
         $sameKeywords = [];
         $totalPreviousPositions = 0;
         $totalCurrentPositions = 0;
         $keywordCount = 0;
-
 
         $newKeywords = Keyword::select('keywords.*', 'keyword_data.*')
             ->join('keyword_data', function ($join) {
@@ -571,22 +570,27 @@ class KeywordController extends Controller
 
             if (is_array($response)) {
                 usort($response, function ($a, $b) {
-                    return strtotime($a['keys'][1]) - strtotime($b['keys'][1]);
+                    if (isset($a['keys'][1]) && isset($b['keys'][1])) {
+                        return strtotime($a['keys'][1]) - strtotime($b['keys'][1]);
+                    }
+                    return 0;
                 });
 
                 $previousDatePosition = null;
                 $currentDatePosition = null;
 
                 foreach ($response as $data) {
-                    $currentPosition = $data['position'];
-                    $date = $data['keys'][1];
+                    if (is_array($data) && isset($data['position'])) {
+                        $currentPosition = $data['position'];
+                        $date = $data['keys'][1] ?? null;
 
-                    if ($date == $yesterday) {
-                        $previousDatePosition = $currentPosition;
-                    }
+                        if ($date == $yesterday) {
+                            $previousDatePosition = $currentPosition;
+                        }
 
-                    if ($date == $today) {
-                        $currentDatePosition = $currentPosition;
+                        if ($date == $today) {
+                            $currentDatePosition = $currentPosition;
+                        }
                     }
                 }
 
