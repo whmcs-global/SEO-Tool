@@ -54,13 +54,15 @@
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .metric-title {
             font-size: 14px;
             color: #6c757d;
             margin-bottom: 5px;
         }
+
         .metric-value {
             font-size: 24px;
             font-weight: bold;
@@ -239,7 +241,9 @@
                                         <td>{{ $keyword->position }}</td>
                                         <td>{{ $keyword->clicks }}</td>
                                         <td>{{ $keyword->impression }}</td>
-                                        <td>{{ $keyword->created_at->format('Y-m-d') }}</td>
+                                        <td data-order="{{ $keyword->created_at->format('Y-m-d') }}">
+                                            {{ $keyword->created_at->format('d-M-Y') }}
+                                        </td>
                                         <td>
                                             <a href="#" class="btn btn-primary">Details</a>
                                         </td>
@@ -259,7 +263,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         $(document).ready(function() {
-            $('#newKeywordsTable').DataTable();
+            $('#newKeywordsTable').DataTable({
+                columnDefs: [{
+                    targets: 'Created At',
+                    type: 'date'
+                }],
+            });
             $('#rankUpKeywordsTable').DataTable({
                 paging: true,
                 searching: true,

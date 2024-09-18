@@ -38,17 +38,17 @@
                         </div>
                     </div>
                     <!-- <div class="col-12">
-                                            <div class="card">
-                                                <div class="card-header d-flex justify-content-center align-items-center">
-                                                    <h4>Total Inactive Links</h4>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="text-center">
-                                                        <label><b><h1>{{ $inactivelinks }}</h1></b></label>
+                                                <div class="card">
+                                                    <div class="card-header d-flex justify-content-center align-items-center">
+                                                        <h4>Total Inactive Links</h4>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="text-center">
+                                                            <label><b><h1>{{ $inactivelinks }}</h1></b></label>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div> -->
+                                            </div> -->
                 </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
@@ -217,10 +217,10 @@
                 </div>
                 <div class="row mb-3 justify-content-between align-items-center" style="padding: 0px 10px;">
                     <!-- <div class="col-auto">
-                                                            <button id="filterButton" class="btn btn-secondary">
-                                                                <i class="fas fa-filter"></i> Filters
-                                                            </button>
-                                                        </div> -->
+                                                                    <button id="filterButton" class="btn btn-secondary">
+                                                                        <i class="fas fa-filter"></i> Filters
+                                                                    </button>
+                                                                </div> -->
                     <div class="col-auto">
                         <a href="{{ route('backlinks.create') }}" class="btn btn-primary rounded-pill">
                             Add Backlink
@@ -286,7 +286,7 @@
                                         <td>
                                             @if ($backlink->status == 'Active')
                                                 <span class="badge bg-success">{{ ucfirst($backlink->status) }}</span>
-                                            {{-- @elseif ($backlink->status == 'Inactive')
+                                                {{-- @elseif ($backlink->status == 'Inactive')
                                                 <span class="badge bg-secondary">{{ ucfirst($backlink->status) }}</span> --}}
                                             @elseif ($backlink->status == 'Pending')
                                                 <span class="badge bg-warning">{{ ucfirst($backlink->status) }}</span>
@@ -301,7 +301,9 @@
                                         <td>{{ $backlink->page_authority }}</td>
                                         <td>{{ $backlink->contact_person }}</td>
                                         {{-- <td>{{ $backlink->notes_comments }}</td> --}}
-                                        <td>{{ $backlink->created_at->format('d-m-Y') }}</td>
+                                        <td data-order="{{ $backlink->created_at->format('Y-m-d') }}">
+                                            {{ $backlink->created_at->format('d-M-Y') }}
+                                        </td>
                                         <td class="text-right">
                                             <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
                                                 @can('Edit backlink')
@@ -357,9 +359,14 @@
             $('#backlinksTable').DataTable({
                 responsive: true,
                 columnDefs: [{
-                    targets: -1,
-                    orderable: false
-                }]
+                        targets: -1,
+                        orderable: false
+                    },
+                    {
+                        targets: 'Created At',
+                        type: 'date'
+                    }
+                ]
             });
 
             // $('#filterButton').on('click', function() {
