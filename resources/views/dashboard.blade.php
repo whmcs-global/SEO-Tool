@@ -139,6 +139,7 @@
                                     <th>Competition</th>
                                     <th>Bid rate (Low Range)</th>
                                     <th>Bid rate (High Range)</th>
+                                    <th>Created At</th>
                                     @canany(['Edit keyword', 'Delete keyword'])
                                     <th>Actions</th>
                                     @endcanany
@@ -168,6 +169,7 @@
                                     <td>{{ $data->competition }}</td>
                                     <td>{{ round($data->bid_rate_low, 2) }}</td>
                                     <td>{{ round($data->bid_rate_high, 2) }}</td>
+                                    <td>{{ $keyword->created_at->format('Y-m-d') }}</td>
                                     @canany(['Edit keyword', 'Delete keyword'])
                                     <td class="text-right">
                                         <div class="btn-group btn-group-sm" role="group" aria-label="Actions">

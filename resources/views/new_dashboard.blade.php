@@ -228,6 +228,7 @@
                                     <th>Position</th>
                                     <th>Clicks</th>
                                     <th>Impressions</th>
+                                    <th>Created At</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -238,6 +239,7 @@
                                         <td>{{ $keyword->position }}</td>
                                         <td>{{ $keyword->clicks }}</td>
                                         <td>{{ $keyword->impression }}</td>
+                                        <td>{{ $keyword->created_at->format('Y-m-d') }}</td>
                                         <td>
                                             <a href="#" class="btn btn-primary">Details</a>
                                         </td>
