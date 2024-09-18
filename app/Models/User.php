@@ -101,4 +101,10 @@ class User extends Authenticatable
     {
         return $this->parent ? $this->parent->name : null;
     }
+
+    // get that user that user assinged current website
+    public function getcurrentwebsiteuser()
+    {
+        return User_project::where('website_id', $this->website_id)->get();
+    }
 }

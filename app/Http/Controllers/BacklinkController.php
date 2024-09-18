@@ -95,7 +95,8 @@ class BacklinkController extends Controller
 
         $domain_authority = $backlinks->sum("domain_authority");
         $page_authority = $backlinks->sum("page_authority");
-        $users = User::whereIn('id', $backlinks->pluck('user_id')->unique())->get();
+        $backlink_users = Backlinks::get()->pluck('user_id')->unique();
+        $users = User::whereIn('id', $backlink_users)->get();
 
         return view('backlinks.list', compact([
             'backlinks',
