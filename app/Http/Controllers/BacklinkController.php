@@ -29,7 +29,8 @@ class BacklinkController extends Controller
             $query->where('status', 'Pending');
             $query->whereHas('user', function ($query) {
                 $query->where('parent_id', auth()->user()->id);
-            });
+            })
+            ->orWhere('user_id', auth()->user()->id);
         }
         if ($request->filled('status') && $request->input('status') == 'Pending' && auth()->user()->hasRole('User')) {
             $query->where('status', 'Pending')->where('user_id', auth()->user()->id);
