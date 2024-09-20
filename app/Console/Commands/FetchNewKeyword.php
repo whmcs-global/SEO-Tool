@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Console\Commands;
-
+use App\Services\ExternalApiLogger;
 use App\Models\Country;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
@@ -11,6 +11,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request as GzRequest;
 use App\Traits\KeywordAnalytic;
+use Exception;
 
 class FetchNewKeyword extends Command
 {
@@ -34,72 +35,72 @@ class FetchNewKeyword extends Command
      */
     public function handle()
     {
-        // $website_ids = Website::pluck('id')->toArray();
-        // $client = new Client();
-        // foreach ($website_ids as $website_id) {
-        //     $adminSetting = AdminSetting::where('website_id', $website_id)
-        //         ->where('type', 'google')
-        //         ->first();
+        $website_ids = Website::pluck('id')->toArray();
+        $client = new Client();
+        foreach ($website_ids as $website_id) {
+            $adminSetting = AdminSetting::where('website_id', $website_id)
+                ->where('type', 'google')
+                ->first();
 
-        //     if (!is_null($adminSetting)) {
-        //         $expiryTimeMinutes = $adminSetting->expiry_time;
-        //         $pastUpdatedAccessTokenTime = Carbon::parse($adminSetting->created_at);
-        //         $expirationTime = $pastUpdatedAccessTokenTime->copy()->addSeconds((int)$expiryTimeMinutes);
+            if (!is_null($adminSetting)) {
+                $expiryTimeMinutes = $adminSetting->expiry_time;
+                $pastUpdatedAccessTokenTime = Carbon::parse($adminSetting->created_at);
+                $expirationTime = $pastUpdatedAccessTokenTime->copy()->addSeconds((int)$expiryTimeMinutes);
 
-        //         $currentTime = Carbon::now();
-        //         $accessToken = $adminSetting->access_token;
-        //         if ($expirationTime->lessThan($currentTime) && ($adminSetting->status)) {
-        //             $tokenResponse = $this->createToken(
-        //                 $client,
-        //                 jsdecode_userdata($adminSetting->client_id),
-        //                 jsdecode_userdata($adminSetting->client_secret_id),
-        //                 $adminSetting->redirect_url,
-        //                 $adminSetting->refresh_token
-        //             );
-        //             if ($tokenResponse) {
-        //                 $details = $tokenResponse;
-        //                 $adminSetting->update([
-        //                     'access_token' => $details['access_token'],
-        //                     'expiry_time' => $details['expires_in'],
-        //                     'created_at' => Carbon::now(),
-        //                 ]);
-        //                 $accessToken = $details['access_token'];
-        //             }
-        //         } else {
-        //             $accessToken = $adminSetting->access_token;
-        //         }
+                $currentTime = Carbon::now();
+                $accessToken = $adminSetting->access_token;
+                if ($expirationTime->lessThan($currentTime) && ($adminSetting->status)) {
+                    $tokenResponse = $this->createToken(
+                        $client,
+                        jsdecode_userdata($adminSetting->client_id),
+                        jsdecode_userdata($adminSetting->client_secret_id),
+                        $adminSetting->redirect_url,
+                        $adminSetting->refresh_token
+                    );
+                    if ($tokenResponse) {
+                        $details = $tokenResponse;
+                        $adminSetting->update([
+                            'access_token' => $details['access_token'],
+                            'expiry_time' => $details['expires_in'],
+                            'created_at' => Carbon::now(),
+                        ]);
+                        $accessToken = $details['access_token'];
+                    }
+                } else {
+                    $accessToken = $adminSetting->access_token;
+                }
 
-        //         $date = Carbon::now()->subDays(1)->format('Y-m-d');
-        //         $analyticsData = $this->getNewKeywords($date, $client, $accessToken, $website_id);
-        //         if (isset($analyticsData['code'])) {
-        //             $this->info('Error in fetching data: ' . $analyticsData['message']);
-        //             continue;
-        //         }
-        //         foreach ($analyticsData as $data) {
-        //             $keyword = $data['keys'][0];
-        //             $clicks = $data['clicks'];
-        //             $impressions = $data['impressions'];
-        //             $ctr = $data['ctr'];
-        //             $position = $data['position'];
+                $date = Carbon::now()->subDays(1)->format('Y-m-d');
+                $analyticsData = $this->getNewKeywords($date, $client, $accessToken, $website_id);
+                if (isset($analyticsData['code'])) {
+                    $this->info('Error in fetching data: ' . $analyticsData['message']);
+                    continue;
+                }
+                foreach ($analyticsData as $data) {
+                    $keyword = $data['keys'][0];
+                    $clicks = $data['clicks'];
+                    $impressions = $data['impressions'];
+                    $ctr = $data['ctr'];
+                    $position = $data['position'];
 
-        //             $keywordData = Keyword::where('keyword', $keyword)
-        //                 ->where('website_id', $website_id)
-        //                 ->first();
+                    $keywordData = Keyword::where('keyword', $keyword)
+                        ->where('website_id', $website_id)
+                        ->first();
 
-        //             if (is_null($keywordData)) {
-        //                 $DBkeyword = Keyword::create([
-        //                     'keyword' => $keyword,
-        //                     'website_id' => $website_id,
-        //                 ]);
+                    if (is_null($keywordData)) {
+                        $DBkeyword = Keyword::create([
+                            'keyword' => $keyword,
+                            'website_id' => $website_id,
+                        ]);
 
-        //                 keyword_label::create([
-        //                     'keyword_id' => $DBkeyword->id,
-        //                     'label_id' => 11,
-        //                 ]);
-        //             }
-        //         }
-        //     }
-        // }
+                        keyword_label::create([
+                            'keyword_id' => $DBkeyword->id,
+                            'label_id' => 11,
+                        ]);
+                    }
+                }
+            }
+        }
         $this->createKeywordData();
         $this->info('Keyword metrics updated successfully.');
     }
@@ -158,9 +159,15 @@ class FetchNewKeyword extends Command
             // Constructing the request
             $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
 
+            // Logging the request
+            ExternalApiLogger::log('Google API','Find New Keyword Cron started', $requestUrl, 'POST', $query, null, null);
+
             // Sending the request
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents(), true);
+
+            // Logging the response
+            ExternalApiLogger::log('Google API','Find New Keyword Cron response', $requestUrl, 'POST', $query, $analyticsData, $res->getStatusCode());
 
             // Error handling
             if ($res->getStatusCode() != 200) {
@@ -173,6 +180,7 @@ class FetchNewKeyword extends Command
 
             return $analyticsData['rows'] ?? [];
         } catch (\Throwable $th) {
+            ExternalApiLogger::log('Google API','Find New Keyword Cron getting error', $requestUrl, 'POST', $query, ['error' => $th->getMessage()], $th->getCode());
             return [
                 'code' => $th->getCode(),
                 'message' => $th->getMessage(),
@@ -180,8 +188,19 @@ class FetchNewKeyword extends Command
         }
     }
 
-
-
+    /**
+     * Fetches the analytics data for the given date.
+     *
+     * @param string $startDate The start date for which to fetch the data.
+     * @param string $endDate The end date for which to fetch the data.
+     * @param object $client The HTTP client instance.
+     * @param string $accessToken The access token.
+     * @param string $company The company name.
+     * @param string $type The search type.
+     * @param int $website_id The website ID.
+     * @param string $code The country code.
+     * @return array The analytics data.
+     */
     function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
     {
         try {
@@ -246,9 +265,15 @@ class FetchNewKeyword extends Command
             // Constructing the request
             $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
 
+            // Logging the request
+            // ExternalApiLogger::log('Google API', $requestUrl, 'POST', $query, null, null);
+
             // Sending the request
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents(), true);
+
+            // Logging the response
+            // ExternalApiLogger::log('Google API', $requestUrl, 'POST', $query, $analyticsData, $res->getStatusCode());
 
             // Error handling
             if ($res->getStatusCode() != 200) {
@@ -261,6 +286,7 @@ class FetchNewKeyword extends Command
 
             return $analyticsData['rows'] ?? [];
         } catch (\Throwable $th) {
+            ExternalApiLogger::log('Google API','Keyword data api File:FetchNewKeyword.php', $requestUrl, 'POST', $query, ['error' => $th->getMessage()], $th->getCode());
             return [
                 'code' => $th->getCode(),
                 'message' => $th->getMessage(),
@@ -304,6 +330,16 @@ class FetchNewKeyword extends Command
         } catch (Exception $e) {
             $errorResponse = $e->getResponse()->getBody()->getContents();
             $errorData = json_decode($errorResponse, true);
+
+            // Logging the error response
+            ExternalApiLogger::log('Google API','Getting issue whlie creating New token', 'https://oauth2.googleapis.com/token', 'POST', [
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+                'redirect_uri' => $redirectUrl,
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $refreshToken,
+                'scope' => 'https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/userinfo.email',
+            ], $errorData, $e->getCode());
 
             if (isset($errorData['error']) && $errorData['error'] === 'invalid_grant') {
                 error_log('Refresh token has expired or been revoked.');
@@ -365,7 +401,7 @@ class FetchNewKeyword extends Command
                     $data = $this->keywords(request(), $keyword, $country->ISO_CODE);
                     $response = $this->analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $keyword->keyword, 'web', $website_id, $country->ISO_CODE);
                     if (isset($data[0]['code']) || isset($response['code'])) {
-                        $this->info('Error in fetching data: ' . $data['message']);
+                        $this->info('Error in fetching data: ', $data);
                         continue;
                     }
                     KeywordData::create([
