@@ -5,9 +5,10 @@ use App\Models\ExternalApiLog;
 
 class ExternalApiLogger
 {
-    public static function log($apiName, $description =null, $endpoint, $method, $requestData, $responseData, $statusCode)
+    public static function log($cron_id,$apiName, $description =null, $endpoint, $method, $requestData, $responseData, $statusCode)
     {
         ExternalApiLog::create([
+            'cron_status_id' => $cron_id,
             'api_name' => $apiName,
             'description' => $description,
             'endpoint' => $endpoint,

@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('external_api_logs', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('cron_status_id');
             $table->string('api_name');
             $table->text('description')->nullable();
-            $table->text('endpoint');
-            $table->string('method');
+            $table->text('endpoint')->nullable();
+            $table->string('method')->nullable();
             $table->json('request_data')->nullable();
             $table->json('response_data')->nullable();
-            $table->integer('status_code');
+            $table->integer('status_code')->nullable();
             $table->timestamps();
+            $table->foreign('cron_status_id')->references('id')->on('cron_status');
         });
     }
 

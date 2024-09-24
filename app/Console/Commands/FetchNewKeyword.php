@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Console\Commands;
+
 use App\Services\ExternalApiLogger;
 use App\Models\Country;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
-use App\Models\{Keyword, AdminSetting, Website, keyword_label, KeywordData};
+use App\Models\{Keyword, AdminSetting, Website, keyword_label, KeywordData, CronStatus};
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -16,6 +17,8 @@ use Exception;
 class FetchNewKeyword extends Command
 {
     use KeywordAnalytic;
+
+    protected $cron;
     /**
      * The name and signature of the console command.
      *
@@ -35,9 +38,16 @@ class FetchNewKeyword extends Command
      */
     public function handle()
     {
+        $this->cron = CronStatus::updateOrCreate(
+            ['cron_name' => 'Fetch New Keyword', 'date' => Carbon::now()->format('Y-m-d')],
+            ['status' => 2]
+        );
         $website_ids = Website::pluck('id')->toArray();
         $client = new Client();
         foreach ($website_ids as $website_id) {
+            $this->cron->update([
+                'status' => 2,
+            ]);
             $adminSetting = AdminSetting::where('website_id', $website_id)
                 ->where('type', 'google')
                 ->first();
@@ -74,7 +84,13 @@ class FetchNewKeyword extends Command
                 $analyticsData = $this->getNewKeywords($date, $client, $accessToken, $website_id);
                 if (isset($analyticsData['code'])) {
                     $this->info('Error in fetching data: ' . $analyticsData['message']);
-                    continue;
+
+                    ExternalApiLogger::log($this->cron->id, 'Google API', 'Error in Keyword data api File:FetchNewKeyword.php', 'https://searchconsole.googleapis.com/webmasters/v3/sites/', 'POST', [], $analyticsData, 404);
+                    $this->cron->update([
+                        'status' => 3,
+                    ]);
+                    return;
+                    // continue;
                 }
                 foreach ($analyticsData as $data) {
                     $keyword = $data['keys'][0];
@@ -101,7 +117,17 @@ class FetchNewKeyword extends Command
                 }
             }
         }
-        $this->createKeywordData();
+        $status = $this->createKeywordData();
+        if (!$status) {
+            $this->info('Error in fetching data.');
+            $this->cron->update([
+                'status' => 3,
+            ]);
+            return;
+        }
+        $this->cron->update([
+            'status' => 1,
+        ]);
         $this->info('Keyword metrics updated successfully.');
     }
 
@@ -160,14 +186,14 @@ class FetchNewKeyword extends Command
             $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
 
             // Logging the request
-            ExternalApiLogger::log('Google API','Find New Keyword Cron started', $requestUrl, 'POST', $query, null, null);
+            // ExternalApiLogger::log($this->cron->id,'Google API','Find New Keyword Cron started', $requestUrl, 'POST', $query, null, null);
 
             // Sending the request
             $res = $client->sendAsync($request)->wait();
             $analyticsData = json_decode($res->getBody()->getContents(), true);
 
             // Logging the response
-            ExternalApiLogger::log('Google API','Find New Keyword Cron response', $requestUrl, 'POST', $query, $analyticsData, $res->getStatusCode());
+            ExternalApiLogger::log($this->cron->id, 'Google API', 'Find New Keyword Cron response', $requestUrl, 'POST', $query, $analyticsData, $res->getStatusCode());
 
             // Error handling
             if ($res->getStatusCode() != 200) {
@@ -180,7 +206,7 @@ class FetchNewKeyword extends Command
 
             return $analyticsData['rows'] ?? [];
         } catch (\Throwable $th) {
-            ExternalApiLogger::log('Google API','Find New Keyword Cron getting error', $requestUrl, 'POST', $query, ['error' => $th->getMessage()], $th->getCode());
+            ExternalApiLogger::log($this->cron->id, 'Google API', 'Find New Keyword Cron getting error', $requestUrl, 'POST', $query, ['error' => $th->getMessage()], $th->getCode());
             return [
                 'code' => $th->getCode(),
                 'message' => $th->getMessage(),
@@ -286,7 +312,7 @@ class FetchNewKeyword extends Command
 
             return $analyticsData['rows'] ?? [];
         } catch (\Throwable $th) {
-            ExternalApiLogger::log('Google API','Keyword data api File:FetchNewKeyword.php', $requestUrl, 'POST', $query, ['error' => $th->getMessage()], $th->getCode());
+            ExternalApiLogger::log($this->cron->id, 'Google API', 'Error in Keyword data api File:FetchNewKeyword.php', $requestUrl, 'POST', $query, ['error' => $th->getMessage()], $th->getCode());
             return [
                 'code' => $th->getCode(),
                 'message' => $th->getMessage(),
@@ -332,7 +358,7 @@ class FetchNewKeyword extends Command
             $errorData = json_decode($errorResponse, true);
 
             // Logging the error response
-            ExternalApiLogger::log('Google API','Getting issue whlie creating New token', 'https://oauth2.googleapis.com/token', 'POST', [
+            ExternalApiLogger::log($this->cron->id, 'Google API', 'Getting issue whlie creating New token', 'https://oauth2.googleapis.com/token', 'POST', [
                 'client_id' => $clientId,
                 'client_secret' => $clientSecret,
                 'redirect_uri' => $redirectUrl,
@@ -359,7 +385,6 @@ class FetchNewKeyword extends Command
                 $query->whereNull('response');
             })
             ->get();
-
         $client = new Client();
         $website_ids = Website::pluck('id')->toArray();
         $countries = Country::all();
@@ -393,6 +418,9 @@ class FetchNewKeyword extends Command
                             'created_at' => Carbon::now(),
                         ]);
                         $accessToken = $details['access_token'];
+                    } else {
+                        ExternalApiLogger::log($this->cron->id, 'Google API', 'Error in Keyword data api File:FetchNewKeyword.php', 'https://oauth2.googleapis.com/token', 'POST', [], ['error' => 'Token not created'], 404);
+                        return false;
                     }
                 } else {
                     $accessToken = $adminSetting->access_token;
@@ -402,7 +430,9 @@ class FetchNewKeyword extends Command
                     $response = $this->analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $keyword->keyword, 'web', $website_id, $country->ISO_CODE);
                     if (isset($data[0]['code']) || isset($response['code'])) {
                         $this->info('Error in fetching data: ', $data);
-                        continue;
+                        ExternalApiLogger::log($this->cron->id, 'analyticsQueryDatabyDate API', 'Error in Keyword data api File:FetchNewKeyword.php', 'https://searchconsole.googleapis.com/webmasters/v3/sites/', 'POST', [], $response, 404);
+                        return false;
+                        // continue;
                     }
                     KeywordData::create([
                         'keyword_id' => $keyword->id,
@@ -413,7 +443,11 @@ class FetchNewKeyword extends Command
                         'response' => json_encode($response),
                     ]);
                 }
+            } else {
+                ExternalApiLogger::log($this->cron->id, 'Google API', 'Error in Keyword data api File:FetchNewKeyword.php', 'https://oauth2.googleapis.com/token', 'POST', [], ['error' => 'Admin setting not found'], 404);
+                return false;
             }
         }
+        return true;
     }
 }

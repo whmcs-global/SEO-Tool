@@ -9,11 +9,16 @@ class ExternalApiLog extends Model
     use HasFactory;
 
     protected $fillable = [
-        'api_name', 'description', 'endpoint', 'method', 'request_data', 'response_data', 'status_code'
+       'cron_status_id', 'api_name', 'description', 'endpoint', 'method', 'request_data', 'response_data', 'status_code'
     ];
 
     protected $casts = [
         'request_data' => 'array',
         'response_data' => 'array',
     ];
+
+    public function cronStatus()
+    {
+        return $this->belongsTo(CronStatus::class);
+    }
 }

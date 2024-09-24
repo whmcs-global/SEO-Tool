@@ -11,6 +11,7 @@ use Exception;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request as GzRequest;
 use Illuminate\Support\Facades\Log;
+use App\Services\ExternalApiLogger;
 
 
 trait KeywordDaterange
@@ -20,11 +21,12 @@ trait KeywordDaterange
      *
      * @param Keyword $keyword The keyword model instance.
      * @param string $code The countey code by google for the query.
+     * @param  int The cron id.
      * @param string|null $startDate The start date of the date range.
      * @param string|null $endDate The end date of the date range.
      * @return array The keyword analytics data fetched from the API.
      */
-    public function keywordbydate(Keyword $keyword, $code, $startDate = null, $endDate = null)
+    public function keywordbydate(Keyword $keyword, $code, $cron_id, $startDate = null, $endDate = null)
     {
         try {
             $keyword_name = $keyword->keyword;
@@ -57,7 +59,8 @@ trait KeywordDaterange
                         jsdecode_userdata($adminSetting->client_id),
                         jsdecode_userdata($adminSetting->client_secret_id),
                         $adminSetting->redirect_url,
-                        $adminSetting->refresh_token
+                        $adminSetting->refresh_token,
+                        $cron_id
                     );
                     if ($tokenResponse) {
                         $details = $tokenResponse;
@@ -81,15 +84,34 @@ trait KeywordDaterange
                         $keyword_name,
                         'WEB',
                         $keyword->website_id,
-                        $code
+                        $code,
+                        $cron_id
                     );
                 }
                 return $queryData;
             } else {
-                return redirect()->route('dashboard')->with('status', 'error')->with('message', 'Google API settings not found.');
+                return [
+                    'code' => 401,
+                    'message' => 'Google API settings not found',
+                ];
             }
         } catch (RequestException $e) {
-            return redirect()->route('dashboard')->with('status', 'error')->with('message', $e->getMessage());
+
+            ExternalApiLogger::log(
+                $cron_id,
+                'Google Analytics',
+                $e->getMessage(),
+                'API Endpoint (e.g., URL)',
+                'POST',
+                json_encode($keyword),
+                $e->getResponse() ? $e->getResponse()->getBody()->getContents() : null,
+                $e->getCode()
+            );
+
+            return [
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            ];
         }
     }
 
@@ -107,79 +129,7 @@ trait KeywordDaterange
      * @param string $code The code for the query.
      * @return array The analytics data fetched from the API.
      */
-
-    // function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
-    // {
-    //     try {
-
-    //         $Query = [
-    //             "dimensions" => [
-    //                 "QUERY",
-    //                 "DATE"
-    //             ],
-    //             "startDate" => $startDate,
-    //             "endDate" => $endDate,
-    //             "dimensionFilterGroups" => [
-    //                 [
-    //                     "filters" => [
-    //                         [
-    //                             "operator" => "EQUALS",
-    //                             "dimension" => "QUERY",
-    //                             "expression" => $company
-    //                         ],
-    //                         [
-    //                             "operator" => "CONTAINS",
-    //                             "dimension" => "COUNTRY",
-    //                             "expression" => $code
-    //                         ]
-    //                     ]
-    //                 ]
-    //             ],
-    //             "searchType" => $type,
-    //             "dataState" => "ALL"
-    //         ];
-    //         $jsonQuery = json_encode($Query);
-
-    //         $headers = [
-    //             'Content-Type' => 'application/json'
-    //         ];
-
-    //         if ($website_id) {
-    //             $website = Website::where('id', $website_id)->first();
-    //             $web_url = $website->url;
-    //             $key = $website->API_KEY;
-    //         } else {
-    //             $web_url = 'www.hostingseekers.com';
-    //             $key = config('google.key');
-    //         }
-
-    //         $requestUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/https%3A%2F%2F' . $web_url . '%2F/searchAnalytics/query?key=' . $key . '&access_token=' . $accessToken;
-
-    //         $request = new GzRequest('POST', $requestUrl, $headers, $jsonQuery);
-
-    //         $res = $client->sendAsync($request)->wait();
-
-    //         $analyticsData = json_decode($res->getBody()->getContents()) ?? [];
-
-    //         if ($res->getStatusCode() != 200) {
-    //             throw new Exception("Failed to fetch analytics data. Status Code: " . $res->getStatusCode());
-    //         }
-
-    //         if (isset($analyticsData->error)) {
-    //             throw new Exception("Error in fetching analytics data: " . $analyticsData->error->message);
-    //         }
-
-    //         $analyticsData = $analyticsData->rows ?? [];
-    //         return $analyticsData;
-    //     } catch (\Throwable $th) {
-    //         return [
-    //             'code' => $th->getCode(),
-    //             'message' => $th->getMessage(),
-    //         ];
-    //     }
-    // }
-
-    function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code)
+    function analyticsQueryDatabyDate($startDate, $endDate, $client, $accessToken, $company, $type, $website_id, $code, $cron_id)
     {
         try {
             // Constructing the query
@@ -258,6 +208,16 @@ trait KeywordDaterange
 
             return $analyticsData['rows'] ?? [];
         } catch (\Throwable $th) {
+            ExternalApiLogger::log(
+                $cron_id,
+                'Google Search Console',
+                $th->getMessage(),
+                $requestUrl,
+                'POST',
+                json_encode($query),
+                $th->getMessage(),
+                $th->getCode()
+            );
             return [
                 'code' => $th->getCode(),
                 'message' => $th->getMessage(),
@@ -277,7 +237,7 @@ trait KeywordDaterange
      * @return array|null The access token data if successful, null otherwise.
      * @throws Exception If there is an error obtaining the access token.
      */
-    public function createToken($client, $clientId, $clientSecret, $redirectUrl, $refreshToken)
+    public function createToken($client, $clientId, $clientSecret, $redirectUrl, $refreshToken, $cron_id)
     {
         try {
             $response = $client->post('https://oauth2.googleapis.com/token', [
@@ -300,7 +260,24 @@ trait KeywordDaterange
                 throw new Exception('Error obtaining access token');
             }
         } catch (Exception $e) {
-            $errorResponse = $e->getResponse()->getBody()->getContents();
+            ExternalApiLogger::log(
+                $this->cron,
+                'Google OAuth Token Request',
+                $e->getMessage(),
+                'https://oauth2.googleapis.com/token',
+                'POST',
+                json_encode([
+                    'client_id' => $clientId,
+                    'client_secret' => '****',
+                    'redirect_uri' => $redirectUrl,
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => '****',
+                ]),
+                $e->getResponse() ? $e->getResponse()->getBody()->getContents() : null,
+                $e->getCode()
+            );
+
+            $errorResponse = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : null;
             $errorData = json_decode($errorResponse, true);
 
             if (isset($errorData['error']) && $errorData['error'] === 'invalid_grant') {
@@ -312,4 +289,5 @@ trait KeywordDaterange
             return null;
         }
     }
+
 }

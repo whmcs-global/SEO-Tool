@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Website, Website_last_updated, User};
+use App\Models\{Website, Website_last_updated, User, CronStatus};
 use App\Services\KeywordDataUpdate;
 
 class WebsiteController extends Controller
@@ -131,5 +131,35 @@ class WebsiteController extends Controller
         Website_last_updated::updateOrCreate(['website_id' => auth()->user()->website_id], ['last_updated_at' => now()]);
         $this->keywordDataUpdate->update();
         return ['success' => 'Data updated successfully','code' => 200];
+    }
+
+
+    public function checkCronStatus(Request $request)
+    {
+        $cron_status = false;
+        $currentDir = base_path();
+        $cronJobEntry = "* * * * * cd $currentDir && php artisan schedule:run >> /dev/null 2>&1";
+        $os = PHP_OS_FAMILY;
+        $crons = CronStatus::get();
+        if ($os === 'Windows') {
+            $output = shell_exec('schtasks /query /fo LIST');
+            if (strpos($output, $cronJobEntry) !== false) {
+                $cron_status = true;
+            }
+        } elseif ($os === 'Darwin' || $os === 'Linux') {
+            $output = shell_exec('crontab -l');
+            if (strpos($output, $cronJobEntry) !== false) {
+                $cron_status = true;
+            }
+        } else {
+            return redirect()->back()->with(['status' => 'error', 'message'=> 'Unsupported OS']);
+        }
+        return view('website.cron_status', compact('cron_status', 'crons'));
+    }
+
+    public function cronLogs($id)
+    {
+        $crons = CronStatus::where('id', $id)->with('externalApiLogs')->get();
+        return view('website.cron_logs', compact('crons'));
     }
 }

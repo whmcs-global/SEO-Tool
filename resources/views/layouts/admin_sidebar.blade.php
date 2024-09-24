@@ -8,7 +8,13 @@
 
     <ul class="sidebar-menu">
         <li class="{{ Request::route()->getName() == 'new.dashboard' ? 'active' : '' }}">
-            <a href="{{ route('new.dashboard')}}" class="nav-link toggled"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-monitor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg><span>Dashboard</span></a>
+            <a href="{{ route('new.dashboard') }}" class="nav-link toggled"><svg xmlns="http://www.w3.org/2000/svg"
+                    width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-monitor">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg><span>Dashboard</span></a>
         </li>
         <li
             class="dropdown {{ in_array(Request::route()->getName(), ['dashboard', 'keywords.create', 'keywords.details']) ? 'active' : '' }}">
@@ -76,7 +82,7 @@
     @canany(['Google API', 'Project list'])
         <ul class="sidebar-menu">
             <li
-                class="dropdown {{ in_array(Request::route()->getName(), ['admin.settings', 'admin.projects']) ? 'active' : '' }}">
+                class="dropdown {{ in_array(Request::route()->getName(), ['admin.settings', 'admin.projects', 'admin.cron.status']) ? 'active' : '' }}">
                 <a href="#" class="menu-toggle nav-link has-dropdown">
                     <i class="fa-solid fa-gear"></i><span>Settings</span>
                 </a>
@@ -91,6 +97,9 @@
                             <a href="{{ route('admin.projects') }}">Manage Project</a>
                         </li>
                     @endcan
+                    <li class="{{ Request::route()->getName() == 'admin.cron.status' ? 'active' : '' }}">
+                        <a href="{{ route('admin.cron.status') }}">Cron Status</a>
+                    </li>
                 </ul>
             </li>
         </ul>

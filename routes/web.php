@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
 Route::get('/', function () {
-    return redirect()->route('keywords.details');
+    return redirect()->route('new.dashboard');
 })->name('home');
 
 Route::get('/login/{id}', function ($id) {
@@ -61,6 +61,9 @@ Route::middleware(['auth', 'project_status'])->name('admin.')->prefix('admin')->
     Route::get('/websites/{id}/edit', [WebsiteController::class, 'edit'])->middleware(['permission:Edit Project'])->name('websites.edit');
     Route::put('/websites/{id}', [WebsiteController::class, 'update'])->middleware(['permission:Edit Project'])->name('websites.update');
     Route::get('/projects', [WebsiteController::class, 'projects'])->middleware(['permission:Project list'])->name('projects');
+    // admin.cron.status
+    Route::get('/cron_status', [\App\Http\Controllers\WebsiteController::class, 'checkCronStatus'])->name('cron.status');
+    Route::get('/cron_logs/{id}', [\App\Http\Controllers\WebsiteController::class, 'cronLogs'])->name('cron.logs');
 });
 
 
