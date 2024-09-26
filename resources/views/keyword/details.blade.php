@@ -147,9 +147,9 @@
                             <th></th>
                             <th></th>
                             @foreach ($allDates as $date)
-                                <th>Position</th>
-                                <th>Clicks</th>
-                                <th>Impressions</th>
+                                <th class="position-column">Position</th>
+                                <th class="click-column">Clicks</th>
+                                <th class="impression-column">Impressions</th>
                             @endforeach
                         </tr>
                     </thead>
@@ -159,7 +159,7 @@
                                 <td class="sticky-col">
                                     <div>
                                         <span>{{ $data['keyword'] }}</span>
-                                        <div>
+                                        <div class="outer-badges">
                                             @foreach ($data['keyword_label'] as $label)
                                                 <span class="badge badge-info">{{ $label }}</span>
                                             @endforeach
@@ -188,7 +188,7 @@
                                                 ? (int) ($currentPosition - $previousPosition)
                                                 : null;
                                     @endphp
-                                    <td>
+                                    <td class="position-column">
                                         {{ $currentPosition }}
                                         @if (is_numeric($positionChange) && $positionChange != 0)
                                             <small class="{{ $positionChange < 0 ? 'text-success' : 'text-danger' }}">
@@ -196,8 +196,8 @@
                                             </small>
                                         @endif
                                     </td>
-                                    <td>{{ $positionData['clicks'] }}</td>
-                                    <td>{{ $positionData['impressions'] }}</td>
+                                    <td class="click-column">{{ $positionData['clicks'] }}</td>
+                                    <td class="impression-column">{{ $positionData['impressions'] }}</td>
                                 @endforeach
                             </tr>
                         @endforeach
@@ -379,6 +379,32 @@
         .dataTables_wrapper .dataTables_paginate {
             float: right;
             padding-top: 0.25em;
+        }
+        .table td {
+            padding: 7px !important;
+        }
+        .table th:first-child, .table td:first-child {
+            text-align: left;
+        }
+        .table th, .table td {
+            text-align: center;
+        }
+        .table .position-column {
+            background-color: #7888f6ab ! IMPORTANT;
+            color: #fff !important;
+        }
+        .table .click-column {
+            background-color: #ffd2d2 !important;
+        }
+        .table .impression-column {
+            background-color: #a1ce68ad !important ;
+        }
+        .outer-badges {
+            display: inline-flex;
+            gap: 4px;
+        }
+        td.sticky-col span {
+            display: block;
         }
     </style>
 @endpush
