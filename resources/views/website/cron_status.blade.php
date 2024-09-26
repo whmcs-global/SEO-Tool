@@ -35,7 +35,7 @@
                             <h4 class="alert-heading"><i class="fas fa-check-circle"></i> Cron Configured!</h4>
                             <p style="margin-left: 15rem;">The cron job is configured and running successfully.</p>
                             <hr>
-                            <button class="btn btn-primary" onclick="runCronNow()">Run Now</button>
+                            {{-- <button class="btn btn-primary" onclick="runCronNow()">Run Now</button> --}}
                         </div>
                     @endif
                 </div>
