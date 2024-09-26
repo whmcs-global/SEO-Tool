@@ -136,7 +136,7 @@ class WebsiteController extends Controller
 
     public function checkCronStatus(Request $request)
     {
-        $cron_status = false;
+        $cron_status = true;
         $currentDir = base_path();
         $cronJobEntry = "* * * * * cd $currentDir && php artisan schedule:run >> /dev/null 2>&1";
         $os = PHP_OS_FAMILY;
