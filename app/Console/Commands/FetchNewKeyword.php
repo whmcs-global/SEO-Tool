@@ -6,7 +6,7 @@ use App\Services\ExternalApiLogger;
 use App\Models\Country;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
-use App\Models\{Keyword, AdminSetting, Website, keyword_label, KeywordData, CronStatus};
+use App\Models\{Keyword, AdminSetting, Website, keyword_label, KeywordData, CronStatus, Website_last_updated};
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -45,6 +45,10 @@ class FetchNewKeyword extends Command
         $website_ids = Website::pluck('id')->toArray();
         $client = new Client();
         foreach ($website_ids as $website_id) {
+            Website_last_updated::where('website_id', $website_id)
+                ->update([
+                    'last_updated_at' => Carbon::now(),
+                ]);
             $this->cron->update([
                 'status' => 2,
             ]);
@@ -113,6 +117,9 @@ class FetchNewKeyword extends Command
                             'keyword_id' => $DBkeyword->id,
                             'label_id' => 11,
                         ]);
+                    }
+                    else{
+                        $keywordData->touch();
                     }
                 }
             }

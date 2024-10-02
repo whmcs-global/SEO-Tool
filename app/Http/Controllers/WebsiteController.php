@@ -125,12 +125,19 @@ class WebsiteController extends Controller
         return redirect()->route('admin.projects')->with(['status' => 'success', 'message'=> 'Website updated successfully!']);
     }
 
-    public function refresh_data(KeywordDataUpdate $keywordDataUpdate)
+    public function refresh_data()
     {
-        $this->keywordDataUpdate = $keywordDataUpdate;
-        Website_last_updated::updateOrCreate(['website_id' => auth()->user()->website_id], ['last_updated_at' => now()]);
-        $this->keywordDataUpdate->update();
-        return ['success' => 'Data updated successfully','code' => 200];
+        $cmd = 'php artisan keywords:update-metrics';
+        $basePath = base_path();
+        $fullCmd = "cd $basePath && $cmd";
+
+        exec($fullCmd, $output, $return_var);
+
+        if ($return_var === 0) {
+            return ['success' => 'Data updated successfully', 'output' => $output, 'code' => 200];
+        } else {
+            return ['error' => 'Failed to update data', 'output' => $output, 'code' => $return_var];
+        }
     }
 
 
@@ -140,7 +147,7 @@ class WebsiteController extends Controller
         $currentDir = base_path();
         $cronJobEntry = "* * * * * cd $currentDir && php artisan schedule:run >> /dev/null 2>&1";
         $os = PHP_OS_FAMILY;
-        $crons = CronStatus::get();
+        $crons = CronStatus::orderBy('id', 'desc')->get();
         if ($os === 'Windows') {
             $output = shell_exec('schtasks /query /fo LIST');
             if (strpos($output, $cronJobEntry) !== false) {
@@ -154,12 +161,46 @@ class WebsiteController extends Controller
         } else {
             return redirect()->back()->with(['status' => 'error', 'message'=> 'Unsupported OS']);
         }
-        return view('website.cron_status', compact('cron_status', 'crons'));
+
+        $lastCron = CronStatus::latest()->first();
+        $lastRunTime = $lastCron ? $lastCron->created_at : null;
+        $hoursAgo = $lastRunTime ? now()->diffForHumans($lastRunTime) : null;
+
+        return view('website.cron_status', compact('cron_status', 'crons', 'lastCron', 'lastRunTime', 'hoursAgo'));
     }
 
     public function cronLogs($id)
     {
         $crons = CronStatus::where('id', $id)->with('externalApiLogs')->get();
         return view('website.cron_logs', compact('crons'));
+    }
+
+    public function retryCron($id)
+    {
+        $cron = CronStatus::findOrFail($id);
+        $cron->update(['status' => 2]);
+
+        if ($cron->cron_name === 'GSC Data Fetch') {
+            $cmd = 'php artisan keywords:update-metrics';
+        } elseif ($cron->cron_name === 'Fetch New Keyword') {
+            $cmd = 'php artisan keyword:fetch-new-keyword';
+        } else {
+            return response()->json(['error' => 'Invalid cron job'], 400);
+        }
+
+        $basePath = base_path();
+        if (PHP_OS_FAMILY === 'Windows') {
+            $fullCmd = "cd /d $basePath && start /B $cmd";
+        } else {
+            $fullCmd = "cd $basePath && $cmd &";
+        }
+
+        exec($fullCmd, $output, $return_var);
+
+        if ($return_var === 0) {
+            return response()->json(['success' => 'Cron job retried successfully', 'output' => $output, 'code' => 200]);
+        } else {
+            return response()->json(['error' => 'Failed to retry cron job', 'output' => $output, 'code' => $return_var], 400);
+        }
     }
 }

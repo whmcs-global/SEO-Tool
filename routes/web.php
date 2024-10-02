@@ -64,6 +64,8 @@ Route::middleware(['auth', 'project_status'])->name('admin.')->prefix('admin')->
     // admin.cron.status
     Route::get('/cron_status', [\App\Http\Controllers\WebsiteController::class, 'checkCronStatus'])->name('cron.status');
     Route::get('/cron_logs/{id}', [\App\Http\Controllers\WebsiteController::class, 'cronLogs'])->name('cron.logs');
+    // retry cron
+    Route::get('/cron_retry/{id}', [\App\Http\Controllers\WebsiteController::class, 'retryCron'])->name('cron.retry');
 });
 
 
@@ -99,6 +101,8 @@ Route::middleware(['auth', 'project_status'])->group(function () {
     Route::get('/keywords', [KeywordController::class, 'show'])->name('keywords.show');
     Route::get('/refresh_keyword_data', [WebsiteController::class, 'refresh_data'])->name('keywords.refresh');
     Route::get('/keyword_data', [KeywordController::class, 'keyword_data'])->name('keywords.data');
+    Route::get('/filter-keywords', [KeywordController::class, 'filterKeywords'])->name('filter.keywords');
+
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

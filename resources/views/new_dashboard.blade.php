@@ -97,12 +97,12 @@
                             <div class="metric-card">
                                 <div class="metric-title">Top Improved Keyword</div>
                                 <div class="metric-value">{{ $keywordStats['topImproved']['keyword'] ?? 'N/A' }}</div>
-                                <div>Change: +{{ $keywordStats['topImproved']['change'] ?? 0 }}</div>
+                                <div>Change: +{{ number_format($keywordStats['topImproved']['change'] ?? 0, 2) }}</div>
                             </div>
                             <div class="metric-card">
                                 <div class="metric-title">Most Declined Keyword</div>
                                 <div class="metric-value">{{ $keywordStats['topDeclined']['keyword'] ?? 'N/A' }}</div>
-                                <div>Change: {{ $keywordStats['topDeclined']['change'] ?? 0 }}</div>
+                                <div>Change: {{ number_format($keywordStats['topDeclined']['change'] ?? 0, 2) }}</div>
                             </div>
                         </div>
                     </div>
@@ -237,10 +237,10 @@
                             <tbody>
                                 @foreach ($newKeywords as $keyword)
                                     <tr>
-                                        <td>{{ $keyword->keyword }}</td>
-                                        <td>{{ $keyword->position }}</td>
-                                        <td>{{ $keyword->clicks }}</td>
-                                        <td>{{ $keyword->impression }}</td>
+                                        <td>{{ $keyword->keyword ?? 'N/A' }}</td>
+                                        <td>{{ $keyword->position ?? 'N/A' }}</td>
+                                        <td>{{ $keyword->clicks ?? 'N/A' }}</td>
+                                        <td>{{ $keyword->impression ?? 'N/A' }}</td>
                                         <td data-order="{{ $keyword->created_at->format('Y-m-d') }}">
                                             {{ $keyword->created_at->format('d-M-Y') }}
                                         </td>
@@ -268,7 +268,11 @@
                     targets: 'Created At',
                     type: 'date'
                 }],
+                order: [
+                    [4, 'desc']
+                ]
             });
+
             $('#rankUpKeywordsTable').DataTable({
                 paging: true,
                 searching: true,

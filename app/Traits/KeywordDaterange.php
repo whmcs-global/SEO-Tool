@@ -3,7 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Http\Request;
-use App\Models\{Keyword, AdminSetting, Website};
+use App\Models\{Keyword, AdminSetting, Website, Website_last_updated};
 use Auth, DateTime;
 use GuzzleHttp\Client;
 use Carbon\Carbon;
@@ -172,6 +172,10 @@ trait KeywordDaterange
                 $web_url = $website->url;
                 $key = $website->API_KEY;
                 $property_type = $website->property_type;
+                Website_last_updated::where('website_id', $website_id)
+                ->update([
+                    'last_updated_at' => Carbon::now(),
+                ]);
             } else {
                 $web_url = 'www.hostingseekers.com';
                 $key = config('google.key');
