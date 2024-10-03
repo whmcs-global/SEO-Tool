@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Services\GoogleAdsService;
@@ -34,11 +35,7 @@ class KeywordDataUpdate
         foreach ($countries as $country) {
             try {
                 $metrics = $this->googleAdsService->getKeywordHistoricalMetrics($keywords_ads, $country->Google_Code);
-                $metricsMap = [];
-
-                foreach ($metrics as $metric) {
-                    $metricsMap[$metric['text']] = $metric['keywordMetrics'];
-                }
+                $metricsMap = collect($metrics)->pluck('keywordMetrics', 'text');
 
                 foreach ($keywords as $keyword) {
                     $keywordDataAttributes = [
@@ -46,67 +43,20 @@ class KeywordDataUpdate
                         'country_id' => $country->id,
                     ];
 
-                    $keywordDataValues = [];
-                    if (isset($metricsMap[$keyword->keyword])) {
-                        $metric = $metricsMap[$keyword->keyword];
-                        $keywordDataValues = [
-                            'search_volume' => $metric['avgMonthlySearches'],
-                            'competition' => $metric['competition'],
-                            'bid_rate_low' => $metric['lowTopOfPageBidRupees'],
-                            'bid_rate_high' => $metric['highTopOfPageBidRupees'],
-                        ];
-                    }
+                    $keywordDataValues = $this->getKeywordDataValues($metricsMap, $keyword);
 
                     $settings = AdminSetting::where('website_id', $keyword->website_id)
-                                            ->where('type', 'google')
-                                            ->get();
+                        ->where('type', 'google')
+                        ->get();
+
                     if ($settings) {
                         $key = $this->keywords(request(), $keyword, $country->ISO_CODE);
 
-                        // Log API error using ExternalApiLogger
-                        if (isset($key['code'])) {
-                            $error_message = $key['message'];
-                            Log::error('line 61 keyworddata '.$error_message);
-                            ExternalApiLogger::log(
-                                $this->cron_id,
-                                'Google Keyword Data Fetch',
-                                $error_message,
-                                'https://searchconsole.googleapis.com/webmasters/v3',
-                                'POST',
-                                json_encode(['keyword' => $keyword->keyword, 'country' => $country->ISO_CODE]),
-                                json_encode($key),
-                                $key['code']
-                            );
-                            return false;
-                            // continue;
+                        if ($this->handleApiErrors($key, $keyword, $country)) {
+                            continue;
                         }
 
-                        if (isset($key['error'])) {
-                            Log::error('line 65 keyworddata '.$key['error']);
-                            ExternalApiLogger::log(
-                                $this->cron_id,
-                                'Google Keyword Data Fetch',
-                                $key['error'],
-                                'https://searchconsole.googleapis.com/webmasters/v3',
-                                'POST',
-                                json_encode(['keyword' => $keyword->keyword, 'country' => $country->ISO_CODE]),
-                                json_encode($key),
-                                $key['code'] ?? 500 
-                            );
-
-                            return false;
-                            // continue;
-                        }
-
-                        if ($key) {
-                            $keywordDataValues['position'] = isset($key[0]['position']) ? (int) $key[0]['position'] : null;
-                            $keywordDataValues['clicks'] = isset($key[0]['clicks']) ? (int) $key[0]['clicks'] : 0;
-                            $keywordDataValues['impression'] = isset($key[0]['impressions']) ? $key[0]['impressions'] : 0;
-                        } else {
-                            $keywordDataValues['position'] = null;
-                            $keywordDataValues['clicks'] = 0;
-                            $keywordDataValues['impression'] = 0;
-                        }
+                        $keywordDataValues = array_merge($keywordDataValues, $this->getAdditionalKeywordData($key));
                     }
 
                     if (!empty($keywordDataValues)) {
@@ -114,26 +64,73 @@ class KeywordDataUpdate
                     }
 
                     $keyword->save();
-
-                    return true;
                 }
             } catch (\Exception $e) {
-                // Catch any unexpected errors and log them with ExternalApiLogger
-                Log::error('Error updating keyword data: ' . $e->getMessage());
-                ExternalApiLogger::log(
-                    $this->cron_id,
-                    'Google Keyword Historical Metrics Fetch',
-                    $e->getMessage(),
-                    'Google Ads API endpoint', // Add the correct API endpoint here
-                    'GET',
-                    json_encode(['keywords' => $keywords_ads, 'country' => $country->Google_Code]),
-                    $e->getMessage(),
-                    $e->getCode()
-                );
-
+                $this->logException($e, $keywords_ads, $country);
                 return false;
             }
         }
+
+        return true;
+    }
+
+    private function getKeywordDataValues($metricsMap, $keyword)
+    {
+        if (isset($metricsMap[$keyword->keyword])) {
+            $metric = $metricsMap[$keyword->keyword];
+            return [
+                'search_volume' => $metric['avgMonthlySearches'],
+                'competition' => $metric['competition'],
+                'bid_rate_low' => $metric['lowTopOfPageBidRupees'],
+                'bid_rate_high' => $metric['highTopOfPageBidRupees'],
+            ];
+        }
+
+        return [];
+    }
+
+    private function handleApiErrors($key, $keyword, $country)
+    {
+        if (isset($key['code']) || isset($key['error'])) {
+            $error_message = $key['message'] ?? $key['error'];
+            Log::error('Keyword data error: ' . $error_message);
+            ExternalApiLogger::log(
+                $this->cron_id,
+                'Google Keyword Data Fetch',
+                $error_message,
+                'https://searchconsole.googleapis.com/webmasters/v3',
+                'POST',
+                json_encode(['keyword' => $keyword->keyword, 'country' => $country->ISO_CODE]),
+                json_encode($key),
+                $key['code'] ?? 500
+            );
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getAdditionalKeywordData($key)
+    {
+        return [
+            'position' => isset($key[0]['position']) ? (int) $key[0]['position'] : null,
+            'clicks' => isset($key[0]['clicks']) ? (int) $key[0]['clicks'] : 0,
+            'impression' => isset($key[0]['impressions']) ? $key[0]['impressions'] : 0,
+        ];
+    }
+
+    private function logException($e, $keywords_ads, $country)
+    {
+        Log::error('Error updating keyword data: ' . $e->getMessage());
+        ExternalApiLogger::log(
+            $this->cron_id,
+            'Google Keyword Historical Metrics Fetch',
+            $e->getMessage(),
+            'Google Ads API endpoint', // Add the correct API endpoint here
+            'GET',
+            json_encode(['keywords' => $keywords_ads, 'country' => $country->Google_Code]),
+            $e->getMessage(),
+            $e->getCode()
+        );
     }
 }
-
