@@ -220,6 +220,19 @@
             <div class="card">
                 <div class="card-header">
                     <h4>New Keywords</h4>
+                    <div class="form-row align-items-center filter-container">
+                        <div class="col-auto">
+                            <label for="dateFilter" class="font-weight-bold">Filter by: </label>
+                        </div>
+                        <div class="col">
+                            <select id="dateFilter" class="form-control">
+                                <option value="all" selected>All</option>
+                                <option value="3">Last 3 days</option>
+                                <option value="7">Last week</option>
+                                <option value="15">Last 15 days</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -263,15 +276,60 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         $(document).ready(function() {
-            $('#newKeywordsTable').DataTable({
-                columnDefs: [{
-                    targets: 'Created At',
-                    type: 'date'
-                }],
-                order: [
-                    [4, 'desc']
-                ]
+            let newKeywordsTable;
+            let selectedDays = 'all';
+
+            function initializeTable() {
+                newKeywordsTable = $('#newKeywordsTable').DataTable({
+                    columnDefs: [{
+                        targets: 4,
+                        type: 'date'
+                    }],
+                    order: [
+                        [4, 'desc']
+                    ]
+                });
+
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    if (selectedDays === 'all') {
+                        return true;
+                    }
+
+                    let createdAt = new Date(data[4]);
+                    createdAt.setHours(0, 0, 0, 0);
+
+                    let cutoffDate = new Date();
+                    cutoffDate.setHours(0, 0, 0, 0);
+                    cutoffDate.setDate(cutoffDate.getDate() - selectedDays +
+                        1);
+
+                    return createdAt >=
+                        cutoffDate;
+                });
+            }
+
+            function filterTable() {
+                newKeywordsTable.draw();
+            }
+
+            initializeTable();
+
+            $('#dateFilter').on('change', function() {
+                selectedDays = $(this).val() === 'all' ? 'all' : parseInt($(this)
+                    .val());
+                filterTable();
             });
+            filterTable();
+
+            // $('#newKeywordsTable').DataTable({
+            //     columnDefs: [{
+            //         targets: 'Created At',
+            //         type: 'date'
+            //     }],
+            //     order: [
+            //         [4, 'desc']
+            //     ]
+            // });
 
             $('#rankUpKeywordsTable').DataTable({
                 paging: true,
