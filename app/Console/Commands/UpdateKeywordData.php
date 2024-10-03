@@ -43,11 +43,16 @@ class UpdateKeywordData extends Command
         );
 
         // Process keywords in chunks to avoid memory exhaustion.
-        Keyword::with(['keywordData' => function($query) {
+        Keyword::with(['keywordData' => function ($query) {
             $query->with('country');
-        }])->chunk(100, function($keywords) {
-            foreach($keywords as $keyword) {
-                foreach($keyword->keywordData as $data) {
+        }])->chunk(100, function ($keywords) {
+            foreach ($keywords as $keyword) {
+                // Check if the keyword was updated less than 12 hours ago
+                if ($keyword->updated_at->diffInHours(now()) < 12) {
+                    continue;
+                }
+
+                foreach ($keyword->keywordData as $data) {
                     $response = $this->keywordbydate($keyword, $data->country->ISO_CODE, $this->cron->id);
                     $data['response'] = $response;
                     $data->save();
