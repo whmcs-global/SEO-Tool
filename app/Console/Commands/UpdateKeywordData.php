@@ -7,6 +7,7 @@ use App\Services\KeywordDataUpdate;
 use App\Models\Keyword;
 use App\Models\Country;
 use App\Models\CronStatus;
+use App\Models\Website_last_updated;
 use App\Models\KeywordData;
 use App\Traits\KeywordDaterange;
 use Carbon\Carbon;
@@ -41,13 +42,13 @@ class UpdateKeywordData extends Command
             ['cron_name' => 'GSC Data Fetch', 'date' => Carbon::now()->format('Y-m-d')],
             ['status' => 2]
         );
-
-        // Process keywords in chunks to avoid memory exhaustion.
+        Website_last_updated::all()->each(function ($website) {
+            $website->update(['last_updated_at' => Carbon::now()]);
+        });
         Keyword::with(['keywordData' => function ($query) {
             $query->with('country');
         }])->chunk(100, function ($keywords) {
             foreach ($keywords as $keyword) {
-                // Check if the keyword was updated less than 12 hours ago
                 if ($keyword->updated_at->diffInHours(now()) < 12) {
                     continue;
                 }
@@ -56,15 +57,12 @@ class UpdateKeywordData extends Command
                     $response = $this->keywordbydate($keyword, $data->country->ISO_CODE, $this->cron->id);
                     $data['response'] = $response;
                     $data->save();
-                    // Free memory manually
                     unset($data, $response);
                 }
-                // Clear memory after each keyword processing
                 unset($keyword);
             }
         });
 
-        // Update status after processing
         $status = $keywordDataUpdate->update($this->cron->id);
         if (!$status) {
             $this->cron->update(['status' => 0]);
@@ -74,7 +72,6 @@ class UpdateKeywordData extends Command
             $this->info('Keyword metrics updated successfully.');
         }
 
-        // Explicitly force garbage collection
         gc_collect_cycles();
     }
 }

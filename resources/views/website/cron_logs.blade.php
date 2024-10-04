@@ -31,7 +31,7 @@
                                         <tr>
                                             <th style="width: 15%"><i class="fas fa-network-wired"></i> API Name</th>
                                             <th style="width: 15%"><i class="fas fa-link"></i> Endpoint</th>
-                                            <th style="width: 10%"><i class="fas fa-code"></i> Method</th>
+                                            {{-- <th style="width: 10%"><i class="fas fa-code"></i> Method</th> --}}
                                             <th style="width: 10%"><i class="fas fa-flag"></i> Status Code</th>
                                             <th style="width: 20%"><i class="fas fa-info-circle"></i> Description</th>
                                             <th style="width: 15%"><i class="fas fa-database"></i> Request Data</th>
@@ -47,7 +47,7 @@
                                                         {{ \Illuminate\Support\Str::limit($log->endpoint, 30) }}
                                                     </a>
                                                 </td>
-                                                <td><span class="badge badge-info">{{ strtoupper($log->method) }}</span></td>
+                                                {{-- <td><span class="badge badge-info">{{ strtoupper($log->method) }}</span></td> --}}
                                                 <td><span class="badge badge-dark">{{ $log->status_code }}</span></td>
                                                 <td>{{ \Illuminate\Support\Str::limit($log->description, 50) }}</td>
                                                 <td>

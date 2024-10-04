@@ -161,12 +161,10 @@ trait KeywordDaterange
             ];
             $jsonQuery = json_encode($query);
 
-            // Setting headers
             $headers = [
                 'Content-Type' => 'application/json'
             ];
 
-            // Determining the URL, API key, and property type
             if ($website_id) {
                 $website = Website::where('id', $website_id)->first();
                 $web_url = $website->url;
