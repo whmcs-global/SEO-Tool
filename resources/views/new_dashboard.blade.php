@@ -228,7 +228,7 @@
                             <select id="dateFilter" class="form-control">
                                 <option value="all" selected>All</option>
                                 <option value="3">Last 3 days</option>
-                                <option value="7">Last week</option>
+                                <option value="7">Last 7 days</option>
                                 <option value="15">Last 15 days</option>
                             </select>
                         </div>

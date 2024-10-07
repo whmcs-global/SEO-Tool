@@ -38,6 +38,7 @@ class UpdateKeywordData extends Command
      */
     public function handle(KeywordDataUpdate $keywordDataUpdate)
     {
+        $status = false;
         $this->cron = CronStatus::updateOrCreate(
             ['cron_name' => 'GSC Data Fetch', 'date' => Carbon::now()->format('Y-m-d')],
             ['status' => 2]
