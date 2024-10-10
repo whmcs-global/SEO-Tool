@@ -8,8 +8,25 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <style>
+        :root {
+            --primary-color: #343a40;
+            --secondary-color: #6c757d;
+            --background-color: #f8f9fa;
+            --hover-background-color: #f5f5f5;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --green: green;
+            --red: red;
+            --gray: gray;
+            --improved-bg: #7cd792;
+            --declined-bg: #ffa3ab;
+        }
+
         #keywordPerformanceChart {
             height: 300px !important;
+        }
+        #weeklyPerformanceChart {
+            height: 400px;
         }
 
         .position-change {
@@ -18,22 +35,22 @@
         }
 
         .up {
-            color: green;
+            color: var(--green);
             margin-left: 5px;
         }
 
         .down {
-            color: red;
+            color: var(--red);
             margin-left: 5px;
         }
 
         .same {
-            color: gray;
+            color: var(--gray);
             margin-left: 5px;
         }
 
         .table-hover tbody tr:hover {
-            background-color: #f5f5f5;
+            background-color: var(--hover-background-color);
         }
 
         .table-striped tbody tr:nth-of-type(odd) {
@@ -41,7 +58,7 @@
         }
 
         .thead-dark th {
-            background-color: #343a40;
+            background-color: var(--primary-color);
             color: white;
         }
 
@@ -49,32 +66,41 @@
             margin: 10px;
         }
 
-        .metric-card {
-            background-color: #f8f9fa;
-            border-radius: 8px;
+        .metric-card, .metric-card-improved, .metric-card-declined {
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
             padding: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--box-shadow);
+            transition: transform 0.2s;
+        }
+
+        .metric-card:hover, .metric-card-improved:hover, .metric-card-declined:hover {
+            transform: translateY(-5px);
         }
 
         .metric-title {
             font-size: 14px;
-            color: #6c757d;
+            color: var(--secondary-color);
             margin-bottom: 5px;
         }
 
         .metric-value {
             font-size: 24px;
             font-weight: bold;
-            color: #343a40;
+            color: var(--primary-color);
+        }
+
+        .metric-card-improved {
+            background-color: var(--improved-bg);
+        }
+
+        .metric-card-declined {
+            background-color: var(--declined-bg);
         }
 
         .dt-buttons {
             display: none;
-        }
-
-        #weeklyPerformanceChart {
-            height: 400px;
         }
     </style>
 @endpush
@@ -109,12 +135,12 @@
                                 <div class="metric-value">{{ $keywordStats['total'] }}</div>
                             </div>
 
-                            <div class="metric-card">
+                            <div class="metric-card-improved">
                                 <div class="metric-title">Top Improved Keyword</div>
                                 <div class="metric-value">{{ $keywordStats['topImproved']['keyword'] ?? 'N/A' }}</div>
                                 <div>Change: +{{ number_format($keywordStats['topImproved']['change'] ?? 0, 2) }}</div>
                             </div>
-                            <div class="metric-card">
+                            <div class="metric-card-declined">
                                 <div class="metric-title">Most Declined Keyword</div>
                                 <div class="metric-value">{{ $keywordStats['topDeclined']['keyword'] ?? 'N/A' }}</div>
                                 <div>Change: {{ number_format($keywordStats['topDeclined']['change'] ?? 0, 2) }}</div>
