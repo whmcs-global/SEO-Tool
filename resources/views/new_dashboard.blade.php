@@ -68,12 +68,28 @@
             font-weight: bold;
             color: #343a40;
         }
+
+        .dt-buttons {
+            display: none;
+        }
     </style>
 @endpush
 
 @section('content')
     <div class="row">
         <div class="col-12 mb-4">
+            <div class="row">
+                @foreach ($labels as $label)
+                    <div class="col-md-2">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <h5 class="card-title mb-1">{{ $label->name }}</h5>
+                                <p class="card-text mb-0">{{ $label->getKeywordCountAttribute() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
             <div class="card">
                 <div class="card-header">
                     <h4>Keyword Performance Overview</h4>
@@ -218,19 +234,31 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h4>New Keywords</h4>
-                    <div class="form-row align-items-center filter-container">
-                        <div class="col-auto">
-                            <label for="dateFilter" class="font-weight-bold">Filter by: </label>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">New Keywords</h4>
+                    <div class="d-flex align-items-center">
+                        <div class="form-row align-items-center mr-3">
+                            <div class="col-auto">
+                                <label for="dateFilter" class="font-weight-bold mb-0">Filter by:</label>
+                            </div>
+                            <div class="col">
+                                <select id="dateFilter" class="form-control">
+                                    <option value="all" selected>All</option>
+                                    <option value="3">Last 3 days</option>
+                                    <option value="7">Last 7 days</option>
+                                    <option value="15">Last 15 days</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col">
-                            <select id="dateFilter" class="form-control">
-                                <option value="all" selected>All</option>
-                                <option value="3">Last 3 days</option>
-                                <option value="7">Last 7 days</option>
-                                <option value="15">Last 15 days</option>
-                            </select>
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="exportDropdown"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Export
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="exportDropdown">
+                                <a class="dropdown-item" href="#" id="exportCSV">Export to CSV</a>
+                                <a class="dropdown-item" href="#" id="exportExcel">Export to MS Excel</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -272,54 +300,90 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        $(document).ready(function() {
-            let newKeywordsTable;
-            let selectedDays = 'all';
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $(document).ready(function() {
+        let newKeywordsTable;
+        let selectedDays = 'all';
 
-            function initializeTable() {
-                newKeywordsTable = $('#newKeywordsTable').DataTable({
-                    columnDefs: [{
-                        targets: 4,
-                        type: 'date'
-                    }],
-                    order: [
-                        [4, 'desc']
-                    ]
-                });
-
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    if (selectedDays === 'all') {
-                        return true;
+        function initializeTable() {
+            newKeywordsTable = $('#newKeywordsTable').DataTable({
+                columnDefs: [{
+                    targets: 4,
+                    type: 'date'
+                }],
+                order: [
+                    [4, 'desc']
+                ],
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'csv',
+                        text: 'Export to CSV',
+                        filename: 'new_keywords_export',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        },
+                        action: function (e, dt, button, config) {
+                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Export to MS Excel',
+                        filename: 'new_keywords_export',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4]
+                        },
+                        action: function (e, dt, button, config) {
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }
                     }
-
-                    let createdAt = new Date(data[4]);
-                    createdAt.setHours(0, 0, 0, 0);
-
-                    let cutoffDate = new Date();
-                    cutoffDate.setHours(0, 0, 0, 0);
-                    cutoffDate.setDate(cutoffDate.getDate() - selectedDays +
-                        1);
-
-                    return createdAt >=
-                        cutoffDate;
-                });
-            }
-
-            function filterTable() {
-                newKeywordsTable.draw();
-            }
-
-            initializeTable();
-
-            $('#dateFilter').on('change', function() {
-                selectedDays = $(this).val() === 'all' ? 'all' : parseInt($(this)
-                    .val());
-                filterTable();
+                ]
             });
+
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                if (selectedDays === 'all') {
+                    return true;
+                }
+
+                let createdAt = new Date(data[4]);
+                createdAt.setHours(0, 0, 0, 0);
+
+                let cutoffDate = new Date();
+                cutoffDate.setHours(0, 0, 0, 0);
+                cutoffDate.setDate(cutoffDate.getDate() - selectedDays + 1);
+
+                return createdAt >= cutoffDate;
+            });
+        }
+
+        function filterTable() {
+            newKeywordsTable.draw();
+        }
+
+        initializeTable();
+
+        $('#dateFilter').on('change', function() {
+            selectedDays = $(this).val() === 'all' ? 'all' : parseInt($(this).val());
             filterTable();
+        });
+
+        $('#exportCSV').on('click', function(e) {
+            e.preventDefault();
+            newKeywordsTable.button('.buttons-csv').trigger();
+        });
+
+        $('#exportExcel').on('click', function(e) {
+            e.preventDefault();
+            newKeywordsTable.button('.buttons-excel').trigger();
+        });
+
+        filterTable();
 
             // $('#newKeywordsTable').DataTable({
             //     columnDefs: [{

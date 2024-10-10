@@ -541,6 +541,7 @@ class KeywordController extends Controller
         $totalPreviousPositions = 0;
         $totalCurrentPositions = 0;
         $keywordCount = 0;
+        $labels = Label::all();
 
         $newKeywords = Keyword::select('keywords.*', 'keyword_data.*')
             ->join('keyword_data', function ($join) {
@@ -651,6 +652,6 @@ class KeywordController extends Controller
             'topDeclined' => $topDeclined
         ];
 
-        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'yesterday', 'keywordStats'));
+        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'yesterday', 'keywordStats', 'labels'));
     }
 }

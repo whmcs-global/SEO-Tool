@@ -56,11 +56,12 @@ class BacklinkController extends Controller
         }
 
         $backlinks = $query->get();
-        $totallinks = $backlinks->count();
-        $activelinks = $backlinks->where("status", "Active")->count();
-        $inactivelinks = $backlinks->where("status", "Inactive")->count();
-        $pendinglinks = $backlinks->where("status", "Pending")->count();
-        $declinedlinks = $backlinks->where("status", "Declined")->count();
+        $filterBacklinks = Backlinks::all();
+        $totallinks = $filterBacklinks->count();
+        $activelinks = $filterBacklinks->where("status", "Active")->count();
+        $inactivelinks = $filterBacklinks->where("status", "Inactive")->count();
+        $pendinglinks = $filterBacklinks->where("status", "Pending")->count();
+        $declinedlinks = $filterBacklinks->where("status", "Declined")->count();
 
         $data_name = ['Active', 'Inactive', 'Pending', 'Declined'];
         $pie_data = [
@@ -72,7 +73,7 @@ class BacklinkController extends Controller
 
         $values = [];
         $uniqueDomains = [];
-        foreach ($backlinks as $data) {
+        foreach ($filterBacklinks as $data) {
             $values[] = [
                 "name" => $data->website,
                 "data" => [

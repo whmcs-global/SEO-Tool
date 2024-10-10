@@ -15,4 +15,16 @@ class Label extends Model
     {
         return $this->belongsToMany(Keyword::class, 'keyword_labels', 'label_id', 'keyword_id');
     }
+
+    public function keywordsCurrentWebsite()
+    {
+        return $this->belongsToMany(Keyword::class, 'keyword_labels', 'label_id', 'keyword_id')
+            ->where('website_id', auth()->user()->website_id);
+    }
+
+    public function getKeywordCountAttribute()
+    {
+        return $this->keywordsCurrentWebsite()->count();
+    }
+
 }

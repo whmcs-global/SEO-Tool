@@ -26,7 +26,7 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-center align-items-center">
-                                <h4>Total Domains</h4>
+                                <h4>Total Unique Domains</h4>
                             </div>
                             <div class="card-body">
                                 <div class="text-center">
@@ -285,15 +285,13 @@
                                         @endrole --}}
                                         <td>
                                             @if ($backlink->status == 'Active')
-                                                <span class="badge bg-success">{{ ucfirst($backlink->status) }}</span>
-                                                {{-- @elseif ($backlink->status == 'Inactive')
-                                                <span class="badge bg-secondary">{{ ucfirst($backlink->status) }}</span> --}}
+                                                <span class="badge bg-success" data-toggle="tooltip" title="{{ $backlink->notes_comments }}">{{ ucfirst($backlink->status) }}</span>
                                             @elseif ($backlink->status == 'Pending')
-                                                <span class="badge bg-warning">{{ ucfirst($backlink->status) }}</span>
+                                                <span class="badge bg-warning" data-toggle="tooltip" title="{{ $backlink->notes_comments }}">{{ ucfirst($backlink->status) }}</span>
                                             @elseif ($backlink->status == 'Declined')
-                                                <span class="badge bg-danger">Rejected</span>
+                                                <span class="badge bg-danger" data-toggle="tooltip" title="{{ $backlink->notes_comments ?? 'Reason not provided' }}">Rejected</span>
                                             @else
-                                                <span class="badge bg-info">{{ ucfirst($backlink->status) }}</span>
+                                                <span class="badge bg-info" data-toggle="tooltip" title="{{ $backlink->notes_comments }}">{{ ucfirst($backlink->status) }}</span>
                                             @endif
                                         </td>
                                         {{-- <td>{{ $backlink->anchor_text }}</td> --}}
