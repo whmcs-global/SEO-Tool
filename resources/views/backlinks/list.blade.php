@@ -364,6 +364,9 @@
                         targets: 'Created At',
                         type: 'date'
                     }
+                ],
+                order: [
+                    [5, 'asc']
                 ]
             });
 

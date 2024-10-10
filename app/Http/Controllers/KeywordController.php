@@ -314,6 +314,9 @@ class KeywordController extends Controller
 
     public function edit(Keyword $keyword)
     {
+        // Store the current URL in the session
+        session(['previous_url' => url()->previous()]);
+
         $users = [];
         if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
             $users = User::all();
@@ -339,7 +342,9 @@ class KeywordController extends Controller
         $keyword->assignedUsers()->sync($request->users);
 
         session()->flash('message', 'Keyword updated successfully');
-        return redirect()->route('dashboard');
+
+        $previousUrl = session()->get('previous_url', route('dashboard'));
+        return redirect($previousUrl);
     }
 
     public function store(Request $request)
@@ -462,16 +467,21 @@ class KeywordController extends Controller
 
     // public function new_dashboard(Request $request)
     // {
-    //     $yesterday = Carbon::yesterday()->subDays(2)->format('Y-m-d');
-    //     $today = Carbon::today()->subDays(2)->format('Y-m-d');
-    //     // dd($yesterday, $today, auth()->user()->country_id);
+
+    //     $yesterday = Carbon::yesterday()->subDays(1)->format('Y-m-d');
+    //     $today = Carbon::today()->subDays(1)->format('Y-m-d');
     //     $downKeywords = [];
     //     $upKeywords = [];
+    //     $sameKeywords = [];
+    //     $totalPreviousPositions = 0;
+    //     $totalCurrentPositions = 0;
+    //     $keywordCount = 0;
+    //     $labels = Label::all();
 
     //     $newKeywords = Keyword::select('keywords.*', 'keyword_data.*')
-    //         ->join('keyword_data', function($join) {
+    //         ->join('keyword_data', function ($join) {
     //             $join->on('keywords.id', '=', 'keyword_data.keyword_id')
-    //                  ->where('keyword_data.country_id', auth()->user()->country_id);
+    //                 ->where('keyword_data.country_id', auth()->user()->country_id);
     //         })
     //         ->whereNull('keywords.user_id')
     //         ->where('keywords.website_id', auth()->user()->website_id)
@@ -479,39 +489,52 @@ class KeywordController extends Controller
     //         ->get();
 
     //     $Keywords = Keyword::select('keywords.*', 'keyword_data.*')
-    //         ->join('keyword_data', function($join) {
+    //         ->join('keyword_data', function ($join) {
     //             $join->on('keywords.id', '=', 'keyword_data.keyword_id')
-    //                  ->where('keyword_data.country_id', auth()->user()->country_id);
+    //                 ->where('keyword_data.country_id', auth()->user()->country_id);
     //         })
     //         ->where('keywords.website_id', auth()->user()->website_id)
     //         ->get();
 
+    //     $totalKeywords = count($Keywords);
+    //     $totalPositionChange = 0;
+    //     $topImproved = null;
+    //     $topDeclined = null;
     //     foreach ($Keywords as $keyword) {
     //         $response = $keyword->response;
     //         $response = json_decode($response, true);
 
     //         if (is_array($response)) {
-    //             usort($response, function($a, $b) {
-    //                 return strtotime($a['keys'][1]) - strtotime($b['keys'][1]);
+    //             usort($response, function ($a, $b) {
+    //                 if (isset($a['keys'][1]) && isset($b['keys'][1])) {
+    //                     return strtotime($a['keys'][1]) - strtotime($b['keys'][1]);
+    //                 }
+    //                 return 0;
     //             });
 
     //             $previousDatePosition = null;
     //             $currentDatePosition = null;
 
     //             foreach ($response as $data) {
-    //                 $currentPosition = $data['position'];
-    //                 $date = $data['keys'][1];
+    //                 if (is_array($data) && isset($data['position'])) {
+    //                     $currentPosition = $data['position'];
+    //                     $date = $data['keys'][1] ?? null;
 
-    //                 if ($date == $yesterday) {
-    //                     $previousDatePosition = $currentPosition;
-    //                 }
+    //                     if ($date == $yesterday) {
+    //                         $previousDatePosition = $currentPosition;
+    //                     }
 
-    //                 if ($date == $today) {
-    //                     $currentDatePosition = $currentPosition;
+    //                     if ($date == $today) {
+    //                         $currentDatePosition = $currentPosition;
+    //                     }
     //                 }
     //             }
 
     //             if ($previousDatePosition !== null && $currentDatePosition !== null) {
+    //                 $keywordCount++;
+    //                 $totalPreviousPositions += $previousDatePosition;
+    //                 $totalCurrentPositions += $currentDatePosition;
+
     //                 if ($currentDatePosition > $previousDatePosition) {
     //                     $downKeywords[] = [
     //                         'keyword' => $keyword,
@@ -524,17 +547,57 @@ class KeywordController extends Controller
     //                         'previous_position' => $previousDatePosition,
     //                         'current_position' => $currentDatePosition,
     //                     ];
+    //                 } else {
+    //                     $sameKeywords[] = [
+    //                         'keyword' => $keyword,
+    //                         'previous_position' => $previousDatePosition,
+    //                         'current_position' => $currentDatePosition,
+    //                     ];
+    //                 }
+
+    //                 if ($previousDatePosition !== null && $currentDatePosition !== null) {
+    //                     $positionChange = $previousDatePosition - $currentDatePosition;
+    //                     $totalPositionChange += $positionChange;
+
+    //                     if ($positionChange > 0 && (!$topImproved || $positionChange > $topImproved['change'])) {
+    //                         $topImproved = [
+    //                             'keyword' => $keyword->keyword,
+    //                             'change' => $positionChange
+    //                         ];
+    //                     } elseif ($positionChange < 0 && (!$topDeclined || $positionChange < $topDeclined['change'])) {
+    //                         $topDeclined = [
+    //                             'keyword' => $keyword->keyword,
+    //                             'change' => $positionChange
+    //                         ];
+    //                     }
     //                 }
     //             }
     //         }
     //     }
-    //     return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'yesterday'));
+
+    //     $keywordStats = [
+    //         'up' => count($upKeywords),
+    //         'down' => count($downKeywords),
+    //         'same' => count($sameKeywords),
+    //         'avgPreviousPosition' => $keywordCount > 0 ? round($totalPreviousPositions / $keywordCount, 2) : 0,
+    //         'avgCurrentPosition' => $keywordCount > 0 ? round($totalCurrentPositions / $keywordCount, 2) : 0,
+    //         'total' => $totalKeywords,
+    //         'avgPositionChange' => $totalKeywords > 0 ? round($totalPositionChange / $totalKeywords, 2) : 0,
+    //         'topImproved' => $topImproved,
+    //         'topDeclined' => $topDeclined
+    //     ];
+
+    //     $filename = auth()->user()->getCurrentProject()->name.'_New_Keywords_' . date('Y-m-d');
+
+    //     return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'yesterday', 'keywordStats', 'labels', 'filename'));
     // }
+
 
     public function new_dashboard(Request $request)
     {
         $yesterday = Carbon::yesterday()->subDays(1)->format('Y-m-d');
         $today = Carbon::today()->subDays(1)->format('Y-m-d');
+        $pastWeek = Carbon::today()->subDays(8)->format('Y-m-d');
         $downKeywords = [];
         $upKeywords = [];
         $sameKeywords = [];
@@ -565,6 +628,8 @@ class KeywordController extends Controller
         $totalPositionChange = 0;
         $topImproved = null;
         $topDeclined = null;
+        $weeklyData = [];
+
         foreach ($Keywords as $keyword) {
             $response = $keyword->response;
             $response = json_decode($response, true);
@@ -576,6 +641,33 @@ class KeywordController extends Controller
                     }
                     return 0;
                 });
+
+                $datePositions = [];
+                foreach ($response as $data) {
+                    if (is_array($data) && isset($data['position'])) {
+                        $currentPosition = $data['position'];
+                        $date = $data['keys'][1] ?? null;
+
+                        if ($date >= $pastWeek && $date <= $today) {
+                            $datePositions[$date] = $currentPosition;
+                        }
+                    }
+                }
+
+                foreach ($datePositions as $date => $currentPosition) {
+                    $previousDate = Carbon::parse($date)->subDay()->format('Y-m-d');
+                    if (isset($datePositions[$previousDate])) {
+                        $previousPosition = $datePositions[$previousDate];
+
+                        if ($currentPosition > $previousPosition) {
+                            $weeklyData[$date]['down'] = ($weeklyData[$date]['down'] ?? 0) + 1;
+                        } elseif ($currentPosition < $previousPosition) {
+                            $weeklyData[$date]['up'] = ($weeklyData[$date]['up'] ?? 0) + 1;
+                        } else {
+                            $weeklyData[$date]['same'] = ($weeklyData[$date]['same'] ?? 0) + 1;
+                        }
+                    }
+                }
 
                 $previousDatePosition = null;
                 $currentDatePosition = null;
@@ -639,7 +731,7 @@ class KeywordController extends Controller
                 }
             }
         }
-
+        ksort($weeklyData);
         $keywordStats = [
             'up' => count($upKeywords),
             'down' => count($downKeywords),
@@ -649,9 +741,11 @@ class KeywordController extends Controller
             'total' => $totalKeywords,
             'avgPositionChange' => $totalKeywords > 0 ? round($totalPositionChange / $totalKeywords, 2) : 0,
             'topImproved' => $topImproved,
-            'topDeclined' => $topDeclined
+            'topDeclined' => $topDeclined,
+            'weeklyData' => $weeklyData
         ];
+        $filename = auth()->user()->getCurrentProject()->name.'_New_Keywords_' . date('Y-m-d');
 
-        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'yesterday', 'keywordStats', 'labels'));
+        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday'));
     }
 }

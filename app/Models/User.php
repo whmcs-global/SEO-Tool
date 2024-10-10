@@ -63,7 +63,6 @@ class User extends Authenticatable
 
     public function projectconfig_status()
     {
-        // AdminSetting where 'website_id', $this->website_id' if count is 2 then return true else false
         return AdminSetting::where('website_id', $this->website_id)->count() == 2;
     }
 
@@ -106,5 +105,10 @@ class User extends Authenticatable
     public function getcurrentwebsiteuser()
     {
         return User_project::where('website_id', $this->website_id)->get();
+    }
+
+    public function getCurrentProject()
+    {
+        return Website::where('id', $this->website_id)->first();
     }
 }

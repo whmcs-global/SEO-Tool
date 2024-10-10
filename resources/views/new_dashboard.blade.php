@@ -72,6 +72,10 @@
         .dt-buttons {
             display: none;
         }
+
+        #weeklyPerformanceChart {
+            height: 400px;
+        }
     </style>
 @endpush
 
@@ -96,20 +100,15 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <canvas id="keywordPerformanceChart"></canvas>
+                        <div class="col-md-8">
+                            <canvas id="weeklyPerformanceChart"></canvas>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="metric-card">
                                 <div class="metric-title">Total Keywords</div>
                                 <div class="metric-value">{{ $keywordStats['total'] }}</div>
                             </div>
-                            {{-- <div class="metric-card">
-                                <div class="metric-title">Average Position Change</div>
-                                <div class="metric-value">
-                                    {{ $keywordStats['avgPositionChange'] > 0 ? '+' : '' }}{{ $keywordStats['avgPositionChange'] }}
-                                </div>
-                            </div> --}}
+
                             <div class="metric-card">
                                 <div class="metric-title">Top Improved Keyword</div>
                                 <div class="metric-value">{{ $keywordStats['topImproved']['keyword'] ?? 'N/A' }}</div>
@@ -126,6 +125,17 @@
             </div>
         </div>
     </div>
+    {{-- <div class="row">
+        <div class="col-12 mb-4">
+            <div class="row">
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <canvas id="keywordPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div> --}}
 
     <div class="row">
         <div class="col-md-6 col-lg-12 col-xl-6">
@@ -250,16 +260,18 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="dropdown">
-                            <button class="btn btn-primary dropdown-toggle" type="button" id="exportDropdown"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Export
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="exportDropdown">
-                                <a class="dropdown-item" href="#" id="exportCSV">Export to CSV</a>
-                                <a class="dropdown-item" href="#" id="exportExcel">Export to MS Excel</a>
+                        @role('Admin|Super Admin')
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle" type="button" id="exportDropdown"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Export
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="exportDropdown">
+                                    <a class="dropdown-item" href="#" id="exportCSV">Export to CSV</a>
+                                    <a class="dropdown-item" href="#" id="exportExcel">Export to MS Excel</a>
+                                </div>
                             </div>
-                        </div>
+                        @endrole
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -286,7 +298,8 @@
                                             {{ $keyword->created_at->format('d-M-Y') }}
                                         </td>
                                         <td>
-                                            <a href="#" class="btn btn-primary">Details</a>
+                                            <a href="{{ route('keywords.edit', $keyword->keyword_id) }}"
+                                                class="btn btn-primary">add</a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -300,90 +313,93 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    $(document).ready(function() {
-        let newKeywordsTable;
-        let selectedDays = 'all';
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            let newKeywordsTable;
+            let selectedDays = 'all';
 
-        function initializeTable() {
-            newKeywordsTable = $('#newKeywordsTable').DataTable({
-                columnDefs: [{
-                    targets: 4,
-                    type: 'date'
-                }],
-                order: [
-                    [4, 'desc']
-                ],
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        extend: 'csv',
-                        text: 'Export to CSV',
-                        filename: 'new_keywords_export',
-                        exportOptions: {
-                            columns: [0, 1, 2, 3, 4]
-                        },
-                        action: function (e, dt, button, config) {
-                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
-                        }
-                    },
-                    {
-                        extend: 'excel',
-                        text: 'Export to MS Excel',
-                        filename: 'new_keywords_export',
-                        exportOptions: {
-                            columns: [0, 1, 2, 3, 4]
-                        },
-                        action: function (e, dt, button, config) {
-                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
-                        }
+            function initializeTable() {
+                newKeywordsTable = $('#newKeywordsTable').DataTable({
+                    columnDefs: [{
+                        targets: 4,
+                        type: 'date'
+                    }],
+                    order: [
+                        [4, 'desc']
+                    ],
+                    @role('Admin|Super Admin')
+                        dom: 'Bfrtip',
+                        buttons: [{
+                                extend: 'csv',
+                                text: 'Export to CSV',
+                                filename: '{{ $filename }}',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4]
+                                },
+                                action: function(e, dt, button, config) {
+                                    $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt,
+                                        button, config);
+                                }
+                            },
+                            {
+                                extend: 'excel',
+                                text: 'Export to MS Excel',
+                                filename: '{{ $filename }}',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4]
+                                },
+                                action: function(e, dt, button, config) {
+                                    $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt,
+                                        button, config);
+                                }
+                            }
+                        ]
+                    @endrole
+                });
+
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    if (selectedDays === 'all') {
+                        return true;
                     }
-                ]
+
+                    let createdAt = new Date(data[4]);
+                    createdAt.setHours(0, 0, 0, 0);
+
+                    let cutoffDate = new Date();
+                    cutoffDate.setHours(0, 0, 0, 0);
+                    cutoffDate.setDate(cutoffDate.getDate() - selectedDays + 1);
+
+                    return createdAt >= cutoffDate;
+                });
+            }
+
+            function filterTable() {
+                newKeywordsTable.draw();
+            }
+
+            initializeTable();
+
+            $('#dateFilter').on('change', function() {
+                selectedDays = $(this).val() === 'all' ? 'all' : parseInt($(this).val());
+                filterTable();
             });
 
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                if (selectedDays === 'all') {
-                    return true;
-                }
-
-                let createdAt = new Date(data[4]);
-                createdAt.setHours(0, 0, 0, 0);
-
-                let cutoffDate = new Date();
-                cutoffDate.setHours(0, 0, 0, 0);
-                cutoffDate.setDate(cutoffDate.getDate() - selectedDays + 1);
-
-                return createdAt >= cutoffDate;
+            $('#exportCSV').on('click', function(e) {
+                e.preventDefault();
+                newKeywordsTable.button('.buttons-csv').trigger();
             });
-        }
 
-        function filterTable() {
-            newKeywordsTable.draw();
-        }
+            $('#exportExcel').on('click', function(e) {
+                e.preventDefault();
+                newKeywordsTable.button('.buttons-excel').trigger();
+            });
 
-        initializeTable();
-
-        $('#dateFilter').on('change', function() {
-            selectedDays = $(this).val() === 'all' ? 'all' : parseInt($(this).val());
             filterTable();
-        });
-
-        $('#exportCSV').on('click', function(e) {
-            e.preventDefault();
-            newKeywordsTable.button('.buttons-csv').trigger();
-        });
-
-        $('#exportExcel').on('click', function(e) {
-            e.preventDefault();
-            newKeywordsTable.button('.buttons-excel').trigger();
-        });
-
-        filterTable();
 
             // $('#newKeywordsTable').DataTable({
             //     columnDefs: [{
@@ -421,62 +437,177 @@
             });
 
             // Keyword Performance Chart
-            var ctx = document.getElementById('keywordPerformanceChart').getContext('2d');
-            var chart = new Chart(ctx, {
-                type: 'bar',
+            // var ctx = document.getElementById('keywordPerformanceChart').getContext('2d');
+            // var chart = new Chart(ctx, {
+            //     type: 'bar',
+            //     data: {
+            //         labels: ['Improved', 'Declined', 'No Change'],
+            //         datasets: [{
+            //             label: 'Number of Keywords',
+            //             data: [{{ $keywordStats['up'] }}, {{ $keywordStats['down'] }},
+            //                 {{ $keywordStats['same'] }}
+            //             ],
+            //             backgroundColor: ['rgba(40, 167, 69, 0.6)', 'rgba(220, 53, 69, 0.6)',
+            //                 'rgba(255, 193, 7, 0.6)'
+            //             ],
+            //             borderColor: ['rgb(40, 167, 69)', 'rgb(220, 53, 69)', 'rgb(255, 193, 7)'],
+            //             borderWidth: 1
+            //         }, {
+            //             label: 'Average Position',
+            //             data: [{{ $keywordStats['avgPreviousPosition'] }},
+            //                 {{ $keywordStats['avgCurrentPosition'] }}
+            //             ],
+            //             type: 'line',
+            //             fill: false,
+            //             borderColor: 'rgb(75, 192, 192)',
+            //             tension: 0.1,
+            //             yAxisID: 'y1'
+            //         }]
+            //     },
+            //     options: {
+            //         responsive: true,
+            //         scales: {
+            //             y: {
+            //                 beginAtZero: true,
+            //                 title: {
+            //                     display: true,
+            //                     text: 'Number of Keywords'
+            //                 }
+            //             },
+            //             y1: {
+            //                 position: 'right',
+            //                 beginAtZero: true,
+            //                 title: {
+            //                     display: true,
+            //                     text: 'Average Position'
+            //                 },
+            //                 grid: {
+            //                     drawOnChartArea: false
+            //                 }
+            //             }
+            //         },
+            //         plugins: {
+            //             title: {
+            //                 display: true,
+            //                 text: 'Keyword Performance and Average Position'
+            //             },
+            //             legend: {
+            //                 position: 'bottom'
+            //             }
+            //         }
+            //     }
+            // });
+
+            // Weekly Data Line Chart
+            var weeklyCtx = document.getElementById('weeklyPerformanceChart').getContext('2d');
+            var weeklyLabels = Object.keys(@json($keywordStats['weeklyData']));
+            var weeklyUpData = Object.values(@json($keywordStats['weeklyData'])).map(data => data.up);
+            var weeklyDownData = Object.values(@json($keywordStats['weeklyData'])).map(data => data.down);
+            var weeklySameData = Object.values(@json($keywordStats['weeklyData'])).map(data => data.same);
+
+            var weeklyChart = new Chart(weeklyCtx, {
+                type: 'line',
                 data: {
-                    labels: ['Improved', 'Declined', 'No Change'],
+                    labels: weeklyLabels,
                     datasets: [{
-                        label: 'Number of Keywords',
-                        data: [{{ $keywordStats['up'] }}, {{ $keywordStats['down'] }},
-                            {{ $keywordStats['same'] }}
-                        ],
-                        backgroundColor: ['rgba(40, 167, 69, 0.6)', 'rgba(220, 53, 69, 0.6)',
-                            'rgba(255, 193, 7, 0.6)'
-                        ],
-                        borderColor: ['rgb(40, 167, 69)', 'rgb(220, 53, 69)', 'rgb(255, 193, 7)'],
-                        borderWidth: 1
-                    }, {
-                        label: 'Average Position',
-                        data: [{{ $keywordStats['avgPreviousPosition'] }},
-                            {{ $keywordStats['avgCurrentPosition'] }}
-                        ],
-                        type: 'line',
-                        fill: false,
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1,
-                        yAxisID: 'y1'
-                    }]
+                            label: 'Keywords Increased',
+                            data: weeklyUpData,
+                            borderColor: 'rgb(40, 167, 69)',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Keywords Decreased',
+                            data: weeklyDownData,
+                            borderColor: 'rgb(220, 53, 69)',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Keywords No Change',
+                            data: weeklySameData,
+                            borderColor: 'rgb(255, 193, 7)',
+                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 20
+                        }
+                    },
                     scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
                         y: {
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Number of Keywords'
-                            }
-                        },
-                        y1: {
-                            position: 'right',
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Average Position'
+                                text: 'Number of Keywords',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
                             },
-                            grid: {
-                                drawOnChartArea: false
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
                             }
                         }
                     },
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Keyword Performance and Average Position'
+                            text: 'Keyword Positions Over Past Week',
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 30
+                            }
                         },
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 12
+                            },
+                            displayColors: false
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    elements: {
+                        point: {
+                            radius: 4,
+                            hoverRadius: 6
                         }
                     }
                 }

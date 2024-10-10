@@ -22,7 +22,7 @@ class GoogleAnalyticsController extends Controller
     public function configGoogleAnalytics(Request $request)
     {
         $adminSetting = AdminSetting::where('website_id', auth()->user()->website_id)->where('type','google')->first(); //where('user_id', auth()->id())->
-        // dd($adminSetting);
+
         if(!is_null($adminSetting)) {
             // Initialize Guzzle client
             $client = new Client();
