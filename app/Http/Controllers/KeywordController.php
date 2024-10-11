@@ -595,6 +595,8 @@ class KeywordController extends Controller
 
     public function new_dashboard(Request $request)
     {
+        $countries = Country::all();
+        $selectedCountry = auth()->user()->country_id ?? 3;
         $yesterday = Carbon::yesterday()->subDays(1)->format('Y-m-d');
         $today = Carbon::today()->subDays(1)->format('Y-m-d');
         $pastWeek = Carbon::today()->subDays(8)->format('Y-m-d');
@@ -746,6 +748,6 @@ class KeywordController extends Controller
         ];
         $filename = auth()->user()->getCurrentProject()->name.'_New_Keywords_' . date('Y-m-d');
 
-        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday'));
+        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday', 'countries', 'selectedCountry'));
     }
 }
