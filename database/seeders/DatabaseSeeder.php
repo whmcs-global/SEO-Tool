@@ -50,7 +50,8 @@ class DatabaseSeeder extends Seeder
             'Edit Project',
             'Delete Project',
             'Project list',
-            'GSC'
+            'GSC',
+            'Export GSC Data',
         ];
 
         foreach ($permissions as $permission) {
@@ -60,7 +61,7 @@ class DatabaseSeeder extends Seeder
         $permission = Permission::all();
 
         $userRole->givePermissionTo(['Keyword list','Add keyword','Edit keyword','Delete keyword']);
-        $adminRole->givePermissionTo(['Add keyword','Edit keyword','Delete keyword','Keyword list','Create user','User list','Edit user','Delete user','Backlink list','Add backlink','Edit backlink','Delete backlink',]);
+        $adminRole->givePermissionTo(['Add keyword','Edit keyword','Delete keyword','Keyword list','Create user','User list','Edit user','Delete user','Backlink list','Add backlink','Edit backlink','Delete backlink','Export GSC Data']);
         $superadminRole->givePermissionTo($permission);
 
         // $superadmin = User::create([

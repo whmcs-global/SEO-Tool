@@ -26,6 +26,7 @@ class RoleController extends Controller
             'Backlink Management' => Permission::whereIn('name', ['Backlink list', 'Add backlink', 'Edit backlink', 'Delete backlink'])->get(),
             'Project Management' => Permission::whereIn('name', ['Add New Project','Edit Project','Delete Project','Project list'])->get(),
             'Google API' => Permission::whereIn('name', ['Google API'])->get(),
+            'Data Export' => Permission::whereIn('name', ['Export GSC Data'])->get(),
         ];
 
         if(!auth()->user()->hasRole('Super Admin')){
@@ -49,13 +50,13 @@ class RoleController extends Controller
         $validated = $request->validate([
             'roleName' => 'required|unique:roles,name',
         ]);
-    
+
         $role = Role::create([
             'name' => $request->roleName,
         ]);
-    
+
         $role->permissions()->attach($request->permissions);
-    
+
         return redirect(route('admin.roles.index'))
             ->with('message', 'Role has successfully been created.');
     }
@@ -69,8 +70,9 @@ class RoleController extends Controller
             'Backlink Management' => Permission::whereIn('name', ['Backlink list', 'Add backlink', 'Edit backlink', 'Delete backlink'])->get(),
             'Project Management' => Permission::whereIn('name', ['Add New Project','Edit Project','Delete Project','Project list'])->get(),
             'Google API' => Permission::whereIn('name', ['Google API'])->get(),
+            'Data Export' => Permission::whereIn('name', ['Export GSC Data'])->get(),
         ];
-    
+
         if (!auth()->user()->hasRole('Super Admin')) {
             foreach ($permissions as $group => $perms) {
                 $permissions[$group] = $perms->reject(function ($perm) {
@@ -78,12 +80,12 @@ class RoleController extends Controller
                 });
             }
         }
-    
+
         // Filter out empty permission groups
         $permissions = array_filter($permissions, function ($perms) {
             return $perms->isNotEmpty();
         });
-    
+
         return view('admin.roles.edit', compact('role', 'permissions'));
     }
 

@@ -286,7 +286,7 @@
                                 </select>
                             </div>
                         </div>
-                        @role('Admin|Super Admin')
+                        @can('Export GSC Data')
                             <div class="dropdown">
                                 <button class="btn btn-primary dropdown-toggle" type="button" id="exportDropdown"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -297,7 +297,7 @@
                                     <a class="dropdown-item" href="#" id="exportExcel">Export to MS Excel</a>
                                 </div>
                             </div>
-                        @endrole
+                        @endcan
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -358,7 +358,7 @@
                     order: [
                         [4, 'desc']
                     ],
-                    @role('Admin|Super Admin')
+                    @can('Export GSC Data')
                         dom: 'Bfrtip',
                         buttons: [{
                                 extend: 'csv',
@@ -385,7 +385,7 @@
                                 }
                             }
                         ]
-                    @endrole
+                    @endcan
                 });
 
                 $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
