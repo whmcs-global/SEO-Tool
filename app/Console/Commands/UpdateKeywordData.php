@@ -50,9 +50,9 @@ class UpdateKeywordData extends Command
             $query->with('country');
         }])->chunk(100, function ($keywords) {
             foreach ($keywords as $keyword) {
-                if ($keyword->updated_at->diffInHours(now()) < 12) {
-                    continue;
-                }
+                // if ($keyword->updated_at->diffInHours(now()) < 12) {
+                //     continue;
+                // }
 
                 foreach ($keyword->keywordData as $data) {
                     $response = $this->keywordbydate($keyword, $data->country->ISO_CODE, $this->cron->id);
