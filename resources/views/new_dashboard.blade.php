@@ -345,7 +345,7 @@
                                         </td>
                                         <td>
                                             <a href="{{ route('keywords.edit', $keyword->keyword_id) }}"
-                                                class="btn btn-primary">add</a>
+                                                class="btn btn-primary">Assign Label</a>
                                         </td>
                                     </tr>
                                 @endforeach

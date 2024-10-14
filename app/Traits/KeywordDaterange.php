@@ -275,18 +275,9 @@ trait KeywordDaterange
                     'grant_type' => 'refresh_token',
                     'refresh_token' => '****',
                 ]),
-                $e->getResponse() ? $e->getResponse()->getBody()->getContents() : null,
-                $e->getCode()
+                null,
+                null
             );
-
-            $errorResponse = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : null;
-            $errorData = json_decode($errorResponse, true);
-
-            if (isset($errorData['error']) && $errorData['error'] === 'invalid_grant') {
-                error_log('Refresh token has expired or been revoked.');
-            } else {
-                error_log('Error: ' . $e->getMessage());
-            }
 
             return null;
         }

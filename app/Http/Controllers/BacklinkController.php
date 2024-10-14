@@ -18,6 +18,7 @@ class BacklinkController extends Controller
                 ->where('website_id', auth()->user()->website_id);
         }
 
+        $filterQuery = $query->clone();
         if ($request->filled('link_type')) {
             $query->where('link_type', $request->input('link_type'));
         }
@@ -56,7 +57,7 @@ class BacklinkController extends Controller
         }
 
         $backlinks = $query->get();
-        $filterBacklinks = Backlinks::all();
+        $filterBacklinks = $filterQuery->get();
         $totallinks = $filterBacklinks->count();
         $activelinks = $filterBacklinks->where("status", "Active")->count();
         $inactivelinks = $filterBacklinks->where("status", "Inactive")->count();
