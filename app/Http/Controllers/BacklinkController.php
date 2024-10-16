@@ -74,7 +74,7 @@ class BacklinkController extends Controller
 
         $values = [];
         $uniqueDomains = [];
-        foreach ($filterBacklinks as $data) {
+        foreach ($backlinks as $data) {
             $values[] = [
                 "name" => $data->website,
                 "data" => [
@@ -84,10 +84,8 @@ class BacklinkController extends Controller
                 ]
             ];
 
-            // Extract domain from URL
             $domain = parse_url($data->url, PHP_URL_HOST);
             if ($domain) {
-                // Remove 'www.' if present
                 $domain = preg_replace('/^www\./', '', $domain);
                 $uniqueDomains[$domain] = true;
             }
