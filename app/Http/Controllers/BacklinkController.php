@@ -18,7 +18,7 @@ class BacklinkController extends Controller
                 ->where('website_id', auth()->user()->website_id);
         }
 
-        $filterQuery = $query->clone();
+        // $filterQuery = $query->clone();
         if ($request->filled('link_type')) {
             $query->where('link_type', $request->input('link_type'));
         }
@@ -57,12 +57,12 @@ class BacklinkController extends Controller
         }
 
         $backlinks = $query->get();
-        $filterBacklinks = $filterQuery->get();
-        $totallinks = $filterBacklinks->count();
-        $activelinks = $filterBacklinks->where("status", "Active")->count();
-        $inactivelinks = $filterBacklinks->where("status", "Inactive")->count();
-        $pendinglinks = $filterBacklinks->where("status", "Pending")->count();
-        $declinedlinks = $filterBacklinks->where("status", "Declined")->count();
+        // $filterBacklinks = $filterQuery->get();
+        $totallinks = $backlinks->count();
+        $activelinks = $backlinks->where("status", "Active")->count();
+        $inactivelinks = $backlinks->where("status", "Inactive")->count();
+        $pendinglinks = $backlinks->where("status", "Pending")->count();
+        $declinedlinks = $backlinks->where("status", "Declined")->count();
 
         $data_name = ['Active', 'Inactive', 'Pending', 'Declined'];
         $pie_data = [

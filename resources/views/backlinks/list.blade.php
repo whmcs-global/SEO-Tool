@@ -26,9 +26,7 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-center align-items-center">
-                                <h4>Unique Domains</h4>
-                                <i class="fas fa-info-circle ml-2" data-toggle="tooltip" data-placement="top"
-                                    title="Filters are applicable on Unique Domains"></i>
+                                <h4>Total Unique Domains</h4>
                             </div>
                             <div class="card-body">
                                 <div class="text-center">
