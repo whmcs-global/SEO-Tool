@@ -92,17 +92,19 @@
         <div class="card">
             <div id="filterForm" class="mb-3">
                 <form method="GET" action="{{ route('backlinks.index') }}" class="filter-form-box" style="gap:10px;">
-                    <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
-                        <select name="user" class="form-control" id="userSelect">
-                            <option value="">Created By</option>
-                            @foreach ($users as $user)
-                                <option value="{{ $user->id }}"
-                                    {{ $request->input('user') == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                    @role('Admin|Super Admin')
+                        <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
+                            <select name="user" class="form-control" id="userSelect">
+                                <option value="">Created By</option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}"
+                                        {{ $request->input('user') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endrole
                     <div class="me-2 mb-2 mb-md-0" style="flex: 1;">
                         <select name="link_type" class="form-control" id="linkTypeSelect">
                             <option value="">Select Link Type</option>

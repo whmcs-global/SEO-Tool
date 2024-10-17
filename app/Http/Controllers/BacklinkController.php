@@ -10,15 +10,11 @@ class BacklinkController extends Controller
     public function index(Request $request)
     {
         $query = Backlinks::query()->with('user')->where('website_id', auth()->user()->website_id);
-        // if (auth()->user()->hasRole(['Admin', 'Super Admin'])) {
-        //     $query->where('aproval_status', 'Approved');
-        // }
         if (!auth()->user()->hasRole(['Admin', 'Super Admin'])) {
-            $query->where('user_id', auth()->user()->id)
-                ->where('website_id', auth()->user()->website_id);
+            $query->where('user_id', auth()->user()->id);
+                // ->where('website_id', auth()->user()->website_id);
         }
 
-        // $filterQuery = $query->clone();
         if ($request->filled('link_type')) {
             $query->where('link_type', $request->input('link_type'));
         }
@@ -39,8 +35,8 @@ class BacklinkController extends Controller
         if ($request->filled('status') && $request->input('status') == 'Pending' && auth()->user()->hasRole('Super Admin')) {
             $query->where('status', 'Pending');
         }
-        // if request has no status or null get only approved backlinks
-        if (!$request->filled('status') && !auth()->user()->hasRole(['Admin', 'Super Admin'])) {
+
+        if (!$request->filled('status') && $request->input('status') == 'Pending') {
             $query->where('status', 'Active');
         }
         if ($request->filled('daterange')) {
@@ -57,8 +53,8 @@ class BacklinkController extends Controller
         }
 
         $backlinks = $query->get();
-        // $filterBacklinks = $filterQuery->get();
         $totallinks = $backlinks->count();
+        // dd($totallinks);
         $activelinks = $backlinks->where("status", "Active")->count();
         $inactivelinks = $backlinks->where("status", "Inactive")->count();
         $pendinglinks = $backlinks->where("status", "Pending")->count();
