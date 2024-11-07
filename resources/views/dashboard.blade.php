@@ -56,7 +56,7 @@
         @endif
         <div class="mb-4">
             <div class="mb-4 d-flex justify-content-between align-items-center">
-                <div class="form-row align-items-center">
+                {{-- <div class="form-row align-items-center">
                     <div class="col-auto">
                         <label for="country" class="font-weight-bold">Select Country:</label>
                     </div>
@@ -70,7 +70,7 @@
                             @endforeach
                         </select>
                     </div>
-                </div>
+                </div> --}}
                 <form method="GET" action="{{ route('dashboard') }}" class="form-row align-items-center">
                     <div class="col-auto">
                         <label for="labels" class="font-weight-bold">Filter by Labels:</label>
@@ -227,22 +227,22 @@
                     type: 'date'
                 }],
             });
-            $('#country').change(function() {
-                var countryId = $(this).val();
-                $.ajax({
-                    url: '{{ route('countries.set') }}',
-                    type: 'GET',
-                    data: {
-                        country_id: countryId
-                    },
-                    success: function(response) {
-                        location.reload();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error: ' + status + error);
-                    }
-                });
-            });
+            // $('#country').change(function() {
+            //     var countryId = $(this).val();
+            //     $.ajax({
+            //         url: '{{ route('countries.set') }}',
+            //         type: 'GET',
+            //         data: {
+            //             country_id: countryId
+            //         },
+            //         success: function(response) {
+            //             location.reload();
+            //         },
+            //         error: function(xhr, status, error) {
+            //             console.error('AJAX Error: ' + status + error);
+            //         }
+            //     });
+            // });
         });
 
         document.addEventListener('DOMContentLoaded', function() {

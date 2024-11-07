@@ -112,7 +112,7 @@
 
 @section('content')
     <div class="row">
-        <div class="form-row align-items-center mb-4" style="margin-left: 10px !important;">
+        {{-- <div class="form-row align-items-center mb-4" style="margin-left: 10px !important;">
             <div class="col-auto">
                 <label for="country" class="font-weight-bold">Country:</label>
             </div>
@@ -125,7 +125,7 @@
                     @endforeach
                 </select>
             </div>
-        </div>
+        </div> --}}
         <div class="col-12 mb-4">
 
             <div class="row">
@@ -366,22 +366,22 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         $(document).ready(function() {
-            $('#country').change(function() {
-                var countryId = $(this).val();
-                $.ajax({
-                    url: '{{ route('countries.set') }}',
-                    type: 'GET',
-                    data: {
-                        country_id: countryId
-                    },
-                    success: function(response) {
-                        location.reload();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error: ' + status + error);
-                    }
-                });
-            });
+            // $('#country').change(function() {
+            //     var countryId = $(this).val();
+            //     $.ajax({
+            //         url: '{{ route('countries.set') }}',
+            //         type: 'GET',
+            //         data: {
+            //             country_id: countryId
+            //         },
+            //         success: function(response) {
+            //             location.reload();
+            //         },
+            //         error: function(xhr, status, error) {
+            //             console.error('AJAX Error: ' + status + error);
+            //         }
+            //     });
+            // });
 
             let newKeywordsTable;
             let selectedDays = 'all';

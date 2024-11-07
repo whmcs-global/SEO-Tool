@@ -54,6 +54,18 @@
                     <i class="fas fa-align-justify"></i>
                 </a>
                 <div class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <label for="country" style="margin-top: 10px;" class="font-weight-bold">Country:</label>
+                        </li>
+                        <div class="col">
+                            <select name="country" id="country" class="form-control">
+                                @foreach ($countries as $country)
+                                    <option value="{{ $country->id }}" {{ $country->id == $selectedCountry ? 'selected' : '' }}>
+                                        {{ $country->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     <li class="nav-item" style="margin-right: 10px;">
                         <button id="refreshButton" data-href="{{ route('keywords.refresh') }}" class="btn btn-primary">
                             Fetch Remote Data
@@ -129,6 +141,23 @@
 
     <script>
         $(document).ready(function() {
+            $('#country').change(function() {
+                var countryId = $(this).val();
+                $.ajax({
+                    url: '{{ route('countries.set') }}',
+                    type: 'GET',
+                    data: {
+                        country_id: countryId
+                    },
+                    success: function(response) {
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error: ' + status + error);
+                    }
+                });
+            });
+
             $('#keyword-tracker').on('click', function() {
                 $('.loader').show();
             });
