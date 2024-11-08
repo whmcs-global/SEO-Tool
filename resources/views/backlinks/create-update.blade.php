@@ -36,7 +36,7 @@
     </style>
 @endpush
 @section('content')
-{{-- @dd($backlink) --}}
+    {{-- @dd($backlink) --}}
     <div class="container">
         <div class="row justify-content-center">
             @if ($backlink && $backlink->status == 'Declined')
@@ -89,16 +89,16 @@
                             </div>
 
                             <!-- <div class="mb-3 row">
-                                                        <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
-                                                        <div class="col-md-6">
-                                                            <input id="target_keyword" placeholder="e.g., best SEO practices" type="text" class="form-control @error('target_keyword') is-invalid @enderror" name="target_keyword" value="{{ $backlink ? $backlink->target_keyword : old('target_keyword') }}" >
-                                                            @error('target_keyword')
+                                                                <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
+                                                                <div class="col-md-6">
+                                                                    <input id="target_keyword" placeholder="e.g., best SEO practices" type="text" class="form-control @error('target_keyword') is-invalid @enderror" name="target_keyword" value="{{ $backlink ? $backlink->target_keyword : old('target_keyword') }}" >
+                                                                    @error('target_keyword')
         <span class="invalid-feedback" role="alert">
-                                                                                            <strong>{{ $message }}</strong>
-                                                                                        </span>
+                                                                                                            <strong>{{ $message }}</strong>
+                                                                                                        </span>
     @enderror
-                                                        </div>
-                                                    </div> -->
+                                                                </div>
+                                                            </div> -->
                             {{-- <div class="mb-3 row">
                                 <label for="target_keyword" class="col-md-4 col-form-label text-md-end">{{ __('Target Keyword') }}</label>
                                 <div class="col-md-6">
@@ -220,6 +220,14 @@
                                         <option value="Coupon Submission"
                                             {{ $backlink && $backlink->link_type == 'Coupon Submission' ? 'selected' : '' }}>
                                             Coupon Submission</option>
+                                        <option value="Paid Guest Post"
+                                            {{ $backlink && $backlink->link_type == 'Paid Guest Post' ? 'selected' : '' }}>
+                                            Paid Guest Post
+                                        </option>
+                                        <option value="Link Exchange"
+                                            {{ $backlink && $backlink->link_type == 'Link Exchange' ? 'selected' : '' }}>
+                                            Link Exchange
+                                        </option>
                                     </select>
                                     @error('link_type')
                                         <span class="invalid-feedback" role="alert">

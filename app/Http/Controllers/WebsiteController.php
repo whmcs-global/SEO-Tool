@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Website, Website_last_updated, User, CronStatus};
+use App\Models\{Website, Website_last_updated, User, CronStatus, User_project};
 use App\Services\KeywordDataUpdate;
 
 class WebsiteController extends Controller
@@ -75,10 +75,11 @@ class WebsiteController extends Controller
     public function projects(Request $request)
     {
         $user = auth()->user();
-        if ($user->role === 'Super Admin') {
+        $assignedProjects = User_project::where('user_id', $user->id)->pluck('website_id');
+        if ($user->hasRole('Super Admin')) {
             $websites = Website::all();
         } else {
-            $websites = Website::where('user_id', $user->id)->get();
+            $websites = Website::whereIn('id', $assignedProjects)->get();
         }
         return view('website.projects', compact('websites'));
     }

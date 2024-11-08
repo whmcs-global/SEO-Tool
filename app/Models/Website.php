@@ -28,11 +28,16 @@ class Website extends Model
 
     public function backlinks()
     {
-        return $this->hasMany(Backlink::class);
+        return $this->hasMany(Backlinks::class);
     }
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_projects', 'website_id', 'user_id');
     }
 }

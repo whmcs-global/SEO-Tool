@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\{Keyword, AdminSetting, Label, keyword_label, Website_last_updated, Country, User, AssignKeyword, KeywordData};
+use App\Models\{Keyword, AdminSetting, Label, keyword_label, Website_last_updated, Country, User, AssignKeyword, KeywordData, User_project};
 use Illuminate\Support\Facades\Validator;
 use GuzzleHttp\Psr7\Request as GzRequest;
 use App\Services\GoogleAnalyticsService;
@@ -218,60 +218,44 @@ class KeywordController extends Controller
 
     public function dashboard(Request $request)
     {
-        $userId = auth()->id();
-
-        $labelIds = $request->input('labels', []);
-        $countries = Country::all();
-        $selectedCountry = auth()->user()->country_id ?? 3;
-        $labels = Label::all();
-
-        $ranges = [
-            '1-10' => 0,
-            '11-20' => 0,
-            '21-30' => 0,
-            '31-40' => 0,
-            '41-50' => 0
-        ];
-
         $user = auth()->user();
-        $isAdmin = $user->hasRole('Admin');
-        $isSuperAdmin = $user->hasRole('Super Admin');
+        $userId = $user->id;
+        $selectedCountry = $user->country_id ?? 3;
 
-        // Fetch keywords
+        // Get input
+        $labelIds = $request->input('labels', []);
+        $keywordType = $request->input('keyword-type', 'all');
+
+        // Build the base query for keywords
         $keywordsQuery = Keyword::with(['keywordData' => function ($query) use ($selectedCountry) {
             $query->where('country_id', $selectedCountry);
-        }]);
+        }])
+        ->where('website_id', $user->website_id);
 
-        $keywordsQuery->where('website_id', $user->website_id);
-        // Check for the keyword type filter
-        $keywordType = $request->input('keyword-type', 'all');
-        // dd($keywordType);
-        if ($keywordType == 'only-me') {
-            // dd('only-me');
-            $keywordsQuery->where('user_id', $user->id);
+        // Filter by user and labels
+        if ($keywordType === 'only-me') {
+            $keywordsQuery->where('user_id', $userId);
         }
-        // dd($keywordsQuery->get());
-
         if (!empty($labelIds)) {
             $keywordsQuery->filterByLabels($labelIds);
         }
 
+        // Fetch all relevant keywords
         $keywords = $keywordsQuery->get();
 
-        // Fetch assigned keywords using AssignKeyword
-        $assignedKeywords = AssignKeyword::where('user_id', $userId)->with(['keyword' => function ($query) {
-            $query->with(['keywordData' => function ($query) {
-                $query->where('country_id', auth()->user()->country_id);
-            }])->where('website_id', auth()->user()->website_id);
-        }])->get();
-        $assignedKeywordPluck = $assignedKeywords->pluck('keyword');
-        if (null === $assignedKeywordPluck) {
-            $allKeywords = $keywords;
-        } else {
-            $allKeywords = $keywords->merge($assignedKeywordPluck);
-        }
+        // Fetch assigned keywords with eager loading
+        $assignedKeywords = AssignKeyword::with(['keyword.keywordData' => function ($query) use ($selectedCountry) {
+            $query->where('country_id', $selectedCountry);
+        }])
+        ->where('user_id', $userId)
+        ->get()
+        ->pluck('keyword');
+
+        // Combine keywords and assigned keywords
+        $allKeywords = $keywords->merge($assignedKeywords)->unique('id');
+
         // Process keyword data
-        foreach ($allKeywords as $keyword) {
+        $allKeywords = $allKeywords->map(function ($keyword) {
             if ($keyword->keywordData->isEmpty()) {
                 $keyword->keywordData = collect([(object)[
                     'position' => 0,
@@ -282,31 +266,24 @@ class KeywordController extends Controller
                     'bid_rate_low' => 0,
                     'bid_rate_high' => 0
                 ]]);
-            } else {
-                foreach ($keyword->keywordData as $data) {
-                    if ($data->position >= 1 && $data->position <= 10) {
-                        $ranges['1-10']++;
-                    } elseif ($data->position >= 11 && $data->position <= 20) {
-                        $ranges['11-20']++;
-                    } elseif ($data->position >= 21 && $data->position <= 30) {
-                        $ranges['21-30']++;
-                    } elseif ($data->position >= 31 && $data->position <= 40) {
-                        $ranges['31-40']++;
-                    } elseif ($data->position >= 41 && $data->position <= 50) {
-                        $ranges['41-50']++;
-                    }
-                }
             }
-        }
-        // dd($allKeywords);
-        return view('dashboard', compact('allKeywords', 'ranges', 'labels', 'labelIds', 'countries', 'selectedCountry'));
+            return $keyword;
+        });
+
+        // Prepare additional data
+        $countries = Country::all();
+        $labels = Label::all();
+
+        return view('dashboard', compact('allKeywords', 'labels', 'labelIds', 'countries', 'selectedCountry'));
     }
 
     public function create()
     {
+        $websiteId = auth()->user()->website_id;
+        $assignedUserIds = User_project::where('website_id', $websiteId)->pluck('user_id');
         $users = [];
-        if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
-            $users = User::all();
+        if (auth()->user()->hasAnyRole(['Admin', 'Super Admin'])) {
+            $users = User::whereIn('id', $assignedUserIds)->get();
         }
         $labels = Label::all();
         return view('keyword.create', compact('labels', 'users'));
@@ -314,17 +291,17 @@ class KeywordController extends Controller
 
     public function edit(Keyword $keyword)
     {
-        // Store the current URL in the session
         session(['previous_url' => url()->previous()]);
 
+        $websiteId = auth()->user()->website_id;
+        $assignedUserIds = User_project::where('website_id', $websiteId)->pluck('user_id');
         $users = [];
-        if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Super Admin')) {
-            $users = User::all();
+        if (auth()->user()->hasAnyRole(['Admin', 'Super Admin'])) {
+            $users = User::whereIn('id', $assignedUserIds)->get();
         }
         $labels = Label::all();
         return view('keyword.edit', compact('keyword', 'labels', 'users'));
     }
-
     public function update(Request $request, Keyword $keyword)
     {
         $request->validate([
@@ -746,8 +723,15 @@ class KeywordController extends Controller
             'topDeclined' => $topDeclined,
             'weeklyData' => $weeklyData
         ];
-        $filename = auth()->user()->getCurrentProject()->name.'_New_Keywords_' . date('Y-m-d');
+        $filename = auth()->user()->getCurrentProject()->name . '_New_Keywords_' . date('Y-m-d');
 
         return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday', 'countries', 'selectedCountry'));
+    }
+
+    public function test(Request $request)
+    {
+        $analyticsService = new GoogleAnalyticsService();
+        $report = $analyticsService->getPageVisits();
+        dd($report);
     }
 }

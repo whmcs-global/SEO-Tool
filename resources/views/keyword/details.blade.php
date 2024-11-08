@@ -134,9 +134,9 @@
                     <thead>
                         <tr>
                             <th class="sticky-col">KEYWORDS</th>
-                            <th>SEARCH VOL.</th>
-                            <th>IMPRESSION</th>
-                            <th>COMPETITION</th>
+                            <th>S. VOL.</th>
+                            <th>IMP</th>
+                            <th>COMP</th>
                             @foreach ($allDates as $date)
                                 <th colspan="3" class="text-center">{{ $date }}</th>
                             @endforeach

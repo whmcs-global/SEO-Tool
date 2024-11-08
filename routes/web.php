@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\{ProfileController, Controller, KeywordController, WebsiteController, LabelController, BacklinkController};
+use App\Http\Controllers\{ProfileController, Controller, KeywordController, WebsiteController, LabelController, BacklinkController, TrackPagesController};
 use App\Http\Controllers\Admin\{RoleController, UserController};
 use Illuminate\Support\Facades\Route;
 use App\Models\Keyword;
@@ -110,7 +110,6 @@ Route::middleware(['auth', 'project_status'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Backlinks
-    // Route::get('backlinks/index', [BacklinkController::class, 'index'])->name('backlinks.index');
     Route::prefix('backlinks')->name('backlinks.')->controller(BacklinkController::class)->group(function () {
         Route::get('/index', 'index')->name('index');
         Route::any('create/{id?}', 'storeOrUpdate')->name('create');
@@ -118,6 +117,13 @@ Route::middleware(['auth', 'project_status'])->group(function () {
         Route::get('list/{approve_status}', 'statusList')->name('status.list');
         Route::match(['get', 'post'], 'approve/{id?}', 'approve')->name('approve');
     });
+
+
+    // track pages
+    Route::get("/pages", [TrackPagesController::class, 'list'])->name('page.list');
+
+    // test
+    Route::get('/test', [KeywordController::class, 'test'])->name('test');
 });
 
 Route::get('/error', function () {

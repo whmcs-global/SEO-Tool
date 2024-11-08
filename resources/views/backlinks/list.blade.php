@@ -181,7 +181,14 @@
                                 {{ $request->input('link_type') == 'Coupon Submission' ? 'selected' : '' }}>
                                 Coupon Submission
                             </option>
-
+                            <option value="Paid Guest Post"
+                                {{ $request->input('link_type') == 'Paid Guest Post' ? 'selected' : '' }}>
+                                Paid Guest Post
+                            </option>
+                            <option value="Link Exchange"
+                                {{ $request->input('link_type') == 'Link Exchange' ? 'selected' : '' }}>
+                                Link Exchange
+                            </option>
                         </select>
                     </div>
                     <div class="me-2 mb-2 mb-md-0" style="flex: 1;">

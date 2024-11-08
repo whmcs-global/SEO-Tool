@@ -55,55 +55,29 @@
             </div>
         @endif
         <div class="mb-4">
-            <div class="mb-4 d-flex justify-content-between align-items-center">
-                {{-- <div class="form-row align-items-center">
-                    <div class="col-auto">
-                        <label for="country" class="font-weight-bold">Select Country:</label>
-                    </div>
-                    <div class="col">
-                        <select name="country" id="country" class="form-control">
-                            @foreach ($countries as $country)
-                                <option value="{{ $country->id }}"
-                                    {{ $country->id == $selectedCountry ? 'selected' : '' }}>
-                                    {{ $country->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div> --}}
-                <form method="GET" action="{{ route('dashboard') }}" class="form-row align-items-center">
-                    <div class="col-auto">
-                        <label for="labels" class="font-weight-bold">Filter by Labels:</label>
-                    </div>
-                    <div class="col">
-                        <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true"
-                            multiselect-max-items="3">
-                            @foreach ($labels as $label)
-                                <option value="{{ $label->id }}" {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
-                                    {{ $label->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                    </div>
-                </form>
-            </div>
-            <div class="mt-5">
-                <div id="keywordsChart"></div>
-            </div>
-
             <div class="card">
                 {{-- @role('User') --}}
                 <div style="padding: 10px;">
                     <form method="GET" class="row g-3 align-items-center">
-                        <div class="col-md-4">
+                        <div class="col-auto">
                             <select name="keyword-type" class="form-control" id="keyword-type">
                                 <option value="all" {{ request()->input('keyword-type') == 'all' ? 'selected' : '' }}>All
                                 </option>
                                 <option value="only-me"
                                     {{ request()->input('keyword-type') == 'only-me' ? 'selected' : '' }}>Only Me</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <label for="labels" class="font-weight-bold">Filter by Labels:</label>
+                        </div>
+                        <div class="col-auto">
+                            <select name="labels[]" id="field2" class="form-control" multiple multiselect-search="true"
+                                multiselect-max-items="3">
+                                @foreach ($labels as $label)
+                                    <option value="{{ $label->id }}" {{ in_array($label->id, $labelIds) ? 'selected' : '' }}>
+                                        {{ $label->name }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-auto">
@@ -117,7 +91,7 @@
                 {{-- @endrole --}}
                 @can('Add keyword')
                     <div class="mb-3 row justify-content-end">
-                        <div class="col-auto">
+                        <div class="col-auto" style="margin-right: 10px;">
                             <a href="{{ route('keywords.create') }}" class="btn btn-primary rounded-pill">Add Keyword</a>
                         </div>
                     </div>
@@ -177,18 +151,15 @@
                                                     <td class="text-right">
                                                         <div class="btn-group btn-group-sm" role="group" aria-label="Actions">
                                                             @can('Edit keyword')
-                                                                <a href="{{ route('keywords.edit', $keyword) }}"
-                                                                    class="mr-2 btn btn-secondary rounded-pill">
+                                                                <a href="{{ route('keywords.edit', $keyword) }}" class="mr-2 btn btn-secondary rounded-pill">
                                                                     <i class="fas fa-edit"></i>
                                                                 </a>
                                                             @endcan
                                                             @can('Delete keyword')
-                                                                <form method="POST" action="{{ route('keywords.destroy', $keyword) }}"
-                                                                    class="mr-2 d-inline" id="delete-form-{{ $keyword->id }}">
+                                                                <form method="POST" action="{{ route('keywords.destroy', $keyword) }}" class="mr-2 d-inline" id="delete-form-{{ $keyword->id }}">
                                                                     @csrf
                                                                     @method('delete')
-                                                                    <button type="button" class="btn btn-danger rounded-pill"
-                                                                        onclick="confirmDelete({{ $keyword->id }})">
+                                                                    <button type="button" class="btn btn-danger rounded-pill" onclick="confirmDelete({{ $keyword->id }})">
                                                                         <i class="fas fa-trash"></i>
                                                                     </button>
                                                                 </form>
@@ -200,7 +171,7 @@
                                         @endforeach
                                     @empty
                                         <tr>
-                                            <td colspan="9" class="text-center">No keywords found</td>
+                                            <td colspan="10" class="text-center">No keywords found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -218,7 +189,6 @@
 @push('scripts')
     <script src="{{ asset('assets/js/custom/multiselect-dropdown.js') }}"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
         $(document).ready(function() {
             $('#keywordsTable').DataTable({
@@ -227,116 +197,6 @@
                     type: 'date'
                 }],
             });
-            // $('#country').change(function() {
-            //     var countryId = $(this).val();
-            //     $.ajax({
-            //         url: '{{ route('countries.set') }}',
-            //         type: 'GET',
-            //         data: {
-            //             country_id: countryId
-            //         },
-            //         success: function(response) {
-            //             location.reload();
-            //         },
-            //         error: function(xhr, status, error) {
-            //             console.error('AJAX Error: ' + status + error);
-            //         }
-            //     });
-            // });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var data = [
-                {{ $ranges['1-10'] }},
-                {{ $ranges['11-20'] }},
-                {{ $ranges['21-30'] }},
-                {{ $ranges['31-40'] }},
-                {{ $ranges['41-50'] }}
-            ];
-
-            var maxValue = Math.max(...data);
-
-            var options = {
-                chart: {
-                    type: 'bar',
-                    height: 350,
-                    toolbar: {
-                        show: false
-                    },
-                    animations: {
-                        enabled: true,
-                        easing: 'easeinout',
-                        speed: 800
-                    }
-                },
-                plotOptions: {
-                    bar: {
-                        horizontal: false,
-                        columnWidth: '55%',
-                        endingShape: 'rounded'
-                    }
-                },
-                dataLabels: {
-                    enabled: true,
-                    style: {
-                        fontSize: '14px',
-                        colors: ['#000']
-                    },
-                    formatter: function(val) {
-                        return val.toFixed(0);
-                    }
-                },
-                stroke: {
-                    show: true,
-                    width: 2,
-                    colors: ['transparent']
-                },
-                series: [{
-                    name: 'No of Keywords',
-                    data: data
-                }],
-                xaxis: {
-                    categories: ['1-10', '11-20', '21-30', '31-40', '41-50'],
-                    title: {
-                        text: 'Position Ranges'
-                    }
-                },
-                yaxis: {
-                    title: {
-                        text: 'No of Keywords'
-                    },
-                    min: 0,
-                    max: maxValue + 2,
-                    labels: {
-                        formatter: function(val) {
-                            return val.toFixed(0);
-                        }
-                    }
-                },
-                fill: {
-                    opacity: 1
-                },
-                tooltip: {
-                    y: {
-                        formatter: function(val) {
-                            return val;
-                        }
-                    }
-                },
-                title: {
-                    text: 'Keywords Position Distribution',
-                    align: 'center',
-                    style: {
-                        fontSize: '24px',
-                        fontWeight: 'bold',
-                        color: '#263238'
-                    }
-                },
-                colors: ['#1E90FF']
-            };
-
-            var chart = new ApexCharts(document.querySelector("#keywordsChart"), options);
-            chart.render();
         });
 
         function confirmDelete(id) {

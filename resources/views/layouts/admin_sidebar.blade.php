@@ -38,51 +38,30 @@
                 <i class="fa-solid fa-link"></i><span>Backlinks</span>
             </a>
         </li>
-    </ul>
-
-
-    {{-- <ul class="sidebar-menu">
-        <li class="dropdown {{ in_array(Request::route()->getName(), ['backlinks.index', 'backlinks.status.list']) ? 'active' : '' }}">
-            <a href="#" class="menu-toggle nav-link has-dropdown">
-                <i class="fa-solid fa-link"></i><span>Backlinks</span>
+        <li class="dropdown {{ Route::is('page.*') ? 'active' : '' }} ">
+            <a href="{{ route('page.list') }}" class="nav-link">
+                <i class="fa fa-file"></i><span>Track Pages</span>
             </a>
-            <ul class="dropdown-menu">
-                <li class="{{ Request::route()->getName() == 'backlinks.index' ? 'active' : '' }}">
-                    <a href="{{ route('backlinks.index') }}">Active Backlinks</a>
-                </li>
-                @role('Admin|Super Admin')
-                    <li class="{{ Request::route()->getName() == 'backlinks.status.list' ? 'active' : '' }}">
-                        <a href="{{ route('backlinks.status.list', ['approve_status' => 'pending']) }}">Pending Backlinks Approvals</a>
-                    </li>
-                @endrole
-            </ul>
         </li>
-    </ul> --}}
-
-    @can('User list')
-        <ul class="sidebar-menu">
+        @can('User list')
             <li class="dropdown {{ Request::route()->getName() == 'admin.users.index' ? 'active' : '' }}">
                 <a href="{{ route('admin.users.index') }}" class="nav-link">
                     <i class="fa-regular fa-user"></i><span>Users</span>
                 </a>
             </li>
-        </ul>
-    @endcan
+        @endcan
 
-    @can('Role list')
-        <ul class="sidebar-menu">
+        @can('Role list')
             <li class="dropdown {{ Request::route()->getName() == 'admin.roles.index' ? 'active' : '' }}">
                 <a href="{{ route('admin.roles.index') }}" class="nav-link">
                     <i class="fa-solid fa-people-roof"></i><span>Roles</span>
                 </a>
             </li>
-        </ul>
-    @endcan
+        @endcan
 
-    @canany(['Google API', 'Project list'])
-        <ul class="sidebar-menu">
+        @canany(['Google API'])
             <li
-                class="dropdown {{ in_array(Request::route()->getName(), ['admin.settings', 'admin.projects', 'admin.cron.status']) ? 'active' : '' }}">
+                class="dropdown {{ in_array(Request::route()->getName(), ['admin.settings', 'admin.cron.status']) ? 'active' : '' }}">
                 <a href="#" class="menu-toggle nav-link has-dropdown">
                     <i class="fa-solid fa-gear"></i><span>Settings</span>
                 </a>
@@ -92,16 +71,32 @@
                             <a href="{{ route('admin.settings') }}">Google API</a>
                         </li>
                     @endcan
-                    @can('Project list')
-                        <li class="{{ Request::route()->getName() == 'admin.projects' ? 'active' : '' }}">
-                            <a href="{{ route('admin.projects') }}">Manage Project</a>
-                        </li>
-                    @endcan
                     <li class="{{ Request::route()->getName() == 'admin.cron.status' ? 'active' : '' }}">
                         <a href="{{ route('admin.cron.status') }}">Cron Status</a>
                     </li>
                 </ul>
             </li>
-        </ul>
-    @endcanany
+        @endcanany
+        @canany(['Project list', 'Add New Project'])
+            <li
+                class="dropdown {{ in_array(Request::route()->getName(), ['admin.projects', 'admin.websites.create']) ? 'active' : '' }}">
+                <a href="#" class="menu-toggle nav-link has-dropdown">
+                    <i class="fa-solid fa-globe"></i><span>Manage Projects</span>
+                </a>
+                <ul class="dropdown-menu">
+                    @can('Project list')
+                        <li class="{{ Request::route()->getName() == 'admin.projects' ? 'active' : '' }}">
+                            <a href="{{ route('admin.projects') }}">Manage Project</a>
+                        </li>
+                    @endcan
+                    @can('Add New Project')
+                        <li class="{{ Request::route()->getName() == 'admin.websites.create' ? 'active' : '' }}">
+                            <a href="{{ route('admin.websites.create') }}">Create New Project</a>
+                        </li>
+                    @endcan
+                </ul>
+            </li>
+
+        @endcanany
+    </ul>
 </aside>
