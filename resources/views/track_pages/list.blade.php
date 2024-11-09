@@ -9,58 +9,78 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">Track Pages</h4>
+                    <h4 class="card-title mb-0">Track Pages {at this time, only Hostingseekres data is available}</h4>
                     <div id="filterForm" class="col-auto">
-                        <form method="GET" class="form-inline">
+                        <form id="analyticsFilterForm" class="form-inline">
                             <div class="input-group">
                                 <input type="text" name="daterange" class="form-control" id="dateRangeInput"
                                     placeholder="Select Date Range" value="{{ request()->input('daterange') }}" />
-                                <div class="">
-                                    <button type="submit" class="btn btn-primary">Apply</button>
-                                    <a href="{{ route('page.list') }}" class="btn btn-secondary">Clear</a>
-                                </div>
+
+                                <input type="text" name="pagePath" class="form-control ml-2"
+                                    placeholder="Filter by Page Path" />
+
+                                <select name="matchType" id="matchType" class="form-control ml-2">
+                                    <option value="CONTAINS">Contains</option>
+                                    <option value="BEGINS_WITH">Begins with</option>
+                                    <option value="ENDS_WITH">Ends with</option>
+                                    <option value="EXACT">Exact</option>
+
+                                </select>
+
+                                <button type="button" id="applyFilter" class="btn btn-primary ml-2">Apply</button>
+                                <button type="button" id="clearFilter" class="btn btn-secondary ml-2">Clear</button>
                             </div>
                         </form>
                     </div>
                 </div>
-
                 <div class="card-body p-0">
-                    <div class="table-responsive" style="padding: 10px;">
-                        <table class="table table-striped mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="w-25">Page Path</th>
-                                    <th class="w-25">Page Title</th>
-                                    <th class="w-15">Active Users</th>
-                                    <th class="w-15">New Users</th>
-                                    <th class="w-15">Total Users</th>
-                                </tr>
-                            </thead>
-                            <tbody class="table-body">
-                                @forelse($report as $data)
+                    <div id="analyticsReport">
+                        <div class="table-responsive" style="padding: 10px;">
+                            <table class="table table-striped mb-0">
+                                <thead>
                                     <tr>
-                                        <td class="text-break">{{ $data['pagePath'] }}</td>
-                                        <td class="text-break">{{ $data['pageTitle'] }}</td>
-                                        <td>{{ $data['activeUsers'] }}</td>
-                                        <td>{{ $data['newUsers'] }}</td>
-                                        <td>{{ $data['totalUsers'] }}</td>
+                                        <th class="w-25">Page Path</th>
+                                        <th class="w-25">Page Title</th>
+                                        <th class="w-15">Active Users</th>
+                                        <th class="w-15">New Users</th>
+                                        <th class="w-15">Total Users</th>
                                     </tr>
-                                @empty
+                                </thead>
+                                <tbody class="table-body">
+                                    @forelse($report as $data)
+                                        <tr>
+                                            <td class="text-break">{{ $data['pagePath'] }}</td>
+                                            <td class="text-break">{{ $data['pageTitle'] }}</td>
+                                            <td>{{ $data['activeUsers'] }}</td>
+                                            <td>{{ $data['newUsers'] }}</td>
+                                            <td>{{ $data['totalUsers'] }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center">No data available</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                                <tfoot>
                                     <tr>
-                                        <td colspan="5" class="text-center">No data available</td>
+                                        <th class="w-25">Total</th>
+                                        <th class="w-25"></th>
+                                        <th class="w-15">{{ $totals['activeUsers'] }}</th>
+                                        <th class="w-15">{{ $totals['newUsers'] }}</th>
+                                        <th class="w-15">{{ $totals['totalUsers'] }}</th>
                                     </tr>
-                                @endforelse
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th class="w-25">Total</th>
-                                    <th class="w-25"></th>
-                                    <th class="w-15">{{ $totals['activeUsers'] }}</th>
-                                    <th class="w-15">{{ $totals['newUsers'] }}</th>
-                                    <th class="w-15">{{ $totals['totalUsers'] }}</th>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+                <div id="tableLoader" class="position-absolute w-100 h-100 d-none"
+                    style="background: rgb(240 243 255 / 62%)">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -113,6 +133,25 @@
                 padding: 0.5rem;
             }
         }
+
+        .card-body {
+            position: relative;
+            min-height: 200px;
+        }
+
+        #tableLoader {
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        #tableLoader.fade-out {
+            opacity: 0;
+        }
+
+        .spinner-border {
+            width: 6rem !important;
+            height: 6rem !important;
+
+        }
     </style>
 @endpush
 
@@ -121,16 +160,20 @@
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('.table').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                pageLength: 10,
-                lengthChange: false,
-                info: false,
-            });
-        });
-        $(function() {
+            function initializeDataTable() {
+                if ($.fn.DataTable.isDataTable('.table')) {
+                    $('.table').DataTable().destroy();
+                }
+                $('.table').DataTable({
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    pageLength: 10,
+                    lengthChange: false,
+                    info: false,
+                });
+            }
+
             $('input[name="daterange"]').daterangepicker({
                 autoUpdateInput: false,
                 locale: {
@@ -142,25 +185,89 @@
                     'Last 7 Days': [moment().subtract(6, 'days'), moment()],
                     'Last 30 Days': [moment().subtract(29, 'days'), moment()],
                 },
-                startDate: moment().subtract(6, 'days'),
-                endDate: moment()
-            });
-
-            var initialDateRange = $('input[name="daterange"]').val();
-            if (initialDateRange) {
-                var dates = initialDateRange.split(' - ');
-                $('input[name="daterange"]').data('daterangepicker').setStartDate(moment(dates[0]));
-                $('input[name="daterange"]').data('daterangepicker').setEndDate(moment(dates[1]));
-            }
-
-            $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {
+                startDate: moment().subtract(1, 'days'),
+                endDate: moment().subtract(1, 'days'),
+                maxDate: moment(),
+            }).on('apply.daterangepicker', function(ev, picker) {
                 $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format(
                     'YYYY-MM-DD'));
-            });
-
-            $('input[name="daterange"]').on('cancel.daterangepicker', function(ev, picker) {
+            }).on('cancel.daterangepicker', function() {
                 $(this).val('');
             });
+
+
+            function showLoader() {
+                $('#tableLoader').removeClass('d-none');
+            }
+
+            function hideLoader() {
+                $('#tableLoader').addClass('fade-out');
+                setTimeout(() => {
+                    $('#tableLoader').addClass('d-none').removeClass('fade-out');
+                }, 200);
+            }
+
+            function loadAnalyticsData() {
+                showLoader();
+                $.ajax({
+                    url: '{{ route('page.list') }}',
+                    method: 'GET',
+                    data: {
+                        daterange: $('input[name="daterange"]').val(),
+                        pagePath: $('input[name="pagePath"]').val(),
+                        matchType: $('#matchType').val()
+                    },
+                    success: function(response) {
+                        if (response.data == 'false') {
+                            var sample = `<div class="table-responsive" style="padding: 10px;">
+                                            <table class="table table-striped mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="w-25">Page Path</th>
+                                                        <th class="w-25">Page Title</th>
+                                                        <th class="w-15">Active Users</th>
+                                                        <th class="w-15">New Users</th>
+                                                        <th class="w-15">Total Users</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                        <tr>
+                                                            <td colspan="5" class="text-center">No data available</td>
+                                                        </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        `;
+                            $('#analyticsReport').html(sample);
+                            hideLoader();
+                        } else {
+                            $('#analyticsReport').html(response);
+                            initializeDataTable();
+                        }
+                    },
+                    error: function() {
+                        alert("Error loading data. Please try again.");
+                    },
+                    complete: function() {
+                        hideLoader();
+                    }
+                });
+            }
+
+            $('#applyFilter').on('click', function(e) {
+                e.preventDefault();
+                loadAnalyticsData();
+            });
+
+            $('#clearFilter').on('click', function(e) {
+                e.preventDefault();
+                $('input[name="daterange"]').val('');
+                $('input[name="pagePath"]').val('');
+                $('#matchType').val('EXACT');
+                loadAnalyticsData();
+            });
+
+            initializeDataTable();
         });
     </script>
 @endpush

@@ -10,24 +10,12 @@ use Carbon\Carbon;
 class TrackPagesController extends Controller
 {
 
-    // public function list(Request $request)
-    // {
-    //     $analyticsService = new GoogleAnalyticsService();
-    //     $startDate = 'yesterday';
-    //     $endDate = 'yesterday';
-    //     $data = $analyticsService->getAllPageAnalyticsData($startDate, $endDate);
-
-    //     $report = $data['results'] ?? [];
-    //     $totals = $data['totals'] ?? ['activeUsers' => 0, 'newUsers' => 0, 'totalUsers' => 0];
-
-    //     return view('track_pages.list', compact('report', 'totals'));
-    // }
-
-
-
     public function list(Request $request)
     {
         $daterange = $request->input('daterange');
+        $pagePathFilter = $request->input('pagePath');
+        $matchType = $request->input('matchType', 'CONTAINS');
+
         if ($daterange) {
             [$startDate, $endDate] = explode(' - ', $daterange);
             $startDate = Carbon::parse($startDate)->format('Y-m-d');
@@ -37,15 +25,29 @@ class TrackPagesController extends Controller
             $endDate = $startDate;
         }
 
-        $cacheKey = "analytics_data_{$startDate}_{$endDate}";
-        $cacheDuration = 240;
-        $data = Cache::remember($cacheKey, $cacheDuration, function () use ($startDate, $endDate) {
+        $cacheKey = 'analytics_data_' . md5($startDate . '_' . $endDate . '_' . $pagePathFilter . '_' . $matchType);
+
+        $data = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($startDate, $endDate, $pagePathFilter, $matchType) {
             $analyticsService = new GoogleAnalyticsService();
-            return $analyticsService->getAllPageAnalyticsData($startDate, $endDate);
+
+            $dimensionFilter = $pagePathFilter ? [
+                'field_name' => 'pagePath',
+                'match_type' => $matchType,
+                'value' => $pagePathFilter,
+                'case_sensitive' => true,
+            ] : null;
+
+            return $analyticsService->getAllPageAnalyticsData($startDate, $endDate, $dimensionFilter);
         });
 
-        $report = $data['results'] ?? [];
+        $report = $data['results'] ?? null;
         $totals = $data['totals'] ?? ['activeUsers' => 0, 'newUsers' => 0, 'totalUsers' => 0];
+        if ($request->ajax() && !is_null($report)) {
+            return view('track_pages.partials.analytics_table', compact('report', 'totals'))->render();
+        }
+        if ($request->ajax()) {
+            return response()->json(['data' => 'false']);
+        }
 
         return view('track_pages.list', compact('report', 'totals'));
     }
