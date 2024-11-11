@@ -121,6 +121,7 @@ Route::middleware(['auth', 'project_status'])->group(function () {
 
     // track pages
     Route::get("/pages", [TrackPagesController::class, 'list'])->name('page.list');
+    Route::get("/page", [TrackPagesController::class, 'pageDetails'])->name('page.show');
 
     // test
     Route::get('/test', [KeywordController::class, 'test'])->name('test');

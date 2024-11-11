@@ -31,3 +31,16 @@ if (!function_exists('jsdecode_userdata')) {
         }
     }
 }
+
+if (!function_exists('getRootDomain')) {
+    function getRootDomain($url) {
+        $host = parse_url('http://' . str_replace(['http://', 'https://'], '', $url), PHP_URL_HOST);
+        $hostParts = explode('.', $host);
+        if (count($hostParts) < 2) {
+            return $host;
+        }
+
+        $domain = $hostParts[count($hostParts) - 2] . '.' . $hostParts[count($hostParts) - 1];
+        return $domain;
+    }
+}

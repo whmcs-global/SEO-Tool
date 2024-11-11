@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Services\GoogleAnalyticsService;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Support\Facades\Log;
+
 
 class TrackPagesController extends Controller
 {
@@ -25,30 +28,98 @@ class TrackPagesController extends Controller
             $endDate = $startDate;
         }
 
-        $cacheKey = 'analytics_data_' . md5($startDate . '_' . $endDate . '_' . $pagePathFilter . '_' . $matchType);
+        $analyticsService = new GoogleAnalyticsService();
 
-        $data = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($startDate, $endDate, $pagePathFilter, $matchType) {
-            $analyticsService = new GoogleAnalyticsService();
+        $dimensionFilter = $pagePathFilter ? [
+            'field_name' => 'pagePath',
+            'match_type' => $matchType,
+            'value' => $pagePathFilter,
+            'case_sensitive' => true,
+        ] : null;
 
-            $dimensionFilter = $pagePathFilter ? [
-                'field_name' => 'pagePath',
-                'match_type' => $matchType,
-                'value' => $pagePathFilter,
-                'case_sensitive' => true,
-            ] : null;
+        $organicDimensionFilter = $pagePathFilter ? [
+            'field_name' => 'landingPagePlusQueryString',
+            'match_type' => $matchType,
+            'value' => $pagePathFilter,
+            'case_sensitive' => true,
+        ] : null;
 
-            return $analyticsService->getAllPageAnalyticsData($startDate, $endDate, $dimensionFilter);
-        });
+        $pageAnalyticsData = $analyticsService->getAllPageAnalyticsData($startDate, $endDate, $dimensionFilter);
+        $pageReport = $pageAnalyticsData['results'] ?? [];
+        $pageTotals = $pageAnalyticsData['totals'] ?? ['activeUsers' => 0, 'newUsers' => 0, 'totalUsers' => 0];
 
-        $report = $data['results'] ?? null;
-        $totals = $data['totals'] ?? ['activeUsers' => 0, 'newUsers' => 0, 'totalUsers' => 0];
-        if ($request->ajax() && !is_null($report)) {
-            return view('track_pages.partials.analytics_table', compact('report', 'totals'))->render();
+        $organicTrafficData = $analyticsService->getAllPageOrganicTrafficAnalyticsData($startDate, $endDate, $organicDimensionFilter);
+        $organicReport = $organicTrafficData['results'] ?? [];
+        $organicTotals = $organicTrafficData['totals'] ?? [
+            'organicGoogleSearchClicks' => 0,
+            'organicGoogleSearchImpressions' => 0,
+            'organicGoogleSearchClickThroughRate' => 0,
+            'organicGoogleSearchAveragePosition' => 0,
+        ];
+
+        $mergedReport = [];
+        foreach ($pageReport as $page) {
+            $mergedData = [
+                'pagePath' => $page['pagePath'],
+                'pageTitle' => $page['pageTitle'],
+                'activeUsers' => $page['activeUsers'],
+                'newUsers' => $page['newUsers'],
+                'totalUsers' => $page['totalUsers'],
+                'organicGoogleSearchClicks' => 0,
+                'organicGoogleSearchImpressions' => 0,
+                'organicGoogleSearchClickThroughRate' => 0,
+                'organicGoogleSearchAveragePosition' => 0
+            ];
+
+            foreach ($organicReport as $organic) {
+                if ($organic['landingPagePlusQueryString'] == $page['pagePath']) {
+                    $mergedData['organicGoogleSearchClicks'] = $organic['organicGoogleSearchClicks'];
+                    $mergedData['organicGoogleSearchImpressions'] = $organic['organicGoogleSearchImpressions'];
+                    $mergedData['organicGoogleSearchClickThroughRate'] = $organic['organicGoogleSearchClickThroughRate'];
+                    $mergedData['organicGoogleSearchAveragePosition'] = $organic['organicGoogleSearchAveragePosition'];
+                    break;
+                }
+            }
+
+            $mergedReport[] = $mergedData;
         }
+
         if ($request->ajax()) {
-            return response()->json(['data' => 'false']);
+            if (!empty($mergedReport)) {
+                return view('track_pages.partials.analytics_table', compact('mergedReport', 'pageTotals', 'organicTotals', 'startDate', 'endDate'))->render();
+            } else {
+                return response()->json(['data' => 'No data available']);
+            }
         }
 
-        return view('track_pages.list', compact('report', 'totals'));
+        return view('track_pages.list', compact('mergedReport', 'pageTotals', 'organicTotals'));
+    }
+
+    public function pageDetails(Request $request)
+    {
+        try {
+            $startDate = $request->start_date ?? 'yesterday';
+            $endDate = $request->end_date ?? 'yesterday';
+            $url = $request->url ?? '/';
+
+            $analyticsService = new GoogleAnalyticsService();
+            $pageAnalyticsData = $analyticsService->getPageDetails($startDate, $endDate, $url);
+
+            $pageReport = $pageAnalyticsData['results'] ?? [];
+            $pageTotals = $pageAnalyticsData['totals'] ?? ['newUsers' => 0, 'totalUsers' => 0];
+
+            return view('track_pages.details', compact(
+                'pageReport',
+                'pageTotals',
+                'startDate',
+                'endDate',
+                'url'
+            ));
+
+        } catch (Exception $e) {
+            Log::error('Page Details Error: ' . $e->getMessage());
+
+            return back()->with('error', 'Failed to fetch analytics data. Please try again later.');
+        }
     }
 }

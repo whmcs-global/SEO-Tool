@@ -731,7 +731,7 @@ class KeywordController extends Controller
     public function test(Request $request)
     {
         $analyticsService = new GoogleAnalyticsService();
-        $report = $analyticsService->getPageVisits();
+        $report = $analyticsService->getPageDetails('2024-10-11', '2024-11-09', '/about-us');
         dd($report);
     }
 }
