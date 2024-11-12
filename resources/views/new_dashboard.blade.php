@@ -107,39 +107,92 @@
         .dt-buttons {
             display: none;
         }
+
+        .dataTables_filter {
+            margin-bottom: 0.5rem;
+        }
+
+        .dataTables_length {
+            font-size: 0.875rem;
+        }
+
+        .dataTables_paginate {
+            font-size: 0.875rem;
+        }
+
+        table.dataTable thead th {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        table.dataTable tbody td {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
     </style>
 @endpush
 
 @section('content')
     <div class="row">
-        {{-- <div class="form-row align-items-center mb-4" style="margin-left: 10px !important;">
-            <div class="col-auto">
-                <label for="country" class="font-weight-bold">Country:</label>
-            </div>
-            <div class="col">
-                <select name="country" id="country" class="form-control">
-                    @foreach ($countries as $country)
-                        <option value="{{ $country->id }}" {{ $country->id == $selectedCountry ? 'selected' : '' }}>
-                            {{ $country->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-        </div> --}}
-        <div class="col-12 mb-4">
-
-            <div class="row">
-                @foreach ($labels as $label)
-                    <div class="col-md-2">
-                        <div class="card">
-                            <div class="card-body p-2">
-                                <h5 class="card-title mb-1">{{ $label->name }}</h5>
-                                <p class="card-text mb-0">{{ $label->getKeywordCountAttribute() }}</p>
-                            </div>
+        <div class="col-4 col-lg-8">
+            <div class="card shadow border-light mb-4">
+                <div class="card-header bg-light text-center">
+                    <h4 class="card-title mb-2">Google Analytics Overview (Only for HostingSeekers)</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-12 col-md-6 mb-3">
+                            <h5>Total Users</h5>
+                            <h3 class="text-dark">
+                                {{ number_format($formattedReport['totals']['date_range_0']['totalUsers']) }}
+                            </h3>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <h5>New Users</h5>
+                            <h3 class="text-success">
+                                {{ number_format($formattedReport['totals']['date_range_0']['newUsers']) }}
+                            </h3>
                         </div>
                     </div>
-                @endforeach
+                    <div class="row">
+                        <div class="col-12">
+                            <canvas id="analyticsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div class="col-4 col-lg-4">
+            <div class="card shadow border-light mb-4">
+                {{-- <div class="card-header text-center">
+                    <h5>Label Data</h5>
+                </div> --}}
+                <div class="">
+                    <table class="table table-hover" id="labelsTable">
+                        <thead>
+                            <tr>
+                                <th>Label Name</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($labels as $label)
+                                <tr>
+                                    <td>{{ $label->name }}</td>
+                                    <td>{{ $label->keyword_count }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-12 mb-4">
             <div class="card">
                 <div class="card-header">
                     <h4>Keyword Performance Overview</h4>
@@ -675,6 +728,78 @@
                     }
                 }
             });
+
+            $('#labelsTable').DataTable({
+                "pageLength": 10,
+                "lengthMenu": [10],
+                "dom": 'rt<"bottom"lp><"clear">',
+                "ordering": false,
+                "info": false,
+                "responsive": true,
+                "autoWidth": false,
+                "searching": false
+            });
+
+        });
+    </script>
+    <script>
+        const data = @json($formattedReport['results']);
+        data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const ctx = document.getElementById('analyticsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(item => {
+                    const date = new Date(item.date);
+                    return date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                }),
+                datasets: [{
+                        label: 'Total Users',
+                        data: data.map(item => item.totalUsers),
+                        backgroundColor: '#007bff',
+                        borderColor: '#007bff',
+                        borderWidth: 1,
+                        barPercentage: 0.5
+                    },
+                    {
+                        label: 'New Users',
+                        data: data.map(item => item.newUsers),
+                        backgroundColor: '#28a745',
+                        borderColor: '#28a745',
+                        borderWidth: 1,
+                        barPercentage: 0.5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        stacked: true
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
         });
     </script>
 @endpush

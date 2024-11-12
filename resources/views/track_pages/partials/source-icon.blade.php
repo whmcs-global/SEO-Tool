@@ -60,7 +60,7 @@
     $faviconUrl = 'https://' . $domain . '/favicon.ico';
 @endphp
 
-<div class="d-flex align-items-center">
+<div class="d-flex align-items-center  wrap-text">
     <img src="{{ $faviconUrl }}" alt="{{ $domain }} favicon" width="16" height="16" class="me-2"
         onerror="this.style.display='none'">
     {{ ucfirst($source) }}

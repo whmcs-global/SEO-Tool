@@ -12,6 +12,7 @@ use Google\Analytics\Data\V1beta\FilterExpression;
 use Google\Analytics\Data\V1beta\Filter;
 use Google\Analytics\Data\V1beta\Filter\StringFilter;
 use Google\Analytics\Data\V1beta\Filter\StringFilter\MatchType;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -38,9 +39,11 @@ class GoogleAnalyticsService
                 'dimensions' => [
                     new Dimension(['name' => 'pagePath']),
                     new Dimension(['name' => 'pageTitle']),
+                    new Dimension(['name' => 'sessionSourceMedium']),
+                    new Dimension(['name' => 'sessionSource']),
                 ],
                 'metrics' => [
-                    new Metric(['name' => 'activeUsers']),
+                    // new Metric(['name' => 'activeUsers']),
                     new Metric(['name' => 'newUsers']),
                     new Metric(['name' => 'totalUsers']),
                 ],
@@ -89,9 +92,9 @@ class GoogleAnalyticsService
             $totals = [];
             foreach ($response->getTotals() as $totalRow) {
                 $totals[] = [
-                    'activeUsers' => $totalRow->getMetricValues()[0]->getValue(),
-                    'newUsers' => $totalRow->getMetricValues()[1]->getValue(),
-                    'totalUsers' => $totalRow->getMetricValues()[2]->getValue(),
+                    // 'activeUsers' => $totalRow->getMetricValues()[0]->getValue(),
+                    'newUsers' => $totalRow->getMetricValues()[0]->getValue(),
+                    'totalUsers' => $totalRow->getMetricValues()[1]->getValue(),
                 ];
             }
 
@@ -103,15 +106,17 @@ class GoogleAnalyticsService
                 $results[] = [
                     'pagePath' => $dimensionValues[0]->getValue(),
                     'pageTitle' => $dimensionValues[1]->getValue(),
-                    'activeUsers' => $metricValues[0]->getValue(),
-                    'newUsers' => $metricValues[1]->getValue(),
-                    'totalUsers' => $metricValues[2]->getValue(),
+                    'sessionSourceMedium' => $dimensionValues[2]->getValue(),
+                    'sessionSource' => $dimensionValues[3]->getValue(),
+                    // 'activeUsers' => $metricValues[0]->getValue(),
+                    'newUsers' => $metricValues[0]->getValue(),
+                    'totalUsers' => $metricValues[1]->getValue(),
                 ];
             }
 
             return [
                 'results' => $results,
-                'totals' => $totals[0] ?? ['activeUsers' => 0, 'newUsers' => 0, 'totalUsers' => 0],
+                'totals' => $totals[0] ?? ['newUsers' => 0, 'totalUsers' => 0],
             ];
         } catch (Exception $e) {
             Log::error('Google Analytics API Error: ' . $e->getMessage());
@@ -258,7 +263,6 @@ class GoogleAnalyticsService
             }
 
             $response = $this->client->runReport($requestParams);
-
             $totals = [];
             foreach ($response->getTotals() as $totalRow) {
                 $totals[] = [
@@ -274,7 +278,7 @@ class GoogleAnalyticsService
 
                 $results[] = [
                     'pagePath' => $dimensionValues[0]->getValue(),
-                    'sessionSource'=> $dimensionValues[1]->getValue(),
+                    'sessionSource' => $dimensionValues[1]->getValue(),
                     'sessionSourceMedium' => $dimensionValues[2]->getValue(),
                     'newUsers' => $metricValues[0]->getValue(),
                     'totalUsers' => $metricValues[1]->getValue(),
@@ -291,4 +295,167 @@ class GoogleAnalyticsService
         }
     }
 
+    // public function analyticsGraph($startDate1, $endDate1, $startDate2 = null, $endDate2 = null){
+    //     try {
+    //         $dimensions = [
+    //             new Dimension(['name' => 'date']),
+    //         ];
+
+    //         $metrics = [
+    //             new Metric(['name' => 'newUsers']),
+    //             new Metric(['name' => 'totalUsers']),
+    //         ];
+
+    //         $dateRanges = [
+    //             new DateRange(['start_date' => $startDate1, 'end_date' => $endDate1]),
+    //         ];
+
+    //         if ($startDate2 && $endDate2) {
+    //             $dateRanges[] = new DateRange(['start_date' => $startDate2, 'end_date' => $endDate2]);
+    //         }
+
+    //         $metricAggregations = [MetricAggregation::TOTAL];
+
+    //         $requestParams = [
+    //             'property' => 'properties/' . $this->propertyId,
+    //             'dimensions' => $dimensions,
+    //             'metrics' => $metrics,
+    //             'dateRanges' => $dateRanges,
+    //             'metricAggregations' => $metricAggregations,
+    //         ];
+
+    //         $response = $this->client->runReport($requestParams);
+    //         $totals = [];
+    //         if ($startDate2 && $endDate2) {
+    //             foreach ($response->getTotals() as $index => $totalRow) {
+    //                 $totals[$totalRow->getDimensionValues()[1]->getValue()] = [
+    //                     'newUsers' => $totalRow->getMetricValues()[0]->getValue(),
+    //                     'totalUsers' => $totalRow->getMetricValues()[1]->getValue(),
+    //                 ];
+    //             }
+    //         } else {
+    //             foreach ($response->getTotals() as $index => $totalRow) {
+    //                 $totals['date_range_0'] = [
+    //                     'newUsers' => $totalRow->getMetricValues()[0]->getValue(),
+    //                     'totalUsers' => $totalRow->getMetricValues()[1]->getValue(),
+    //                 ];
+    //             }
+    //         }
+
+
+    //         $results = [];
+    //         foreach ($response->getRows() as $row) {
+    //             $dimensionValues = $row->getDimensionValues();
+    //             $metricValues = $row->getMetricValues();
+
+    //             $results[] = [
+    //                 'date' => $dimensionValues[0]->getValue(),
+    //                 'newUsers' => $metricValues[0]->getValue(),
+    //                 'totalUsers' => $metricValues[1]->getValue(),
+    //             ];
+    //         }
+
+    //         return [
+    //             'results' => $results,
+    //             'totals' => $totals,
+    //         ];
+    //     } catch (Exception $e) {
+    //         Log::error('Google Analytics API Error: ' . $e->getMessage());
+    //         return ['error' => 'An error occurred while fetching data. Please try again later.'];
+    //     }
+    // }
+
+
+    public function analyticsGraph($startDate1, $endDate1, $startDate2 = null, $endDate2 = null)
+    {
+        try {
+            // Generate a unique cache key based on the input parameters
+            $cacheKey = 'analytics_graph_' . md5($startDate1 . $endDate1 . $startDate2 . $endDate2);
+
+            // Check if the data is cached
+            $cachedData = Cache::get($cacheKey);
+
+            if ($cachedData) {
+                // If cached data exists, return it
+                return $cachedData;
+            }
+
+            // Define dimensions, metrics, date ranges, and request params
+            $dimensions = [
+                new Dimension(['name' => 'date']),
+            ];
+
+            $metrics = [
+                new Metric(['name' => 'newUsers']),
+                new Metric(['name' => 'totalUsers']),
+            ];
+
+            $dateRanges = [
+                new DateRange(['start_date' => $startDate1, 'end_date' => $endDate1]),
+            ];
+
+            if ($startDate2 && $endDate2) {
+                $dateRanges[] = new DateRange(['start_date' => $startDate2, 'end_date' => $endDate2]);
+            }
+
+            $metricAggregations = [MetricAggregation::TOTAL];
+
+            $requestParams = [
+                'property' => 'properties/' . $this->propertyId,
+                'dimensions' => $dimensions,
+                'metrics' => $metrics,
+                'dateRanges' => $dateRanges,
+                'metricAggregations' => $metricAggregations,
+            ];
+
+            // Fetch the data from the API
+            $response = $this->client->runReport($requestParams);
+
+            // Prepare totals
+            $totals = [];
+            if ($startDate2 && $endDate2) {
+                foreach ($response->getTotals() as $index => $totalRow) {
+                    $totals[$totalRow->getDimensionValues()[1]->getValue()] = [
+                        'newUsers' => $totalRow->getMetricValues()[0]->getValue(),
+                        'totalUsers' => $totalRow->getMetricValues()[1]->getValue(),
+                    ];
+                }
+            } else {
+                foreach ($response->getTotals() as $index => $totalRow) {
+                    $totals['date_range_0'] = [
+                        'newUsers' => $totalRow->getMetricValues()[0]->getValue(),
+                        'totalUsers' => $totalRow->getMetricValues()[1]->getValue(),
+                    ];
+                }
+            }
+
+            // Prepare results
+            $results = [];
+            foreach ($response->getRows() as $row) {
+                $dimensionValues = $row->getDimensionValues();
+                $metricValues = $row->getMetricValues();
+
+                $results[] = [
+                    'date' => $dimensionValues[0]->getValue(),
+                    'newUsers' => $metricValues[0]->getValue(),
+                    'totalUsers' => $metricValues[1]->getValue(),
+                ];
+            }
+
+            // Prepare the data to cache
+            $dataToCache = [
+                'results' => $results,
+                'totals' => $totals,
+            ];
+
+            // Cache the data for 4 hours (240 minutes)
+            Cache::put($cacheKey, $dataToCache, now()->addMinutes(240));
+
+            // Return the data
+            return $dataToCache;
+        } catch (Exception $e) {
+            Log::error('Google Analytics API Error: ' . $e->getMessage());
+            return ['error' => 'An error occurred while fetching data. Please try again later.'];
+        }
+    }
 }

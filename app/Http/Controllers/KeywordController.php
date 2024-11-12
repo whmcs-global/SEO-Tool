@@ -572,11 +572,33 @@ class KeywordController extends Controller
 
     public function new_dashboard(Request $request)
     {
+        $yesterday = Carbon::today()->subDays(1)->format('Y-m-d');
+        $startWeek = Carbon::today()->subDays(7)->format('Y-m-d');
+        $analyticsService = new GoogleAnalyticsService();
+        $report = $analyticsService->analyticsGraph($startWeek, $yesterday);
+        $formattedReport = [
+            'results' => [],
+            'totals' => [
+                'date_range_0' => [
+                    'newUsers' => $report['totals']['date_range_0']['newUsers'] ?? 0,
+                    'totalUsers' => $report['totals']['date_range_0']['totalUsers'] ?? 0
+                ],
+            ],
+        ];
+
+        foreach ($report['results'] as $result) {
+            $formattedDate = substr($result['date'], 0, 4) . '-' . substr($result['date'], 4, 2) . '-' . substr($result['date'], 6, 2);
+
+            $formattedReport['results'][] = [
+                'date' => $formattedDate,
+                'newUsers' => $result['newUsers'] ?? 0,
+                'totalUsers' => $result['totalUsers'] ?? 0
+            ];
+        }
         $countries = Country::all();
         $selectedCountry = auth()->user()->country_id ?? 3;
-        $yesterday = Carbon::yesterday()->subDays(1)->format('Y-m-d');
-        $today = Carbon::today()->subDays(1)->format('Y-m-d');
         $pastWeek = Carbon::today()->subDays(8)->format('Y-m-d');
+        $today = Carbon::today()->subDays(1)->format('Y-m-d');
         $downKeywords = [];
         $upKeywords = [];
         $sameKeywords = [];
@@ -724,14 +746,34 @@ class KeywordController extends Controller
             'weeklyData' => $weeklyData
         ];
         $filename = auth()->user()->getCurrentProject()->name . '_New_Keywords_' . date('Y-m-d');
-
-        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday', 'countries', 'selectedCountry'));
+        // dd($formattedReport);
+        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday', 'countries', 'selectedCountry', 'formattedReport'));
     }
 
     public function test(Request $request)
     {
         $analyticsService = new GoogleAnalyticsService();
-        $report = $analyticsService->getPageDetails('2024-10-11', '2024-11-09', '/about-us');
-        dd($report);
+        $report = $analyticsService->analyticsGraph('2024-10-01', '2024-10-31');
+        $formattedReport = [
+            'results' => [],
+            'totals' => [
+                'date_range_0' => [
+                    'newUsers' => $report['totals']['date_range_0']['newUsers'] ?? 0,
+                    'totalUsers' => $report['totals']['date_range_0']['totalUsers'] ?? 0
+                ],
+            ],
+        ];
+
+        foreach ($report['results'] as $result) {
+            $formattedDate = substr($result['date'], 0, 4) . '-' . substr($result['date'], 4, 2) . '-' . substr($result['date'], 6, 2);
+
+            $formattedReport['results'][] = [
+                'date' => $formattedDate,
+                'newUsers' => $result['newUsers'] ?? 0,
+                'totalUsers' => $result['totalUsers'] ?? 0
+            ];
+        }
+
+        return view('analytics_graph', ['report' => $formattedReport]);
     }
 }

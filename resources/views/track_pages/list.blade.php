@@ -39,9 +39,8 @@
                             <table class="table table-striped mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="w-20">Page Path</th>
-                                        <th class="w-20">Page Title</th>
-                                        <th class="w-5">Active Users</th>
+                                        <th class="w-20">Page Information</th>
+                                        <th class="w-5">Source / Medium</th>
                                         <th class="w-5">New Users</th>
                                         <th class="w-5">Total Users</th>
                                         <th class="w-5">Organic Clicks</th>
@@ -54,9 +53,16 @@
                                 <tbody>
                                     @forelse($mergedReport as $data)
                                         <tr>
-                                            <td class="text-break">{{ $data['pagePath'] }}</td>
-                                            <td class="text-break">{{ $data['pageTitle'] }}</td>
-                                            <td>{{ $data['activeUsers'] }}</td>
+                                            <td class="text-break">
+                                                <div class="wrap-text">{{ $data['pagePath'] }}</div>
+                                                <small class="text-muted wrap-text">{{ $data['pageTitle'] }}</small>
+                                            </td>
+                                            <td class="source-column text-break">
+                                                @include('track_pages.partials.source-icon', [
+                                                    'source' => $data['sessionSourceMedium'],
+                                                ])
+                                                {{ $data['sessionSourceMedium'] }}
+                                            </td>
                                             <td>{{ $data['newUsers'] }}</td>
                                             <td>{{ $data['totalUsers'] }}</td>
                                             <td>{{ number_format($data['organicGoogleSearchClicks'], 2) }}</td>
@@ -69,27 +75,25 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="9" class="text-center">No data available</td>
+                                            <td colspan="8" class="text-center">No data available</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th class="w-20">Total</th>
-                                        <th class="w-20"></th>
-                                        <th class="w-5">{{ $pageTotals['activeUsers'] }}</th>
-                                        <th class="w-5">{{ $pageTotals['newUsers'] }}</th>
-                                        <th class="w-5">{{ $pageTotals['totalUsers'] }}</th>
-                                        <th class="w-5">{{ number_format($organicTotals['organicGoogleSearchClicks'], 2) }}</th>
-                                        <th class="w-5">{{ number_format($organicTotals['organicGoogleSearchImpressions'], 2) }}</th>
-                                        <th class="w-5">{{ number_format($organicTotals['organicGoogleSearchClickThroughRate'], 2) }}</th>
-                                        <th class="w-10">{{ number_format($organicTotals['organicGoogleSearchAveragePosition'], 2) }}</th>
+                                        <th>Total</th>
+                                        <th></th>
+                                        <th>{{ $pageTotals['newUsers'] }}</th>
+                                        <th>{{ $pageTotals['totalUsers'] }}</th>
+                                        <th>{{ number_format($organicTotals['organicGoogleSearchClicks'], 2) }}</th>
+                                        <th>{{ number_format($organicTotals['organicGoogleSearchImpressions'], 2) }}</th>
+                                        <th>{{ number_format($organicTotals['organicGoogleSearchClickThroughRate'], 2) }}</th>
+                                        <th>{{ number_format($organicTotals['organicGoogleSearchAveragePosition'], 2) }}</th>
                                         <th></th>
                                     </tr>
                                 </tfoot>
                             </table>
                         </div>
-
                     </div>
                 </div>
                 <div id="tableLoader" class="position-absolute w-100 h-100 d-none"
