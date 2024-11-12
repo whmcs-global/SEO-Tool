@@ -572,10 +572,11 @@ class KeywordController extends Controller
 
     public function new_dashboard(Request $request)
     {
-        $yesterday = Carbon::today()->subDays(1)->format('Y-m-d');
+        $yesterday = Carbon::yesterday()->subDays(1)->format('Y-m-d');
         $startWeek = Carbon::today()->subDays(7)->format('Y-m-d');
+        $endWeek = Carbon::today()->subDays(1)->format('Y-m-d');
         $analyticsService = new GoogleAnalyticsService();
-        $report = $analyticsService->analyticsGraph($startWeek, $yesterday);
+        $report = $analyticsService->analyticsGraph($startWeek, $endWeek);
         $formattedReport = [
             'results' => [],
             'totals' => [
