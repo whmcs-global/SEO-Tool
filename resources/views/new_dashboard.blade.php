@@ -135,23 +135,56 @@
 @section('content')
     <div class="row">
         <div class="col-4 col-lg-8">
-            <div class="card shadow border-light mb-4">
+            <div class="card shadow border-light">
                 <div class="card-header bg-light text-center">
-                    <h4 class="card-title mb-2">Google Analytics Overview (Only for HostingSeekers)</h4>
+                    <h4 class="card-title">Google Analytics Overview (Only for HostingSeekers)</h4>
                 </div>
                 <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-12 col-md-6 mb-3">
-                            <h5>Total Users</h5>
-                            <h3 class="text-dark">
-                                {{ number_format($formattedReport['totals']['date_range_0']['totalUsers']) }}
-                            </h3>
-                        </div>
-                        <div class="col-12 col-md-6 mb-3">
-                            <h5>New Users</h5>
-                            <h3 class="text-success">
-                                {{ number_format($formattedReport['totals']['date_range_0']['newUsers']) }}
-                            </h3>
+                    <div class="container">
+                        <div class="row text-center">
+                            <div class="col-12 col-md-6">
+                                <div class="card" style="margin-bottom: 0px !important">
+                                    <div class="m-2">
+                                        <h5 class="card-title">Last 7 Days</h5>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h6>Total Users</h6>
+                                                <h3 class="text-dark">
+                                                    {{ number_format($formattedReport['totals']['date_range_0']['totalUsers']) }}
+                                                </h3>
+                                            </div>
+                                            <div class="col-6">
+                                                <h6>New Users</h6>
+                                                <h3 class="text-success">
+                                                    {{ number_format($formattedReport['totals']['date_range_0']['newUsers']) }}
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <div class="card" style="margin-bottom: 0px !important">
+                                    <div class="m-2">
+                                        <h5 class="card-title">Yesterday</h5>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h6>Total Users</h6>
+                                                <h3 class="text-dark">
+                                                    {{ number_format($yesterdayUsers['totalUsers']) }}
+                                                </h3>
+                                            </div>
+                                            <div class="col-6">
+                                                <h6>New Users</h6>
+                                                <h3 class="text-success">
+                                                    {{ number_format($yesterdayUsers['newUsers']) }}
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -165,9 +198,6 @@
 
         <div class="col-4 col-lg-4">
             <div class="card shadow border-light mb-4">
-                {{-- <div class="card-header text-center">
-                    <h5>Label Data</h5>
-                </div> --}}
                 <div class="">
                     <table class="table table-hover" id="labelsTable">
                         <thead>
@@ -224,18 +254,6 @@
             </div>
         </div>
     </div>
-    {{-- <div class="row">
-        <div class="col-12 mb-4">
-            <div class="row">
-            </div>
-            <div class="card">
-                <div class="card-body">
-                    <canvas id="keywordPerformanceChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div> --}}
-
     <div class="row">
         <div class="col-md-6 col-lg-12 col-xl-6">
             <div class="card">
@@ -517,15 +535,6 @@
 
             filterTable();
 
-            // $('#newKeywordsTable').DataTable({
-            //     columnDefs: [{
-            //         targets: 'Created At',
-            //         type: 'date'
-            //     }],
-            //     order: [
-            //         [4, 'desc']
-            //     ]
-            // });
 
             $('#rankUpKeywordsTable').DataTable({
                 paging: true,
@@ -551,69 +560,6 @@
                     targets: [0, 3, 4]
                 }]
             });
-
-            // Keyword Performance Chart
-            // var ctx = document.getElementById('keywordPerformanceChart').getContext('2d');
-            // var chart = new Chart(ctx, {
-            //     type: 'bar',
-            //     data: {
-            //         labels: ['Improved', 'Declined', 'No Change'],
-            //         datasets: [{
-            //             label: 'Number of Keywords',
-            //             data: [{{ $keywordStats['up'] }}, {{ $keywordStats['down'] }},
-            //                 {{ $keywordStats['same'] }}
-            //             ],
-            //             backgroundColor: ['rgba(40, 167, 69, 0.6)', 'rgba(220, 53, 69, 0.6)',
-            //                 'rgba(255, 193, 7, 0.6)'
-            //             ],
-            //             borderColor: ['rgb(40, 167, 69)', 'rgb(220, 53, 69)', 'rgb(255, 193, 7)'],
-            //             borderWidth: 1
-            //         }, {
-            //             label: 'Average Position',
-            //             data: [{{ $keywordStats['avgPreviousPosition'] }},
-            //                 {{ $keywordStats['avgCurrentPosition'] }}
-            //             ],
-            //             type: 'line',
-            //             fill: false,
-            //             borderColor: 'rgb(75, 192, 192)',
-            //             tension: 0.1,
-            //             yAxisID: 'y1'
-            //         }]
-            //     },
-            //     options: {
-            //         responsive: true,
-            //         scales: {
-            //             y: {
-            //                 beginAtZero: true,
-            //                 title: {
-            //                     display: true,
-            //                     text: 'Number of Keywords'
-            //                 }
-            //             },
-            //             y1: {
-            //                 position: 'right',
-            //                 beginAtZero: true,
-            //                 title: {
-            //                     display: true,
-            //                     text: 'Average Position'
-            //                 },
-            //                 grid: {
-            //                     drawOnChartArea: false
-            //                 }
-            //             }
-            //         },
-            //         plugins: {
-            //             title: {
-            //                 display: true,
-            //                 text: 'Keyword Performance and Average Position'
-            //             },
-            //             legend: {
-            //                 position: 'bottom'
-            //             }
-            //         }
-            //     }
-            // });
-
             // Weekly Data Line Chart
             var weeklyCtx = document.getElementById('weeklyPerformanceChart').getContext('2d');
             var weeklyLabels = Object.keys(@json($keywordStats['weeklyData']));

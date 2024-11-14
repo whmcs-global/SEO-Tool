@@ -369,18 +369,13 @@ class GoogleAnalyticsService
     public function analyticsGraph($startDate1, $endDate1, $startDate2 = null, $endDate2 = null)
     {
         try {
-            // Generate a unique cache key based on the input parameters
             $cacheKey = 'analytics_graph_' . md5($startDate1 . $endDate1 . $startDate2 . $endDate2);
 
-            // Check if the data is cached
             $cachedData = Cache::get($cacheKey);
 
             if ($cachedData) {
-                // If cached data exists, return it
                 return $cachedData;
             }
-
-            // Define dimensions, metrics, date ranges, and request params
             $dimensions = [
                 new Dimension(['name' => 'date']),
             ];
@@ -408,10 +403,8 @@ class GoogleAnalyticsService
                 'metricAggregations' => $metricAggregations,
             ];
 
-            // Fetch the data from the API
             $response = $this->client->runReport($requestParams);
 
-            // Prepare totals
             $totals = [];
             if ($startDate2 && $endDate2) {
                 foreach ($response->getTotals() as $index => $totalRow) {
@@ -429,7 +422,6 @@ class GoogleAnalyticsService
                 }
             }
 
-            // Prepare results
             $results = [];
             foreach ($response->getRows() as $row) {
                 $dimensionValues = $row->getDimensionValues();
@@ -442,16 +434,13 @@ class GoogleAnalyticsService
                 ];
             }
 
-            // Prepare the data to cache
             $dataToCache = [
                 'results' => $results,
                 'totals' => $totals,
             ];
 
-            // Cache the data for 4 hours (240 minutes)
             Cache::put($cacheKey, $dataToCache, now()->addMinutes(240));
 
-            // Return the data
             return $dataToCache;
         } catch (Exception $e) {
             Log::error('Google Analytics API Error: ' . $e->getMessage());

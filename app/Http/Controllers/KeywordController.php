@@ -230,7 +230,7 @@ class KeywordController extends Controller
         $keywordsQuery = Keyword::with(['keywordData' => function ($query) use ($selectedCountry) {
             $query->where('country_id', $selectedCountry);
         }])
-        ->where('website_id', $user->website_id);
+            ->where('website_id', $user->website_id);
 
         // Filter by user and labels
         if ($keywordType === 'only-me') {
@@ -247,9 +247,9 @@ class KeywordController extends Controller
         $assignedKeywords = AssignKeyword::with(['keyword.keywordData' => function ($query) use ($selectedCountry) {
             $query->where('country_id', $selectedCountry);
         }])
-        ->where('user_id', $userId)
-        ->get()
-        ->pluck('keyword');
+            ->where('user_id', $userId)
+            ->get()
+            ->pluck('keyword');
 
         // Combine keywords and assigned keywords
         $allKeywords = $keywords->merge($assignedKeywords)->unique('id');
@@ -586,7 +586,7 @@ class KeywordController extends Controller
                 ],
             ],
         ];
-
+        $yesterdayUsers = [];
         foreach ($report['results'] as $result) {
             $formattedDate = substr($result['date'], 0, 4) . '-' . substr($result['date'], 4, 2) . '-' . substr($result['date'], 6, 2);
 
@@ -595,7 +595,16 @@ class KeywordController extends Controller
                 'newUsers' => $result['newUsers'] ?? 0,
                 'totalUsers' => $result['totalUsers'] ?? 0
             ];
+
+            if ($formattedDate === $endWeek) {
+                $yesterdayUsers = [
+                    'date' => $formattedDate,
+                    'newUsers' => $result['newUsers'] ?? 0,
+                    'totalUsers' => $result['totalUsers'] ?? 0
+                ];
+            }
         }
+
         $countries = Country::all();
         $selectedCountry = auth()->user()->country_id ?? 3;
         $pastWeek = Carbon::today()->subDays(8)->format('Y-m-d');
@@ -748,7 +757,7 @@ class KeywordController extends Controller
         ];
         $filename = auth()->user()->getCurrentProject()->name . '_New_Keywords_' . date('Y-m-d');
         // dd($formattedReport);
-        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday', 'countries', 'selectedCountry', 'formattedReport'));
+        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday', 'countries', 'selectedCountry', 'formattedReport','yesterdayUsers'));
     }
 
     public function test(Request $request)
