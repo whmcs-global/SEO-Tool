@@ -154,7 +154,7 @@
 
                             <div class="col-12 col-md-4">
                                 <div class="card" style="margin-bottom: 0px !important">
-                                    <div class="m-2">
+                                    <div class="m-1">
                                         <h5 class="card-title">Last 28 Days</h5>
                                         <div class="row">
                                             <div class="col-6">
@@ -175,7 +175,7 @@
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="card" style="margin-bottom: 0px !important">
-                                    <div class="m-2">
+                                    <div class="m-1">
                                         <h5 class="card-title">Last 7 Days</h5>
                                         <div class="row">
                                             <div class="col-6">
@@ -198,7 +198,7 @@
 
                             <div class="col-12 col-md-4">
                                 <div class="card" style="margin-bottom: 0px !important">
-                                    <div class="m-2">
+                                    <div class="m-1">
                                         <h5 class="card-title">Yesterday</h5>
                                         <div class="row">
                                             <div class="col-6">
