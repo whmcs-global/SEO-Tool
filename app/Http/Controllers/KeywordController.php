@@ -448,18 +448,20 @@ class KeywordController extends Controller
         $startWeek = Carbon::today()->subDays(7)->format('Y-m-d');
         $endWeek = Carbon::today()->subDays(1)->format('Y-m-d');
         $analyticsService = new GoogleAnalyticsService();
-        $report = $analyticsService->analyticsGraph($startWeek, $endWeek);
+        $WeeklyReport = $analyticsService->analyticsGraph($startWeek, $endWeek);
         $formattedReport = [
             'results' => [],
             'totals' => [
                 'date_range_0' => [
-                    'newUsers' => $report['totals']['date_range_0']['newUsers'] ?? 0,
-                    'totalUsers' => $report['totals']['date_range_0']['totalUsers'] ?? 0
+                    'newUsers' => $WeeklyReport['totals']['date_range_0']['newUsers'] ?? 0,
+                    'totalUsers' => $WeeklyReport['totals']['date_range_0']['totalUsers'] ?? 0,
+                    'startDate' => $startWeek,
+                    'endDate' => $endWeek
                 ],
             ],
         ];
         $yesterdayUsers = [];
-        foreach ($report['results'] as $result) {
+        foreach ($WeeklyReport['results'] as $result) {
             $formattedDate = substr($result['date'], 0, 4) . '-' . substr($result['date'], 4, 2) . '-' . substr($result['date'], 6, 2);
 
             $formattedReport['results'][] = [
@@ -476,6 +478,17 @@ class KeywordController extends Controller
                 ];
             }
         }
+
+        $startDate = Carbon::today()->subDays(28)->format('Y-m-d');
+        $endDate = Carbon::today()->subDays(1)->format('Y-m-d');
+        $Report = $analyticsService->analyticsGraph($startDate, $endDate);
+
+        $formattedReport['totals']['date_range_1'] = [
+            'newUsers' => $Report['totals']['date_range_0']['newUsers'] ?? 0,
+            'totalUsers' => $Report['totals']['date_range_0']['totalUsers'] ?? 0,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ];
 
         $countries = Country::all();
         $selectedCountry = auth()->user()->country_id ?? 3;

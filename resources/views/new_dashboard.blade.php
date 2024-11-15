@@ -129,6 +129,15 @@
             padding: 0.25rem 0.5rem;
             font-size: 0.875rem;
         }
+
+        #labelsTable tr:hover {
+            cursor: pointer;
+            background-color: rgba(0, 0, 0, .075);
+        }
+
+        .dataTables_length{
+            display: none;
+        }
     </style>
 @endpush
 
@@ -142,7 +151,29 @@
                 <div class="card-body">
                     <div class="container">
                         <div class="row text-center">
-                            <div class="col-12 col-md-6">
+
+                            <div class="col-12 col-md-4">
+                                <div class="card" style="margin-bottom: 0px !important">
+                                    <div class="m-2">
+                                        <h5 class="card-title">Last 28 Days</h5>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h6>Total Users</h6>
+                                                <h3 class="text-dark">
+                                                    {{ number_format($formattedReport['totals']['date_range_1']['totalUsers'] ?? 0) }}
+                                                </h3>
+                                            </div>
+                                            <div class="col-6">
+                                                <h6>New Users</h6>
+                                                <h3 class="text-success">
+                                                    {{ number_format($formattedReport['totals']['date_range_1']['newUsers'] ?? 0) }}
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
                                 <div class="card" style="margin-bottom: 0px !important">
                                     <div class="m-2">
                                         <h5 class="card-title">Last 7 Days</h5>
@@ -150,13 +181,13 @@
                                             <div class="col-6">
                                                 <h6>Total Users</h6>
                                                 <h3 class="text-dark">
-                                                    {{ number_format($formattedReport['totals']['date_range_0']['totalUsers']) }}
+                                                    {{ number_format($formattedReport['totals']['date_range_0']['totalUsers'] ?? 0) }}
                                                 </h3>
                                             </div>
                                             <div class="col-6">
                                                 <h6>New Users</h6>
                                                 <h3 class="text-success">
-                                                    {{ number_format($formattedReport['totals']['date_range_0']['newUsers']) }}
+                                                    {{ number_format($formattedReport['totals']['date_range_0']['newUsers'] ?? 0) }}
                                                 </h3>
                                             </div>
                                         </div>
@@ -164,7 +195,8 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-6">
+
+                            <div class="col-12 col-md-4">
                                 <div class="card" style="margin-bottom: 0px !important">
                                     <div class="m-2">
                                         <h5 class="card-title">Yesterday</h5>
@@ -172,13 +204,13 @@
                                             <div class="col-6">
                                                 <h6>Total Users</h6>
                                                 <h3 class="text-dark">
-                                                    {{ number_format($yesterdayUsers['totalUsers']) }}
+                                                    {{ number_format($yesterdayUsers['totalUsers'] ?? 0) }}
                                                 </h3>
                                             </div>
                                             <div class="col-6">
                                                 <h6>New Users</h6>
                                                 <h3 class="text-success">
-                                                    {{ number_format($yesterdayUsers['newUsers']) }}
+                                                    {{ number_format($yesterdayUsers['newUsers'] ?? 0) }}
                                                 </h3>
                                             </div>
                                         </div>
@@ -209,8 +241,18 @@
                         <tbody>
                             @foreach ($labels as $label)
                                 <tr>
-                                    <td>{{ $label->name }}</td>
-                                    <td>{{ $label->keyword_count }}</td>
+                                    <td>
+                                        <a href="{{ route('keywords.details', ['labels[]' => $label->id]) }}"
+                                            class="d-block w-100 text-decoration-none text-reset">
+                                            {{ $label->name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('keywords.details', ['labels[]' => $label->id]) }}"
+                                            class="d-block w-100 text-decoration-none text-reset">
+                                            {{ $label->keyword_count }}
+                                        </a>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -675,7 +717,7 @@
                 }
             });
 
-            $('#labelsTable').DataTable({
+            const table = $('#labelsTable').DataTable({
                 "pageLength": 10,
                 "lengthMenu": [10],
                 "dom": 'rt<"bottom"lp><"clear">',
@@ -686,6 +728,19 @@
                 "searching": false
             });
 
+            $('#labelsTable').on('mousedown', 'a', function(e) {
+                if (e.which === 2) {
+                    e.preventDefault();
+                    window.open(this.href, '_blank');
+                }
+            });
+
+            $('#labelsTable').on('click', 'a', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    window.open(this.href, '_blank');
+                }
+            });
         });
     </script>
     <script>
