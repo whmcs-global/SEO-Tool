@@ -13,6 +13,7 @@ class Website extends Model
         'name',
         'user_id',
         'property_type',
+        'property_id',
         'url',
         'GOOGLE_ANALYTICS_CLIENT_ID',
         'GOOGLE_ANALYTICS_CLIENT_SECRET',

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Website;
 use Google\Analytics\Data\V1beta\BetaAnalyticsDataClient;
 use Google\Analytics\Data\V1beta\RunReportRequest;
 use Google\Analytics\Data\V1beta\Dimension;
@@ -24,7 +25,8 @@ class GoogleAnalyticsService
     public function __construct()
     {
         $keyFilePath = storage_path('app/dev-hosting-seekers-c4df9b6f2084.json');
-        $this->propertyId = '325401964';
+        $property_id = Website::where('id', auth()->user()->website_id)->value('property_id');
+        $this->propertyId = $property_id;
 
         $this->client = new BetaAnalyticsDataClient([
             'credentials' => $keyFilePath,
@@ -43,7 +45,6 @@ class GoogleAnalyticsService
                     new Dimension(['name' => 'sessionSource']),
                 ],
                 'metrics' => [
-                    // new Metric(['name' => 'activeUsers']),
                     new Metric(['name' => 'newUsers']),
                     new Metric(['name' => 'totalUsers']),
                 ],
@@ -74,7 +75,6 @@ class GoogleAnalyticsService
                         $matchType = MatchType::CONTAINS;
                         break;
                 }
-
                 $requestParams['dimensionFilter'] = new FilterExpression([
                     'filter' => new Filter([
                         'field_name' => $dimensionFilter['field_name'],
@@ -89,38 +89,55 @@ class GoogleAnalyticsService
 
             $response = $this->client->runReport($requestParams);
 
+            // Handle totals with safety checks
             $totals = [];
             foreach ($response->getTotals() as $totalRow) {
+                $metricValues = $totalRow->getMetricValues();
                 $totals[] = [
-                    // 'activeUsers' => $totalRow->getMetricValues()[0]->getValue(),
-                    'newUsers' => $totalRow->getMetricValues()[0]->getValue(),
-                    'totalUsers' => $totalRow->getMetricValues()[1]->getValue(),
+                    'newUsers' => isset($metricValues[0]) ? $metricValues[0]->getValue() : 0,
+                    'totalUsers' => isset($metricValues[1]) ? $metricValues[1]->getValue() : 0,
                 ];
             }
 
+            // Handle results with safety checks
             $results = [];
             foreach ($response->getRows() as $row) {
                 $dimensionValues = $row->getDimensionValues();
                 $metricValues = $row->getMetricValues();
 
-                $results[] = [
-                    'pagePath' => $dimensionValues[0]->getValue(),
-                    'pageTitle' => $dimensionValues[1]->getValue(),
-                    'sessionSourceMedium' => $dimensionValues[2]->getValue(),
-                    'sessionSource' => $dimensionValues[3]->getValue(),
-                    // 'activeUsers' => $metricValues[0]->getValue(),
-                    'newUsers' => $metricValues[0]->getValue(),
-                    'totalUsers' => $metricValues[1]->getValue(),
+                // Add null checks for each dimension and metric value
+                $result = [
+                    'pagePath' => isset($dimensionValues[0]) ? $dimensionValues[0]->getValue() : '',
+                    'pageTitle' => isset($dimensionValues[1]) ? $dimensionValues[1]->getValue() : '',
+                    'sessionSourceMedium' => isset($dimensionValues[2]) ? $dimensionValues[2]->getValue() : '',
+                    'sessionSource' => isset($dimensionValues[3]) ? $dimensionValues[3]->getValue() : '',
+                    'newUsers' => isset($metricValues[0]) ? $metricValues[0]->getValue() : 0,
+                    'totalUsers' => isset($metricValues[1]) ? $metricValues[1]->getValue() : 0,
                 ];
+
+                // Only add the result if we have at least some valid data
+                if (array_filter($result)) {
+                    $results[] = $result;
+                }
             }
 
+            // Return results with default values if totals are empty
             return [
                 'results' => $results,
-                'totals' => $totals[0] ?? ['newUsers' => 0, 'totalUsers' => 0],
+                'totals' => !empty($totals) ? $totals[0] : ['newUsers' => 0, 'totalUsers' => 0],
             ];
+
         } catch (Exception $e) {
-            Log::error('Google Analytics API Error: ' . $e->getMessage());
-            return ['error' => 'An error occurred while fetching data. Please try again later.'];
+            // Log::error('Google Analytics API Error: ' . $e->getMessage(), [
+            //     'startDate' => $startDate,
+            //     'endDate' => $endDate,
+            //     'dimensionFilter' => $dimensionFilter,
+            //     'trace' => $e->getTraceAsString()
+            // ]);
+            return [
+                'error' => 'An error occurred while fetching data. Please try again later.',
+                'details' => $e->getMessage()
+            ];
         }
     }
 
@@ -217,7 +234,7 @@ class GoogleAnalyticsService
                 ],
             ];
         } catch (Exception $e) {
-            Log::error('Google Analytics API Error: ' . $e->getMessage());
+            // Log::error('Google Analytics API Error: ' . $e->getMessage());
             return ['error' => 'An error occurred while fetching data. Please try again later.'];
         }
     }
@@ -369,7 +386,7 @@ class GoogleAnalyticsService
     public function analyticsGraph($startDate1, $endDate1, $startDate2 = null, $endDate2 = null)
     {
         try {
-            $cacheKey = 'analytics_graph_' . md5($startDate1 . $endDate1 . $startDate2 . $endDate2);
+            $cacheKey = 'analytics_graph_' . md5($startDate1 . $endDate1 . $startDate2 . $endDate2.auth()->user()->website_id);
 
             $cachedData = Cache::get($cacheKey);
 
@@ -443,7 +460,7 @@ class GoogleAnalyticsService
 
             return $dataToCache;
         } catch (Exception $e) {
-            Log::error('Google Analytics API Error: ' . $e->getMessage());
+            // Log::error('Google Analytics API Error: ' . $e->getMessage());
             return ['error' => 'An error occurred while fetching data. Please try again later.'];
         }
     }

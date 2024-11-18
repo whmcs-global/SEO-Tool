@@ -45,7 +45,7 @@ class TrackPagesController extends Controller
         $daterange = $request->input('daterange');
         $pagePathFilter = $request->input('pagePath');
         $matchType = $request->input('matchType', 'CONTAINS');
-
+        $website_id = auth()->user()->website_id;
         if ($daterange) {
             [$startDate, $endDate] = explode(' - ', $daterange);
             $startDate = Carbon::parse($startDate)->format('Y-m-d');
@@ -55,7 +55,7 @@ class TrackPagesController extends Controller
             $endDate = 'yesterday';
         }
 
-        $cacheKey = "analytics_data_{$startDate}_{$endDate}_{$pagePathFilter}";
+        $cacheKey = "analytics_data_{$startDate}_{$endDate}_{$pagePathFilter}_{$website_id}";
 
         if (Cache::has($cacheKey)) {
             $data = Cache::get($cacheKey);
@@ -100,7 +100,6 @@ class TrackPagesController extends Controller
                 'organicTotals' => $organicTotals
             ], now()->addMinutes(60));
         }
-
         $mergedReport = $this->mergePageAndOrganicData($pageReport, $organicReport);
 
         if ($request->ajax()) {

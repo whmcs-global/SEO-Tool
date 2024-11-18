@@ -33,6 +33,7 @@ class WebsiteController extends Controller
             'GOOGLE_ADS_REDIRECT_URI' => 'required|url|max:255',
             'GOOGLE_ADS_KEY' => 'required|string|max:255',
             'GOOGLE_ADS_LOGIN_CUSTOMER_ID' => 'required|string|max:255',
+            'property_id' => 'required|integer',
         ]);
 
         $website = Website::create([
@@ -50,6 +51,7 @@ class WebsiteController extends Controller
             'GOOGLE_ADS_REDIRECT_URI' => $validatedData['GOOGLE_ADS_REDIRECT_URI'],
             'GOOGLE_ADS_KEY' => $validatedData['GOOGLE_ADS_KEY'],
             'GOOGLE_ADS_LOGIN_CUSTOMER_ID' => $validatedData['GOOGLE_ADS_LOGIN_CUSTOMER_ID'],
+            'property_id' => $validatedData['property_id'],
         ]);
 
         $user = auth()->user();
@@ -118,6 +120,7 @@ class WebsiteController extends Controller
             'GOOGLE_ADS_REDIRECT_URI' => 'required|url|max:255',
             'GOOGLE_ADS_KEY' => 'required|string|max:255',
             'GOOGLE_ADS_LOGIN_CUSTOMER_ID' => 'required|string|max:255',
+            'property_id' => 'required|integer',
         ]);
 
         $website = Website::findOrFail($id);

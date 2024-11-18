@@ -9,7 +9,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">Track Pages {at this time, only Hostingseekres data is available}</h4>
+                    <h4 class="card-title mb-0">Track Pages</h4>
                     <div id="filterForm" class="col-auto">
                         <form id="analyticsFilterForm" class="form-inline">
                             <div class="input-group">

@@ -44,7 +44,7 @@
                         </div>
                         </fieldset>
                         <fieldset class="fieldset-gray">
-                            <legend>Google Analytics Settings</legend>
+                            <legend>Google Search Console Settings</legend>
                         <x-form-field label="Google Client ID" name="GOOGLE_ANALYTICS_CLIENT_ID" value="{{ $website->GOOGLE_ANALYTICS_CLIENT_ID }}" />
                         <x-form-field label="Google Client Secret" name="GOOGLE_ANALYTICS_CLIENT_SECRET" value="{{ $website->GOOGLE_ANALYTICS_CLIENT_SECRET }}" />
                         <x-form-field label="Google Redirect URI" name="GOOGLE_ANALYTICS_REDIRECT_URI" type="text" value="{{ $website->GOOGLE_ANALYTICS_REDIRECT_URI }}" />
@@ -58,6 +58,18 @@
                         <x-form-field label="Google Redirect URI" name="GOOGLE_ADS_REDIRECT_URI" type="text" value="{{ $website->GOOGLE_ADS_REDIRECT_URI }}" />
                         <x-form-field label="Google Key" name="GOOGLE_ADS_KEY" value="{{ $website->GOOGLE_ADS_KEY }}" />
                         <x-form-field label="Google Login Customer ID" name="GOOGLE_ADS_LOGIN_CUSTOMER_ID" value="{{ $website->GOOGLE_ADS_LOGIN_CUSTOMER_ID }}" />
+                        </fieldset>
+                        <fieldset class="fieldset-gray">
+                            <legend>Google Analytics</legend>
+
+                            <div class="form-group">
+                                <x-form-field label="Property ID" name="property_id" value="{{ $website->property_id }}" />
+                            </div>
+
+                            <h6 class="info-text">
+                                Add this Email into your Google Analytics in Account access management with Viewer Permission:
+                                <a href="#">seotool@dev-hosting-seekers.iam.gserviceaccount.com</a>
+                            </h3>
                         </fieldset>
                         <div class="form-group row mb-0">
                             <div class="col-md-6 offset-md-4">

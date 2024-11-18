@@ -146,7 +146,7 @@
         <div class="col-4 col-lg-8">
             <div class="card shadow border-light">
                 <div class="card-header bg-light text-center">
-                    <h4 class="card-title">Google Analytics Overview (Only for HostingSeekers)</h4>
+                    <h4 class="card-title">Google Analytics Overview</h4>
                 </div>
                 <div class="card-body">
                     <div class="container">

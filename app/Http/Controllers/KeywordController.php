@@ -461,7 +461,7 @@ class KeywordController extends Controller
             ],
         ];
         $yesterdayUsers = [];
-        foreach ($WeeklyReport['results'] as $result) {
+        foreach ($WeeklyReport['results']?? [] as $result) {
             $formattedDate = substr($result['date'], 0, 4) . '-' . substr($result['date'], 4, 2) . '-' . substr($result['date'], 6, 2);
 
             $formattedReport['results'][] = [

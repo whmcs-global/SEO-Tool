@@ -42,7 +42,7 @@
                         </fieldset>
 
                         <fieldset class="fieldset-gray">
-                            <legend>Google Analytics Settings</legend>
+                            <legend>Google Search Console Settings</legend>
                             <x-form-field label="Google Client ID" name="GOOGLE_ANALYTICS_CLIENT_ID" value="{{ old('GOOGLE_ANALYTICS_CLIENT_ID') }}" />
                             <x-form-field label="Google Client Secret" name="GOOGLE_ANALYTICS_CLIENT_SECRET" value="{{ old('GOOGLE_ANALYTICS_CLIENT_SECRET') }}" />
                             <x-form-field label="Google Redirect URI" name="GOOGLE_ANALYTICS_REDIRECT_URI" type="text" value="{{ old('GOOGLE_ANALYTICS_REDIRECT_URI') }}" />
@@ -77,6 +77,30 @@
                                         <a class="dropdown-item" target="blank" href="https://developers.google.com/workspace/marketplace/configure-oauth-consent-screen" target="_blank">Configure OAuth Consent</a>
                                         <a class="dropdown-item" target="blank" href="https://developers.google.com/google-ads/api/docs/first-call/dev-token" target="_blank">Google Ads Developer Token</a>
                                         <a class="dropdown-item" target="blank" href="https://support.google.com/google-ads/answer/1704344?hl=en">Get Customer ID</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="fieldset-gray">
+                            <legend>Google Analytics</legend>
+
+                            <div class="form-group">
+                                <x-form-field label="Property ID" name="property_id" value="{{ old('property_id') }}" />
+                            </div>
+
+                            <h6 class="info-text">
+                                Add this Email into your Google Analytics in Account access management with Viewer Permission:
+                                <a href="#">seotool@dev-hosting-seekers.iam.gserviceaccount.com</a>
+                            </h3>
+
+                            <div class="help-dropdown">
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="helpDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Help
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="helpDropdown">
+                                        <a class="dropdown-item" target="_blank" href="https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id">How to Get Property ID</a>
                                     </div>
                                 </div>
                             </div>
