@@ -142,6 +142,11 @@
 @endpush
 
 @section('content')
+@if(is_null(auth()->user()->getCurrentProject()->property_id))
+<div class="alert alert-danger" role="alert">
+    <span class="font-weight-bold"></span>Please Update Your Property Id and and Give Viewer Permission SeoTool service email in analytics Dashboard.<a style="color: black" href="{{ route('admin.websites.edit', auth()->user()->website_id ?? 0) }}"> Click here</a>
+</div>
+@endif
     <div class="row">
         <div class="col-4 col-lg-8">
             <div class="card shadow border-light">
