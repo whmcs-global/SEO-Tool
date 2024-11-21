@@ -481,6 +481,7 @@ class KeywordController extends Controller
 
         $startDate = Carbon::today()->subDays(28)->format('Y-m-d');
         $endDate = Carbon::today()->subDays(1)->format('Y-m-d');
+        $analyticsData = $analyticsService->getSessionSourceMediumUserData($startDate, $endDate);
         $Report = $analyticsService->analyticsGraph($startDate, $endDate);
 
         $formattedReport['totals']['date_range_1'] = [
@@ -641,8 +642,7 @@ class KeywordController extends Controller
             'weeklyData' => $weeklyData
         ];
         $filename = auth()->user()->getCurrentProject()->name . '_New_Keywords_' . date('Y-m-d');
-        // dd($formattedReport);
-        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday', 'countries', 'selectedCountry', 'formattedReport','yesterdayUsers'));
+        return view('new_dashboard', compact('newKeywords', 'downKeywords', 'upKeywords', 'today', 'pastWeek', 'keywordStats', 'labels', 'filename', 'weeklyData', 'yesterday', 'countries', 'selectedCountry', 'formattedReport','yesterdayUsers', 'analyticsData'));
     }
 
 }

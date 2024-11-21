@@ -135,18 +135,54 @@
             background-color: rgba(0, 0, 0, .075);
         }
 
-        .dataTables_length{
+        .dataTables_length {
             display: none;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
         }
     </style>
 @endpush
 
 @section('content')
-@if(is_null(auth()->user()->getCurrentProject()->property_id))
-<div class="alert alert-danger" role="alert">
-    <span class="font-weight-bold"></span>Please Update Your Property Id and and Give Viewer Permission SeoTool service email in analytics Dashboard.<a style="color: black" href="{{ route('admin.websites.edit', auth()->user()->website_id ?? 0) }}"> Click here</a>
-</div>
-@endif
+    @if (is_null(auth()->user()->getCurrentProject()->property_id))
+        <div class="alert alert-danger" role="alert">
+            <span class="font-weight-bold"></span>Please Update Your Property Id and and Give Viewer Permission SeoTool
+            service email in analytics Dashboard.<a style="color: black"
+                href="{{ route('admin.websites.edit', auth()->user()->website_id ?? 0) }}"> Click here</a>
+        </div>
+    @endif
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <h4 class="text-center">Traffic Sources Distribution (Last 28 Days)</h4>
+                    <div class="chart-container">
+                        <canvas id="trafficPieChart"></canvas>
+                    </div>
+                    <div>
+                        <h5 class="font-medium m-2">Top Source Types:</h5>
+                        <div id="sourceTypes" class="d-flex flex-wrap gap-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <h4 class="text-center">Top 10 Traffic Sources (Last 28 Days)</h4>
+                    <p class="text-center text-muted">By Website/Origin</p>
+                    <div class="chart-container">
+                        <canvas id="trafficBarChart"></canvas>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-4 col-lg-8">
             <div class="card shadow border-light">
@@ -479,27 +515,110 @@
 @push('scripts')
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         $(document).ready(function() {
-            // $('#country').change(function() {
-            //     var countryId = $(this).val();
-            //     $.ajax({
-            //         url: '{{ route('countries.set') }}',
-            //         type: 'GET',
-            //         data: {
-            //             country_id: countryId
-            //         },
-            //         success: function(response) {
-            //             location.reload();
-            //         },
-            //         error: function(xhr, status, error) {
-            //             console.error('AJAX Error: ' + status + error);
-            //         }
-            //     });
-            // });
+            var json_data = `@json($analyticsData)`;
+
+            var data = JSON.parse(json_data);
+            const mediumGroups = {};
+            const sourceGroups = [];
+
+            data.rows.forEach(row => {
+                const medium = row.dimensionValues[0].value || '(none)';
+                const source = row.dimensionValues[1].value;
+                const users = parseInt(row.metricValues[1].value);
+
+                mediumGroups[medium] = (mediumGroups[medium] || 0) + users;
+                sourceGroups.push({
+                    medium,
+                    source,
+                    users
+                });
+            });
+
+            const sortedMediums = Object.entries(mediumGroups)
+                .map(([name, value]) => ({
+                    name: name === '(none)' ? 'Direct' : name === '(not set)' ? 'Not Set' : name.charAt(0)
+                        .toUpperCase() + name.slice(1),
+                    value
+                }))
+                .sort((a, b) => b.value - a.value);
+
+            const totalUsers = sortedMediums.reduce((sum, item) => sum + item.value, 0);
+            const chartData = sortedMediums.slice(0, 4).map(item => ({
+                ...item,
+                percentage: ((item.value / totalUsers) * 100).toFixed(2)
+            }));
+            chartData.push({
+                name: 'Other',
+                value: totalUsers - chartData.reduce((sum, item) => sum + item.value, 0),
+                percentage: ((chartData[chartData.length - 1]?.value / totalUsers) * 100).toFixed(2)
+            });
+
+            new Chart(document.getElementById('trafficPieChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.map(item => `${item.name} (${item.percentage}%)`),
+                    datasets: [{
+                        data: chartData.map(item => item.value),
+                        backgroundColor: [
+                            '#1e5df6',
+                            '#5bcdf2',
+                            '#e44d78',
+                            '#60c4a0',
+                            '#cc5ef1'
+                        ],
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+
+            const topSources = sourceGroups
+                .sort((a, b) => b.users - a.users)
+                .slice(0, 10)
+                .map(item => ({
+                    ...item,
+                    displayName: item.source === '(direct)' ? 'Direct' : item.source.replace(/\.\w+$/, ''),
+                    sourceType: item.medium === 'organic' ? 'Search Engine' : item.medium === '(none)' ?
+                        'Direct Traffic' : 'Referral'
+                }));
+
+            new Chart(document.getElementById('trafficBarChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: topSources.map(item => item.displayName),
+                    datasets: [{
+                        label: 'Users',
+                        data: topSources.map(item => item.users),
+                        backgroundColor: '#3B82F6',
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const sourceTypes = [...new Set(topSources.map(item => item.sourceType))];
+            sourceTypes.forEach(type => {
+                $('#sourceTypes').append(`
+                        <div class="d-flex align-items-center m-2">
+                            <div class="bg-primary rounded-circle" style="width: 10px; height: 10px; margin-right: 8px;"></div>
+                            <span>${type}</span </div>
+                    `);
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
 
             let newKeywordsTable;
             let selectedDays = 'all';
