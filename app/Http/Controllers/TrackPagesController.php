@@ -119,7 +119,7 @@ class TrackPagesController extends Controller
         foreach ($pageReport as $page) {
             $mergedData = [
                 'pagePath' => $page['pagePath'],
-                'pageTitle' => $page['pageTitle'],
+                // 'pageTitle' => $page['pageTitle'],
                 'newUsers' => $page['newUsers'],
                 'totalUsers' => $page['totalUsers'],
                 // 'sessionSourceMedium' => $page['sessionSourceMedium'],

@@ -40,7 +40,7 @@ class GoogleAnalyticsService
                 'property' => 'properties/' . $this->propertyId,
                 'dimensions' => [
                     new Dimension(['name' => 'pagePath']),
-                    new Dimension(['name' => 'pageTitle']),
+                    // new Dimension(['name' => 'pageTitle']),
                     // new Dimension(['name' => 'sessionSourceMedium']),
                     // new Dimension(['name' => 'sessionSource']),
                 ],
@@ -105,7 +105,7 @@ class GoogleAnalyticsService
 
                 $result = [
                     'pagePath' => isset($dimensionValues[0]) ? $dimensionValues[0]->getValue() : '',
-                    'pageTitle' => isset($dimensionValues[1]) ? $dimensionValues[1]->getValue() : '',
+                    // 'pageTitle' => isset($dimensionValues[1]) ? $dimensionValues[1]->getValue() : '',
                     // 'sessionSourceMedium' => isset($dimensionValues[2]) ? $dimensionValues[2]->getValue() : '',
                     // 'sessionSource' => isset($dimensionValues[3]) ? $dimensionValues[3]->getValue() : '',
                     'newUsers' => isset($metricValues[0]) ? $metricValues[0]->getValue() : 0,

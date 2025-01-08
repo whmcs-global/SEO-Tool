@@ -18,7 +18,7 @@
                 <tr>
                     <td class="text-break">
                         <div class="wrap-text">{{ $data['pagePath'] }}</div>
-                        <small class="text-muted wrap-text">{{ $data['pageTitle'] }}</small>
+                        {{-- <small class="text-muted wrap-text">{{ $data['pageTitle'] }}</small> --}}
                     </td>
                     {{-- <td class="source-column text-break">
                         @include('track_pages.partials.source-icon', [
