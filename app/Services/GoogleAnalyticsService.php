@@ -41,8 +41,8 @@ class GoogleAnalyticsService
                 'dimensions' => [
                     new Dimension(['name' => 'pagePath']),
                     new Dimension(['name' => 'pageTitle']),
-                    new Dimension(['name' => 'sessionSourceMedium']),
-                    new Dimension(['name' => 'sessionSource']),
+                    // new Dimension(['name' => 'sessionSourceMedium']),
+                    // new Dimension(['name' => 'sessionSource']),
                 ],
                 'metrics' => [
                     new Metric(['name' => 'newUsers']),
@@ -106,8 +106,8 @@ class GoogleAnalyticsService
                 $result = [
                     'pagePath' => isset($dimensionValues[0]) ? $dimensionValues[0]->getValue() : '',
                     'pageTitle' => isset($dimensionValues[1]) ? $dimensionValues[1]->getValue() : '',
-                    'sessionSourceMedium' => isset($dimensionValues[2]) ? $dimensionValues[2]->getValue() : '',
-                    'sessionSource' => isset($dimensionValues[3]) ? $dimensionValues[3]->getValue() : '',
+                    // 'sessionSourceMedium' => isset($dimensionValues[2]) ? $dimensionValues[2]->getValue() : '',
+                    // 'sessionSource' => isset($dimensionValues[3]) ? $dimensionValues[3]->getValue() : '',
                     'newUsers' => isset($metricValues[0]) ? $metricValues[0]->getValue() : 0,
                     'totalUsers' => isset($metricValues[1]) ? $metricValues[1]->getValue() : 0,
                 ];

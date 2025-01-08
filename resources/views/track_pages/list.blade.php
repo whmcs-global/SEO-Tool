@@ -5,11 +5,13 @@
 @endsection
 
 @section('content')
-@if(is_null(auth()->user()->getCurrentProject()->property_id))
-<div class="alert alert-danger" role="alert">
-    <span class="font-weight-bold"></span>Please Update Your Property Id and and Give Viewer Permission SeoTool service email in analytics Dashboard.<a style="color: black" href="{{ route('admin.websites.edit', auth()->user()->website_id ?? 0) }}"> Click here</a>
-</div>
-@endif
+    @if (is_null(auth()->user()->getCurrentProject()->property_id))
+        <div class="alert alert-danger" role="alert">
+            <span class="font-weight-bold"></span>Please Update Your Property Id and and Give Viewer Permission SeoTool
+            service email in analytics Dashboard.<a style="color: black"
+                href="{{ route('admin.websites.edit', auth()->user()->website_id ?? 0) }}"> Click here</a>
+        </div>
+    @endif
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -45,7 +47,7 @@
                                 <thead>
                                     <tr>
                                         <th class="w-20">Page Information</th>
-                                        <th class="w-5">Source / Medium</th>
+                                        {{-- <th class="w-5">Source / Medium</th> --}}
                                         <th class="w-5">New Users</th>
                                         <th class="w-5">Total Users</th>
                                         <th class="w-5">Organic Clicks</th>
@@ -62,12 +64,12 @@
                                                 <div class="wrap-text">{{ $data['pagePath'] }}</div>
                                                 <small class="text-muted wrap-text">{{ $data['pageTitle'] }}</small>
                                             </td>
-                                            <td class="source-column text-break">
+                                            {{-- <td class="source-column text-break">
                                                 @include('track_pages.partials.source-icon', [
                                                     'source' => $data['sessionSourceMedium'],
                                                 ])
                                                 {{ $data['sessionSourceMedium'] }}
-                                            </td>
+                                            </td> --}}
                                             <td>{{ $data['newUsers'] }}</td>
                                             <td>{{ $data['totalUsers'] }}</td>
                                             <td>{{ number_format($data['organicGoogleSearchClicks'], 2) }}</td>
@@ -75,7 +77,8 @@
                                             <td>{{ number_format($data['organicGoogleSearchClickThroughRate'], 2) }}</td>
                                             <td>{{ number_format($data['organicGoogleSearchAveragePosition'], 2) }}</td>
                                             <td>
-                                                <a href="{{ route('page.show', ['url' => $data['pagePath'] ]); }}" class="btn btn-primary">Details</a>
+                                                <a href="{{ route('page.show', ['url' => $data['pagePath']]) }}"
+                                                    class="btn btn-primary">Details</a>
                                             </td>
                                         </tr>
                                     @empty
@@ -87,13 +90,15 @@
                                 <tfoot>
                                     <tr>
                                         <th>Total</th>
-                                        <th></th>
+                                        {{-- <th></th> --}}
                                         <th>{{ $pageTotals['newUsers'] }}</th>
                                         <th>{{ $pageTotals['totalUsers'] }}</th>
                                         <th>{{ number_format($organicTotals['organicGoogleSearchClicks'], 2) }}</th>
                                         <th>{{ number_format($organicTotals['organicGoogleSearchImpressions'], 2) }}</th>
-                                        <th>{{ number_format($organicTotals['organicGoogleSearchClickThroughRate'], 2) }}</th>
-                                        <th>{{ number_format($organicTotals['organicGoogleSearchAveragePosition'], 2) }}</th>
+                                        <th>{{ number_format($organicTotals['organicGoogleSearchClickThroughRate'], 2) }}
+                                        </th>
+                                        <th>{{ number_format($organicTotals['organicGoogleSearchAveragePosition'], 2) }}
+                                        </th>
                                         <th></th>
                                     </tr>
                                 </tfoot>
