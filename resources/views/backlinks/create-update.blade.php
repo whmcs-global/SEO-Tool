@@ -303,20 +303,20 @@
                                     @enderror
                                 </div>
                             </div>
-                            @role('Admin|Super Admin')
-                                <div class="mb-3 row">
-                                    <label for="notes_comments"
-                                        class="col-md-4 col-form-label text-md-end">{{ __('Notes/Comments') }}</label>
-                                    <div class="col-md-6">
-                                        <textarea id="notes_comments" placeholder="Enter a Note"
-                                            class="form-control @error('notes_comments') is-invalid @enderror" name="notes_comments">{{ $backlink ? $backlink->notes_comments : old('notes_comments') }}</textarea>
-                                        @error('notes_comments')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
+                            <div class="mb-3 row">
+                                <label for="notes_comments"
+                                class="col-md-4 col-form-label text-md-end">{{ __('Notes/Comments') }}</label>
+                                <div class="col-md-6">
+                                    <textarea id="notes_comments" placeholder="Enter a Note"
+                                    class="form-control @error('notes_comments') is-invalid @enderror" name="notes_comments">{{ $backlink ? $backlink->notes_comments : old('notes_comments') }}</textarea>
+                                    @error('notes_comments')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                    @enderror
                                 </div>
+                            </div>
+                            @role('Admin|Super Admin')
                                 <div class="mb-3 row">
                                     <label for="status"
                                         class="col-md-4 col-form-label text-md-end">{{ __('Status') }}</label>
